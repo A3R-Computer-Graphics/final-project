@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<title>Arm</title>
+<link rel="stylesheet" href="no-2.css">
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+attribute vec3 vNormal;
+varying vec4 fColor;
+
+uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+uniform vec4 lightPosition;
+uniform float shininess;
+void main()
+{
+    // pos is vertex position in eye coordinates
+
+    vec3 pos = -(viewMatrix * modelMatrix * vPosition).xyz;
+    
+    // vector from vertex position to light source
+    
+    vec3 L = normalize( lightPosition.xyz - pos );
+	
+    vec3 E = normalize( -pos );
+    vec3 H = normalize( L + E );
+    
+    vec4 NN = vec4(vNormal, 0);
+
+    // Transform vertex normal into eye coordinates
+    vec3 N = normalize(NN.xyz);
+
+    // Compute diffuse reflection term (see p. 286 Angel 7th ed)
+    float Kd = max( dot(L, N), 0.0 );
+    vec4  diffuse  = Kd * diffuseProduct;
+
+    // Compute specular reflection term (see p. 287 Angel 7th ed)
+    float Ks = pow( max(dot(N, H), 0.0), shininess );
+    vec4  specular = Ks * specularProduct;
+
+    if( dot(L, N) < 0.0 ) {
+	    specular = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+
+    // Use ambient
+    vec4 ambient = ambientProduct;
+
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vPosition;
+    fColor = ambient + diffuse +specular;
+    
+    fColor.a = 1.0;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+
+
+varying vec4 fColor;
+
+void
+main()
+{
+    gl_FragColor = fColor;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+
+<script type="text/javascript" src="object-node.js"></script>
+<script type="text/javascript" src="model.js"></script>
+<script type="text/javascript" src="objects-materials.js"></script>
+<script type="text/javascript" src="../temp/objects-data.js"></script>
+<script type="text/javascript" src="../temp/objects-vertices.js"></script>
+<script type="text/javascript" src="m4.js"></script>
+<script type="text/javascript" src="camera-coordinates.js"></script>
+<script type="text/javascript" src="utils.js"></script>
+
+<script type="text/javascript" src="no-2.js"></script>
+
+<body>
+  <canvas width="512" height="512" tabindex="1" id="gl-canvas">
+    Oops ... your browser doesn't support the HTML5 canvas element
+  </canvas>
+</body>
+
+</html>
