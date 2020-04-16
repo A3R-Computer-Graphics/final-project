@@ -19,8 +19,10 @@ for material in D.materials:
     material_data = {}
     material_data['name'] = material.name
     
+    if 'Principled BSDF' not in material.node_tree.nodes:
+        continue
+    
     node = material.node_tree.nodes['Principled BSDF']
-    print(material.name)
     color_values = node.inputs['Base Color'].default_value
     
     material_color = [color_values[0], color_values[1], color_values[2], color_values[3]]
