@@ -91,7 +91,7 @@ let isRenderedContinuously = true;
 var materialDict = {};
 
 function initMaterials() {
-  materials_defintion.forEach(material => {
+  materials_definition.forEach(material => {
     materialDict[material.name] = material;
   })
   updateMaterialsLighting();
@@ -117,8 +117,9 @@ function updateLight(data) {
     lightSpecular = data.specular;
   }
   if (data.position) {
-    lightPosition = data.position;
+    lightPosition = [data.position[0], data.position[1], data.position[2], 0.0];
   }
+  updateLightingPosition();
   updateMaterialsLighting();
   if (!isRenderedContinuously) {
     render();
@@ -258,16 +259,8 @@ function initBufferFromPoints() {
   gl.enableVertexAttribArray(vPosition);
 }
 
-function updateMaterialsAndLights() {
-  let ambientProduct = mult(lightAmbient, materialAmbient);
-  let diffuseProduct = mult(lightDiffuse, materialDiffuse);
-  let specularProduct = mult(lightSpecular, materialSpecular);
-  gl.uniform4fv(ambientLoc, flatten(ambientProduct));
-  gl.uniform4fv(diffuseLoc, flatten(diffuseProduct));
-  gl.uniform4fv(specularLoc, flatten(specularProduct));
-
+function updateLightingPosition() {
   gl.uniform4fv(lightPositionLoc, flatten(lightPosition));
-  gl.uniform1f(shininessLoc, materialShininess);
 }
 
 var cameraPosIndex = 17;
@@ -297,7 +290,7 @@ window.addEventListener('load', function init() {
   initObjects();
 
   initBufferFromPoints();
-  updateMaterialsAndLights();
+  updateLightingPosition();
 
   initializeCameraPosition();
   initializeProjectionMatrix();
