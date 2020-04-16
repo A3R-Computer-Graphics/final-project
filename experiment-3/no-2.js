@@ -69,13 +69,6 @@ let lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 
-// Default material
-
-let materialAmbient = vec4(1.0, 0.0, 1.0, 1.0);
-let materialDiffuse = vec4(1.0, 0.8, 0.0, 1.0);
-let materialSpecular = vec4(1.0, 0.8, 0.0, 1.0);
-let materialShininess = 20.0;
-
 // Rendering variables
 
 let isRenderedContinuously = true;
@@ -200,13 +193,13 @@ function initObjects() {
 
 function renderModel(
   bufferStart, bufferCount,
-  ambientProduct, diffuseProduct, specularProduct,
+  ambientProduct, diffuseProduct, specularProduct, shininess,
   modelMatrix) {
 
   gl.uniform4fv(ambientLoc, ambientProduct);
   gl.uniform4fv(diffuseLoc, diffuseProduct);
   gl.uniform4fv(specularLoc, specularProduct);
-  gl.uniform1f(shininessLoc, materialShininess);
+  gl.uniform1f(shininessLoc, shininess);
 
   gl.uniformMatrix4fv(modelMatrixLoc, false, flatten(modelMatrix));
   gl.drawArrays(gl.TRIANGLES, bufferStart, bufferCount);
@@ -337,6 +330,7 @@ function render() {
         model.material.ambientProduct,
         model.material.diffuseProduct,
         model.material.specularProduct,
+        model.material.shininess,
         model.transformationMatrix)
     }
   })
