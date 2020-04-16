@@ -7,7 +7,7 @@ var objects_info = {
         "parent": "arm.upper"
     },
     "axis": {
-        "location": [3.7, 0.0, 0.0],
+        "location": [1.5, -1.0, -0.2],
         "rotation": [0.0, 0.0, 0.0],
         "scale": [0.5, 0.5, 0.5],
         "material_name": "pink"
