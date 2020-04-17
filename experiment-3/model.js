@@ -47,6 +47,8 @@ class Model {
       this.location[2] + this.origin[2]
     );
     mat = m4.scale(mat, this.scale[0], this.scale[1], this.scale[2]);
+    mat = m4.zRotate(mat, degToRad(this.rotation[2]));
+    mat = m4.yRotate(mat, degToRad(this.rotation[1]));
     mat = m4.xRotate(mat, degToRad(this.rotation[0]));
     mat = m4.yRotate(mat, degToRad(this.rotation[1]));
     mat = m4.zRotate(mat, degToRad(this.rotation[2]));
