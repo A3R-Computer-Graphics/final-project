@@ -50,8 +50,12 @@ class Model {
     mat = m4.zRotate(mat, degToRad(this.rotation[2]));
     mat = m4.yRotate(mat, degToRad(this.rotation[1]));
     mat = m4.xRotate(mat, degToRad(this.rotation[0]));
-    mat = m4.yRotate(mat, degToRad(this.rotation[1]));
-    mat = m4.zRotate(mat, degToRad(this.rotation[2]));
+    mat = m4.multiply(mat,
+      m4.xyzRotationScale(
+        degToRad(this.rotation[0]), degToRad(this.rotation[1]), degToRad(this.rotation[2]),
+        this.scale[0], this.scale[1], this.scale[2]
+      )
+    );
     mat = m4.translate(mat, this.origin[0], this.origin[1], this.origin[2]);
     this.transformationMatrix = mat;
   }
