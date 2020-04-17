@@ -124,19 +124,15 @@ var rootNodes = [];
 function initObjects() {
   // Iterate over the objects_vertices and objects_data
   // to initiate node data.
-  Object.keys(objects_vertices).forEach((objectName, index) => {
-    // Init object vertices
-    var verts = objects_vertices[objectName];
+  Object.keys(objects_vertices).forEach(objectName => {
     var numVertsBefore = numVertices;
-    verts.tris.forEach((tris) => {
-      let quadData = getPointsAndNormalsFromNgon(tris);
-      pointsArray = [...pointsArray, ...quadData.points];
-      normalsArray = [...normalsArray, ...quadData.normals];
-    });
-    verts.quads.forEach((quad) => {
-      let quadData = getPointsAndNormalsFromNgon(quad);
-      pointsArray = [...pointsArray, ...quadData.points];
-      normalsArray = [...normalsArray, ...quadData.normals];
+    var objVertsData = objects_vertices[objectName];
+    
+    var vertices = objVertsData.vertices;
+    objVertsData.indices.forEach(polygonIndices => {
+      let faceData = getScaledVertexPointsAndNormals(vertices, polygonIndices)
+      pointsArray = [...pointsArray, ...faceData.points];
+      normalsArray = [...normalsArray, ...faceData.normals];
     });
     numVertices = pointsArray.length;
     var vertexCount = numVertices - numVertsBefore;

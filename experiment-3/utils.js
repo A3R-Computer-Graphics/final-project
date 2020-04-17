@@ -51,14 +51,20 @@ function easeInOut(x) {
   return b + a * Math.pow(2 * (b + a * x), 3) / 2
 }
 
-function getPointsAndNormalsFromNgon(initPoints) {
-  let newInitPoints = []
-  for (let i = 0; i < initPoints.length; i++) {
-    // Make sure points are in vec4 representation by adding '1.0'
-    let old = initPoints[i]
-    newInitPoints.push([old[0], old[1], old[2], 1.0])
+function getScaledVertexPointsAndNormals(vertices, polygonIndices, scaleFactor) {
+  if (!scaleFactor) {
+    scaleFactor = 1;
   }
-  initPoints = newInitPoints;
+
+  let initPoints = [];
+  for (let i = 0; i < polygonIndices.length; i++) {
+    let v = vertices[polygonIndices[i]]
+    initPoints.push([
+      v[0] * scaleFactor,
+      v[1] * scaleFactor,
+      v[2] * scaleFactor,
+      1.0])
+  }
 
   let a = initPoints[0]
   let b = initPoints[1]

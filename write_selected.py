@@ -16,26 +16,17 @@ def write_selected():
     objs_info_data = {}
 
     for obj in objs:
-        obj_verts = {}
-
-        # Write all quads and tris
-        quad_vertices = []
-        tris_vertices = []
-        
         if obj.data is None or not hasattr(obj.data, 'polygons'):
             continue
         
-        for f in obj.data.polygons:
-            vertices = []
-            for idx in f.vertices:
-                vertices.append(list(obj.data.vertices[idx].co[0:3]))
-            if len(vertices) == 4:
-                quad_vertices.append(vertices)
-            elif len(vertices) == 3:
-                tris_vertices.append(vertices)
-
-        obj_verts["quads"] = quad_vertices
-        obj_verts["tris"] = tris_vertices
+        vertices = []
+        indices = []
+        
+        for idx, vertex in enumerate(obj.data.vertices):
+            vertices.append(list(map(lambda i: round(i, 3), vertex.co[0:3])))
+        
+        for i in range(len(obj.data.polygons)):
+            indices.append(list(obj.data.polygons[i].vertices))
 
         # Print object loc rot scale
         obj_info = {}
@@ -68,7 +59,10 @@ def write_selected():
             obj_info["parent"] = parent.name
 
         objs_info_data[obj.name] = obj_info
-        objs_verts_data[obj.name] = obj_verts
+        objs_verts_data[obj.name] = {
+            "vertices": vertices,
+            "indices": indices
+        }
     
     with open(OBJECTS_INFO_PATH, "w+") as outfile:
         outfile.write("var objects_info = " + json.dumps(objs_info_data))
