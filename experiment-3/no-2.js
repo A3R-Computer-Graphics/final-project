@@ -122,12 +122,31 @@ function updateLight(data) {
 var rootNodes = [];
 
 function initObjects() {
+
+  // Estimate points count by counting how many triangles needed to
+  // make a face, for each face in model, for all models.
+  // Formula: (vertex count - 2) * 3
+  // example a square (having 4 vertex) will need 2 triangles
+  
+  let triangleCount = Object.keys(objects_vertices).map(key =>
+    objects_vertices[key].indices
+    .reduce((p, c) => p + c.length - 2, 0))
+    .reduce((p, c) => p + c)
+
+  // create matrix with size of points count
+  pointsArray = new Array(triangleCount * 3);
+  normalsArray = new Array(triangleCount * 3);
+
   // Iterate over the objects_vertices and objects_data
   // to initiate node data.
   Object.keys(objects_vertices).forEach(objectName => {
     var numVertsBefore = numVertices;
     var objVertsData = objects_vertices[objectName];
-    
+
+    /* 
+    // Appending new data to points and normals array, without allocating space.
+    // Inspecting performance shows scripting takes ~600ms for 20000 vertex.
+
     var vertices = objVertsData.vertices;
     objVertsData.indices.forEach(polygonIndices => {
       let faceData = getScaledVertexPointsAndNormals(vertices, polygonIndices)
@@ -135,6 +154,31 @@ function initObjects() {
       normalsArray = [...normalsArray, ...faceData.normals];
     });
     numVertices = pointsArray.length;
+    */
+
+    /* 
+    // Appending new data to points & normals array, but this time,
+    // allocating single model vertex count.
+    // Scripting takes ~200ms.
+    
+    var facesData = getScaledModelPointsAndNormals(
+      objVertsData.vertices, objVertsData.indices
+    )
+    pointsArray = [...pointsArray, ...facesData.points];
+    normalsArray = [...normalsArray, ...facesData.normals];
+    numVertices = pointsArray.length;
+    */
+
+    // Estimating vertex count for all models and assigning
+    // points and normals without appending/destructuring.
+    // Scripting takes ~160ms.
+    
+    var newData = populatePointsAndNormalsArray({
+      vertices: objVertsData.vertices,
+      polygonIndices: objVertsData.indices
+    }, numVertices, pointsArray, normalsArray)
+    numVertices = newData.newStartIndex;
+
     var vertexCount = numVertices - numVertsBefore;
 
     var objImportedData = objects_info[objectName];

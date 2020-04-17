@@ -99,6 +99,114 @@ function getScaledVertexPointsAndNormals(vertices, polygonIndices, scaleFactor) 
   }
 }
 
+function getScaledModelPointsAndNormals(vertices, polygonIndices, scaleFactor) {
+  if (!scaleFactor) {
+    scaleFactor = 1;
+  }
+
+  // Estimate array size
+  let totalPoints = 0
+  polygonIndices.forEach(indices => {
+    totalPoints += (indices.length - 2) * 3
+  })
+
+  // Init array with size totalPoints
+  let points = new Array(totalPoints);
+  let normals = new Array(totalPoints);
+  let pointCnt = 0;
+
+  polygonIndices.forEach(indices => {
+    let initPoints = [];
+
+    for (let i = 0; i < indices.length; i++) {
+      let v = vertices[indices[i]]
+      initPoints.push([
+        v[0] * scaleFactor,
+        v[1] * scaleFactor,
+        v[2] * scaleFactor,
+        1.0])
+    }
+  
+    let a = initPoints[0]
+    let b = initPoints[1]
+    let c = initPoints[2]
+  
+    // Compute normal from the direction of first 3 points.
+  
+    var t1 = subtract(b, a);
+    var t2 = subtract(c, b);
+    var normal = cross(t1, t2);
+    normal = vec4(normal);
+  
+    // Duplicate points using triangle fan style
+
+    for (let i = 1; i < initPoints.length - 1; i++) {
+      b = initPoints[i];
+      c = initPoints[i+1];
+
+      points[pointCnt] = a;
+      normals[pointCnt++] = normal;
+      points[pointCnt] = b;
+      normals[pointCnt++] = normal;
+      points[pointCnt] = c;
+      normals[pointCnt++] = normal;
+    }
+  })
+
+  return {
+    points,
+    normals
+  }
+}
+
+function populatePointsAndNormalsArray(
+    { vertices, polygonIndices},
+    startIndex, points, normals) {
+
+  polygonIndices.forEach(indices => {
+    let initPoints = [];
+    for (let i = 0; i < indices.length; i++) {
+      let v = vertices[indices[i]]
+      initPoints.push([
+        v[0],
+        v[1],
+        v[2],
+        1.0])
+    }
+  
+    let a = initPoints[0]
+    let b = initPoints[1]
+    let c = initPoints[2]
+  
+    // Compute normal from the direction of first 3 points.
+  
+    var t1 = subtract(b, a);
+    var t2 = subtract(c, b);
+    var normal = cross(t1, t2);
+    normal = vec4(normal);
+  
+    // Duplicate points using triangle fan style
+
+    for (let i = 1; i < initPoints.length - 1; i++) {
+      b = initPoints[i];
+      c = initPoints[i+1];
+
+      points[startIndex] = a;
+      normals[startIndex++] = normal;
+      points[startIndex] = b;
+      normals[startIndex++] = normal;
+      points[startIndex] = c;
+      normals[startIndex++] = normal;
+    }
+  })
+
+  return {
+    points,
+    normals,
+    newStartIndex: startIndex
+  }
+}
+
 function cloneUsingJSON(obj) {
   return JSON.parse(JSON.stringify(obj))
 }
