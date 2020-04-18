@@ -46,10 +46,6 @@ class Model {
       this.location[1] + this.origin[1],
       this.location[2] + this.origin[2]
     );
-    mat = m4.scale(mat, this.scale[0], this.scale[1], this.scale[2]);
-    mat = m4.zRotate(mat, degToRad(this.rotation[2]));
-    mat = m4.yRotate(mat, degToRad(this.rotation[1]));
-    mat = m4.xRotate(mat, degToRad(this.rotation[0]));
     mat = m4.multiply(mat,
       m4.xyzRotationScale(
         degToRad(this.rotation[0]), degToRad(this.rotation[1]), degToRad(this.rotation[2]),
@@ -73,7 +69,6 @@ class Model {
     // If the node already has parent and the model is already initialized
     if (this.node.hasParent && !!this.node.parent.model) {
       var parentNode = this.node.parent;
-      console.log('parent: ', parentNode);
       var parentMatrix = parentNode.model.fullTransformMatrix;
       this.fullTransformMatrix = m4.multiply(
         parentMatrix,
