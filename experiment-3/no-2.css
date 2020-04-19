@@ -286,3 +286,21 @@ div#speed-slider {
 #btn-animate {
   width: 100%;
 }
+
+#screen-info {
+  position: absolute;
+  bottom: 0;
+  z-index: 1;
+  display: none;
+  color: white;
+  padding-bottom: 10px;
+  padding-left: 10px;
+}
+
+#canvas-status {
+  margin-bottom: 0;
+}
+
+canvas:focus+#screen-info {
+  display: block;
+}

@@ -96,11 +96,14 @@ main()
     <canvas tabindex="1" id="gl-canvas">
       Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
+    <div id="screen-info">
+      <p id="canvas-status">Canvas aktif dipilih</p>
+    </div>
   </div>
   <div id="menu-toggler-wrapper" class="show-menu">
     <button type="button" class="btn btn-primary" id="menu-toggler-button">
       <span class="button-text">Tutup</span>
-      <img class="arrow" src="arrow.svg"/>
+      <img class="arrow" src="arrow.svg" />
     </button>
     <div class="menu">
       <div class="submenu-two-list-container">
@@ -164,7 +167,7 @@ main()
             <label>Rotasi Tolehan Kepala<b>
                 <div class="slider-value">0</div>
               </b></label>
-            <input type="range" step="0.1" name="head.rotation.z" value="0" min="-90" max="9  0"
+            <input type="range" step="0.1" name="head.rotation.z" value="0" min="-90" max="90"
               class="custom-range range-animation" />
           </div>
           <div class="slider-container">
@@ -185,11 +188,11 @@ main()
             <label>Loncatan<b>
                 <div class="slider-value">0</div>
               </b></label>
-            <input type="range" step="0.1" name="body.location.z" value="0" min="0" max="0.5"
+            <input type="range" step="0.01" name="body.location.z" value="0" min="-1" max="1"
               class="custom-range range-animation">
           </div>
           <div class="slider-container">
-            <label>Rotasi Badan: <b>
+            <label>Rotasi Tengkurap Badan<b>
                 <div class="slider-value">0</div>
               </b></label>
             <input type="range" step="0.1" name="body.rotation.x" value="0" min="-90" max="90"
