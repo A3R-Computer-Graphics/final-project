@@ -478,3 +478,20 @@ function adjustViewport() {
     // thus creating two render() function running simultaneously.
     isRenderedContinuously = backUpIsRenderedContinuously;
   }
+
+var isMenuShown = false;
+function toggleMenu() {
+  let wrapperDOM = document.getElementById('menu-toggler-wrapper');
+  let menuTogglerButtonText = document.getElementById('menu-toggler-button-text');
+  let menuTogglerButtonArrow = document.getElementById('menu-toggler-button-arrow');
+  if (!isMenuShown) {
+    wrapperDOM.className = "show-menu";  
+    menuTogglerButtonText.innerText = 'Hide Menu Overlay';
+    menuTogglerButtonArrow.innerText = '>';
+  } else {
+    wrapperDOM.className = "hide-menu";
+    menuTogglerButtonText.innerText = 'Show Menu Overlay';
+    menuTogglerButtonArrow.innerText = '<';
+  }
+  isMenuShown = !isMenuShown;
+}

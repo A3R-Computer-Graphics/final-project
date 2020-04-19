@@ -38,7 +38,8 @@ body {
   display: flex;
   flex-flow: row;
   position: relative;
-  background-color: #202125;
+  background-color: #3c3f44;
+  background-color: rgba(32, 33, 37, 0.5);
   color: #b4b4b4;
   height: 100vh;
 }
@@ -49,19 +50,43 @@ body {
   overflow: hidden;
 }
 
-.menu-left {
-  max-width: 220px;
+#menu-toggler-wrapper {
+  position: fixed;
+  margin: 0;
+  transition: right 1s;
+  display: flex;
+}
+
+.hide-menu {
+  right: -25vw;
+}
+
+
+.hide-menu > button > div {
+  flex-direction: row;
+}
+
+.show-menu {
+  right: 0;
+}
+
+.show-menu > button > div {
+  flex-direction: row-reverse;
+}
+
+.menu {
+  width: 25vw;
   overflow-x: hidden;
   overflow-y: auto;
   padding: 10px;
-  background-color: #2f3136;
-  box-shadow: -4px 0 4px rgba(0, 0, 0, 0.6);
+  background-color: rgba(47, 49, 54, 0.5);
+  box-shadow: 4px 0 4px rgba(0, 0, 0, 0.6);
   z-index: 1;
 }
 
 .submenu {
   margin: 0;
-  background-color: #3c3f44;
+  background-color: rgba(32, 33, 37, 0.75);
   padding: 10px;
   border-radius: 3px;
   margin-bottom: 10px;
@@ -72,6 +97,20 @@ body {
 }
 
 canvas {
-  height: 100vh;
+  height: 100%;
   left: 0;
+}
+
+#menu-toggler-button {
+  width: 3rem;
+  height: 12rem;
+  position: relative;
+  text-align: center;
+  vertical-align: center;
+}
+
+.rotated-text {
+  display: inline-block;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
 }
