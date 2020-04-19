@@ -72,6 +72,7 @@ let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 // Rendering variables
 
 let isRenderedContinuously = true;
+let isAnimated = false;
 
 // Variables related to objects and materials
 
@@ -127,10 +128,10 @@ function initObjects() {
   // make a face, for each face in model, for all models.
   // Formula: (vertex count - 2) * 3
   // example a square (having 4 vertex) will need 2 triangles
-  
+
   let triangleCount = Object.keys(objects_vertices).map(key =>
-    objects_vertices[key].indices
-    .reduce((p, c) => p + c.length - 2, 0))
+      objects_vertices[key].indices
+      .reduce((p, c) => p + c.length - 2, 0))
     .reduce((p, c) => p + c)
 
   // create matrix with size of points count
@@ -172,7 +173,7 @@ function initObjects() {
     // Estimating vertex count for all models and assigning
     // points and normals without appending/destructuring.
     // Scripting takes ~160ms.
-    
+
     var newData = populatePointsAndNormalsArray({
       vertices: objVertsData.vertices,
       polygonIndices: objVertsData.indices
@@ -192,8 +193,7 @@ function initObjects() {
       parentName: objImportedData.parent,
       bufferStartIndex: numVertsBefore,
       vertexCount: vertexCount,
-      material:
-        materialDict[objImportedData.material_name] || materialDict["Default"],
+      material: materialDict[objImportedData.material_name] || materialDict["Default"],
     });
     if (!model.node.hasParent) rootNodes.push(model.node);
   });
@@ -280,12 +280,44 @@ function initializeProjectionMatrix() {
   gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 }
 
+// Animation
+function initAnimateBtn() {
+  var animateBtn = document.getElementById("btn-animate");
+  animateBtn.addEventListener("click", animateFunc);
+}
+
+function animateFunc() {
+  const animateBtn = document.getElementById("btn-animate");
+  if (isAnimated) {
+    stopAnimation();
+    animateBtn.innerHTML = "Start Animation";
+    animateBtn.classList.remove('btn-danger');
+    animateBtn.classList.add('btn-primary');
+    document.querySelectorAll('.range-animation')
+    .forEach(elem => {
+      elem.disabled = false;
+    })
+  }
+  else {
+    startAnimation();
+    animateBtn.innerHTML = "Stop Animation";
+    animateBtn.classList.remove('btn-primary');
+    animateBtn.classList.add('btn-danger');
+    document.querySelectorAll('.range-animation')
+    .forEach(elem => {
+      elem.disabled = true;
+    })
+  } 
+}
+
 window.addEventListener("load", function init() {
   initCanvasAndGL();
   initGraphicsLibraryVariables();
 
   initMaterials();
   initObjects();
+  initAnimateBtn()
+  initAnimationDict();
 
   initBufferFromPoints();
   updateLightingPosition();
@@ -331,11 +363,11 @@ function render() {
 
   // Make recursive call if and only if the app is set to render continuously
   if (isRenderedContinuously) {
-    setTimeout(() => {
       window.requestAnimationFrame(render);
-    }, 100);
   }
 }
+
+
 
 /**
  * Convert keyboard into direction, with respect to three
