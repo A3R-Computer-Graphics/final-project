@@ -60,6 +60,7 @@ let vBuffer;
 
 let theta = 0;
 let phi = 0;
+let resolution = 100;
 
 // Light data
 
@@ -333,6 +334,7 @@ window.addEventListener("load", function init() {
   adjustViewport();
   window.addEventListener('resize', adjustViewport);
   document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
+  document.querySelector('input[name="resolution"]').addEventListener('input', adjustResolution)
 });
 
 /**
@@ -463,8 +465,10 @@ function adjustViewport() {
 
     let widthToHeightRatio = rect.width / rect.height;
     width = Math.min(MAX_WIDTH, width);
-    height = Math.min(MAX_HEIGHT, width / widthToHeightRatio);
+    height = Math.min(MAX_HEIGHT, width / widthToHeightRatio) * resolution / 100;
     width = height * widthToHeightRatio;
+
+    width = Math.ceil(width);
 
     canvas.width = width;
     canvas.height = height;
@@ -492,4 +496,10 @@ function toggleMenu() {
     menuTogglerButtonText.innerText = 'Buka Menu';
   }
   isMenuShown = !isMenuShown;
+}
+
+function adjustResolution(event) {
+  resolution = Math.min(100, Math.max(1, event.target.value));
+  event.target.parentElement.querySelector('.slider-value').innerText = resolution + "%";
+  adjustViewport();
 }
