@@ -16,6 +16,9 @@
       width: 100%;
       background-color: #282828;
       padding: 10px 2rem;
+      overflow-y: scroll;
+      z-index: 1;
+      position: absolute;
   }
 
   .menu::before {
@@ -27,7 +30,8 @@
 
   #menu-toggler-button {
       width: 141px;
-      margin-left: auto;
+      margin-right: auto;
+      transform: translate(0, -100%);
   }
 
   #menu-toggler-wrapper.show-menu #menu-toggler-button img {
@@ -35,8 +39,7 @@
   }
 
   .hide-menu {
-      right: 0;
-      bottom: calc(-50vh + 40px) !important;
+    transform: translate(0, 100%);
   }
 
   #menu-toggler-wrapper.hide-menu #menu-toggler-button img {
