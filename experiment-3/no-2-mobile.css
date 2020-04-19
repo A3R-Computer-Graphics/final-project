@@ -64,4 +64,52 @@
       padding: 6px 5px 9px;
       box-shadow: 0 4px 4px rgb(28, 28, 28);
   }
+
+  .slider-container input {
+    flex-basis: 60%;
+    right: 0;
+    position: relative;
+    top: 15px;
+  }
+
+  .slider-container > label {
+      width: calc(40% - 1rem);
+      margin-right: 1rem;
+      font-size: 13px;
+      line-height: 1.2;
+  }
+
+  .slider-container {
+      display: flex;
+      min-height: 38px;
+      margin-top: 6px;
+      padding-bottom: 5px;
+      flex-wrap: wrap;
+  }
+
+  .submenu > .slider-container:not(:last-child)::after {
+      width: 100%;
+      display: block;
+      content: "";
+      flex-basis: 100%;
+      border-bottom: 1px solid #4d4d4da3;
+      margin: 1px 0 9px;
+      top: 15px;
+      position: relative;
+  }
+
+  .slider-value {
+      right: auto;
+      left: 40%;
+      text-align: left;
+  }
+
+  .slider-container input {
+      margin-bottom: 0;
+  }
+
+  .slider-container {
+      width: calc(100% - 10px);
+      left: 5px;
+  }
 }
