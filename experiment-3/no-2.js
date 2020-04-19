@@ -449,21 +449,22 @@ function onCanvasKeydown(event) {
  * Adjust viewport so the canvas stays clear even if window resolution changes.
  */
 
+let MAX_HEIGHT = 1080;
+let MAX_WIDTH = 1440;
+
 function adjustViewport() {
     let backUpIsRenderedContinuously = isRenderedContinuously;
     isRenderedContinuously = false;
 
-    let width = canvas.clientWidth;
-    let height = canvas.clientHeight;
-    // let rect = canvas.parentElement.getBoundingClientRect()
-    // let width = parseInt(rect.width * window.devicePixelRatio);
-    // let height = parseInt(rect.height * window.devicePixelRatio);
-  
-    if (canvas.width !== width || canvas.height !== height) {
-      // Make the canvas the same size
-      canvas.width = width;
-      canvas.height = height;
-    }
+    let rect = canvas.parentElement.getBoundingClientRect()
+    let width = parseInt(rect.width * window.devicePixelRatio);
+    let height = parseInt(rect.height * window.devicePixelRatio);
+
+    let widthToHeightRatio = rect.width / rect.height;
+    width = Math.min(MAX_WIDTH, width);
+    height = Math.min(MAX_HEIGHT, width / widthToHeightRatio);
+    width = height * widthToHeightRatio;
+
     canvas.width = width;
     canvas.height = height;
   
