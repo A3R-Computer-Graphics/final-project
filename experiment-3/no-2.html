@@ -97,159 +97,164 @@ main()
       Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
   </div>
-  <div id="menu-toggler-wrapper" class="hide-menu">
-    <button type="button" class="btn btn-primary" id="menu-toggler-button" onclick="toggleMenu()">
-      <div class="row justify-content-center align-items-center">
-        <div id="menu-toggler-button-arrow"><</div>
-        <div id="menu-toggler-button-text" class="rotated-text">Show Menu Overlay</div>
-      </div>
+  <div id="menu-toggler-wrapper" class="show-menu">
+    <button type="button" class="btn btn-primary" id="menu-toggler-button">
+      <span class="button-text">Tutup</span>
+      <img class="arrow" src="arrow.svg"/>
     </button>
     <div class="menu">
-      <div class="submenu row">
-        <div class="col-sm">
-          <button type="button" class="btn btn-primary" id="btn-animate">Start Animation</button>
+      <div class="submenu-two-list-container">
+        <div class="submenu">
+          <h3 class="submenu-title">Kontrol animasi</h3>
+          <button type="button" class="btn btn-primary" id="btn-animate">Mulai Animasi</button>
+          <div class="slider-container" id="speed-slider">
+            <label>Kecepatan animasi<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.01" name="speed" value="0" min="0" max="4" class="custom-range range-speed">
+          </div>
         </div>
-        <div class="col-sm">
-          <label>Kecepatan animasi: <b>
-              <div class="slider-value">0</div>
-            </b></label>
-          <input type="range" step="0.01" name="speed" value="0" min="0" max="4" class="custom-range range-speed">
+        <div class="submenu">
+          <h3 class="submenu-title">Lokasi Cahaya</h3>
+          <div class="slider-container">
+            <label>Lorem<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.01" name="speed" value="0" min="0" max="4" class="custom-range range-speed">
+          </div>
+          <div class="slider-container">
+            <label>Ipsum<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.01" name="speed" value="0" min="0" max="4" class="custom-range range-speed">
+          </div>
+          <div class="slider-container">
+            <label>Dolor<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.01" name="speed" value="0" min="0" max="4" class="custom-range range-speed">
+          </div>
         </div>
       </div>
-      <div class="d-flex" id="slider-row">
-        <div class="submenu" id="slider-link" style="margin-right: 1rem;">
-          <h3>Slider Link:</h3>
-          <div class="row">
-            <div class="col-sm">
-              <label>Rotasi Tangan Kiri: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="arm.L.rotation.x" value="0" min="-45" max="135"
-                class="custom-range range-animation">
-            </div>
-            <div class="col-sm">
-              <label>Rotasi Tangan Kanan: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="arm.R.rotation.x" value="0" min="-45" max="135"
-                class="custom-range range-animation">
-            </div>
+      <div class="submenu-two-list-container">
+        <div class="submenu" id="link-submenu">
+          <h3 class="submenu-title">Gerakan Ksatria ("Link")</h3>
+          <div class="slider-container">
+            <label>Rotasi Tangan Kiri<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="arm.L.rotation.x" value="0" min="-45" max="135"
+              class="custom-range range-animation">
           </div>
-          <div class="row">
-            <div class="col-sm">
-              <label>Rotasi Pedang: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="sword_grip.rotation.x" value="0" min="-90" max="90"
-                class="custom-range range-animation">
-            </div>
-            <div class="col-sm">
-              <label>Tolehan Kepala: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="head.rotation.z" value="0" min="-90" max="9  0"
-                class="custom-range range-animation" />
-            </div>
+          <div class="slider-container">
+            <label>Rotasi Tangan Kanan<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="arm.R.rotation.x" value="0" min="-45" max="135"
+              class="custom-range range-animation">
           </div>
-          <div class="row">
-            <div class="col-sm">
-              <label>Kedipan Mata: <b>
-                  <div class="slider-value">1</div>
-                </b></label>
-              <input type="range" step="0.01" name="eye.scale.z" value="1" min="0" max="1"
-                class="custom-range range-animation">
-            </div>
-            <div class="col-sm">
-              <label>Anggukan Kepala: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="head.rotation.x" value="0" min="-90" max="9  0"
-                class="custom-range range-animation" />
-            </div>
+          <div class="slider-container">
+            <label>Rotasi Pedang<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="sword_grip.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
           </div>
-          <div class="row">
-            <div class="col-sm">
-              <label>Loncatan: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="body.location.z" value="0" min="0" max="0.5"
-                class="custom-range range-animation">
-            </div>
-            <div class="col-sm">
-              <label>Rotasi Badan: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="body.rotation.x" value="0" min="-90" max="90"
-                class="custom-range range-animation">
-            </div>
+          <div class="slider-container">
+            <label>Rotasi Tolehan Kepala<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="head.rotation.z" value="0" min="-90" max="9  0"
+              class="custom-range range-animation" />
+          </div>
+          <div class="slider-container">
+            <label>Kedipan Mata<b>
+                <div class="slider-value">1</div>
+              </b></label>
+            <input type="range" step="0.01" name="eye.scale.z" value="1" min="0" max="1"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Anggukan Kepala<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="head.rotation.x" value="0" min="-90" max="9  0"
+              class="custom-range range-animation" />
+          </div>
+          <div class="slider-container">
+            <label>Loncatan<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="body.location.z" value="0" min="0" max="0.5"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Badan: <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="body.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
           </div>
         </div>
         <!-- TODO: Change Slider Ayam-->
         <div class="submenu">
-          <h3>Slider Ayam:</h3>
-          <div class="row">
-            <div class="col-sm">
-              <label>Rotasi Tangan Kiri: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="arm.L.rotation.x" value="0" min="-45" max="135"
-                class="custom-range range-animation">
-            </div>
-            <div class="col-sm">
-              <label>Rotasi Tangan Kanan: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="arm.R.rotation.x" value="0" min="-45" max="135"
-                class="custom-range range-animation">
-            </div>
+          <h3 class="submenu-title">Gerakan Ayam</h3>
+
+          <div class="slider-container">
+            <label>Rotasi Tangan Kiri: <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="arm.L.rotation.x" value="0" min="-45" max="135"
+              class="custom-range range-animation">
           </div>
-          <div class="row">
-            <div class="col-sm">
-              <label>Rotasi Pedang: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="sword_grip.rotation.x" value="0" min="-90" max="90"
-                class="custom-range range-animation">
-            </div>
-            <div class="col-sm">
-              <label>Tolehan Kepala: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="head.rotation.z" value="0" min="-90" max="9  0"
-                class="custom-range range-animation" />
-            </div>
+          <div class="slider-container">
+            <label>Rotasi Tangan Kanan: <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="arm.R.rotation.x" value="0" min="-45" max="135"
+              class="custom-range range-animation">
           </div>
-          <div class="row">
-            <div class="col-sm">
-              <label>Kedipan Mata: <b>
-                  <div class="slider-value">1</div>
-                </b></label>
-              <input type="range" step="0.01" name="eye.scale.z" value="1" min="0" max="1"
-                class="custom-range range-animation">
-            </div>
-            <div class="col-sm">
-              <label>Anggukan Kepala: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="head.rotation.x" value="0" min="-90" max="9  0"
-                class="custom-range range-animation" />
-            </div>
+          <div class="slider-container">
+            <label>Rotasi Pedang: <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="sword_grip.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
           </div>
-          <div class="row">
-            <div class="col-sm">
-              <label>Loncatan: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="body.location.z" value="0" min="0" max="0.5"
-                class="custom-range range-animation">
-            </div>
-            <div class="col-sm">
-              <label>Rotasi Badan: <b>
-                  <div class="slider-value">0</div>
-                </b></label>
-              <input type="range" step="0.1" name="body.rotation.x" value="0" min="-90" max="90"
-                class="custom-range range-animation">
-            </div>
+          <div class="slider-container">
+            <label>Tolehan Kepala: <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="head.rotation.z" value="0" min="-90" max="9  0"
+              class="custom-range range-animation" />
+          </div>
+          <div class="slider-container">
+            <label>Kedipan Mata: <b>
+                <div class="slider-value">1</div>
+              </b></label>
+            <input type="range" step="0.01" name="eye.scale.z" value="1" min="0" max="1"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Anggukan Kepala: <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="head.rotation.x" value="0" min="-90" max="9  0"
+              class="custom-range range-animation" />
+          </div>
+          <div class="slider-container">
+            <label>Loncatan: <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="body.location.z" value="0" min="0" max="0.5"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Badan: <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="body.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
           </div>
         </div>
       </div>

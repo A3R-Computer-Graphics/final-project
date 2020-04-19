@@ -290,7 +290,7 @@ function animateFunc() {
   const animateBtn = document.getElementById("btn-animate");
   if (isAnimated) {
     stopAnimation();
-    animateBtn.innerHTML = "Start Animation";
+    animateBtn.innerHTML = "Mulai Animasi";
     animateBtn.classList.remove('btn-danger');
     animateBtn.classList.add('btn-primary');
     document.querySelectorAll('.range-animation')
@@ -300,7 +300,7 @@ function animateFunc() {
   }
   else {
     startAnimation();
-    animateBtn.innerHTML = "Stop Animation";
+    animateBtn.innerHTML = "Hentikan Animasi";
     animateBtn.classList.remove('btn-primary');
     animateBtn.classList.add('btn-danger');
     document.querySelectorAll('.range-animation')
@@ -332,6 +332,7 @@ window.addEventListener("load", function init() {
 
   adjustViewport();
   window.addEventListener('resize', adjustViewport);
+  document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
 });
 
 /**
@@ -479,19 +480,16 @@ function adjustViewport() {
     isRenderedContinuously = backUpIsRenderedContinuously;
   }
 
-var isMenuShown = false;
+var isMenuShown = true;
 function toggleMenu() {
   let wrapperDOM = document.getElementById('menu-toggler-wrapper');
-  let menuTogglerButtonText = document.getElementById('menu-toggler-button-text');
-  let menuTogglerButtonArrow = document.getElementById('menu-toggler-button-arrow');
+  let menuTogglerButtonText = document.querySelector('#menu-toggler-button > .button-text');
   if (!isMenuShown) {
     wrapperDOM.className = "show-menu";  
-    menuTogglerButtonText.innerText = 'Hide Menu Overlay';
-    menuTogglerButtonArrow.innerText = '>';
+    menuTogglerButtonText.innerText = 'Tutup';
   } else {
     wrapperDOM.className = "hide-menu";
-    menuTogglerButtonText.innerText = 'Show Menu Overlay';
-    menuTogglerButtonArrow.innerText = '<';
+    menuTogglerButtonText.innerText = 'Buka Menu';
   }
   isMenuShown = !isMenuShown;
 }
