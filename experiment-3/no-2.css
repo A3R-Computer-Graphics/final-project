@@ -42,7 +42,7 @@ body {
 #menu-toggler-wrapper {
   position: fixed;
   margin: 0;
-  transition: right 0.4s cubic-bezier(.33,1.5,.59,1);
+  transition: right, bottom 0.4s cubic-bezier(.33,1.5,.59,1);
   display: flex;
   height: 100%;
   font-size: 14px;
@@ -303,4 +303,12 @@ div#speed-slider {
 
 canvas:focus+#screen-info {
   display: block;
+}
+
+#help-content strong {
+  color: white;
+}
+
+#help-content {
+  letter-spacing: 0.03rem;
 }

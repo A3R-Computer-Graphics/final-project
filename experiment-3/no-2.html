@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
 <title>Link</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="lib/css/bootstrap.min.css">
 <link rel="stylesheet" href="no-2.css">
+<link rel="stylesheet" href="no-2-mobile.css">
 <script id="vertex-shader" type="x-shader/x-vertex">
   attribute vec4 vPosition;
 attribute vec3 vNormal;
@@ -259,6 +261,14 @@ main()
             <input type="range" step="0.1" name="body.rotation.x" value="0" min="-90" max="90"
               class="custom-range range-animation">
           </div>
+        </div>
+      </div>
+      <div class="submenu">
+        <h3 class="submenu-title">Bantuan</h3>
+        <div id="help-content">
+          <p>Tekan <strong>panah keyboard</strong> untuk memindahkan posisi kamera.
+          <br/>Tekan <strong>spasi</strong> untuk memulai/menghentikan animasi.
+          </p>
         </div>
       </div>
     </div>
