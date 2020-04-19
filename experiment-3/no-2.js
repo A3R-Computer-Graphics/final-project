@@ -450,10 +450,20 @@ function onCanvasKeydown(event) {
  */
 
 function adjustViewport() {
-    let rect = canvas.parentElement.getBoundingClientRect()
-    let width = parseInt(rect.width * window.devicePixelRatio);
-    let height = parseInt(rect.height * window.devicePixelRatio);
+    let backUpIsRenderedContinuously = isRenderedContinuously;
+    isRenderedContinuously = false;
+
+    let width = canvas.clientWidth;
+    let height = canvas.clientHeight;
+    // let rect = canvas.parentElement.getBoundingClientRect()
+    // let width = parseInt(rect.width * window.devicePixelRatio);
+    // let height = parseInt(rect.height * window.devicePixelRatio);
   
+    if (canvas.width !== width || canvas.height !== height) {
+      // Make the canvas the same size
+      canvas.width = width;
+      canvas.height = height;
+    }
     canvas.width = width;
     canvas.height = height;
   
@@ -465,4 +475,5 @@ function adjustViewport() {
   
     // Flag to prevent trigger another render while being renderedContinuously
     // thus creating two render() function running simultaneously.
+    isRenderedContinuously = backUpIsRenderedContinuously;
   }
