@@ -72,7 +72,6 @@ let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 
 // Rendering variables
 
-let isRenderedContinuously = true;
 let isAnimated = false;
 
 // Variables related to objects and materials
@@ -116,9 +115,6 @@ function updateLight(data) {
   }
   updateLightingPosition();
   updateMaterialsLighting();
-  if (!isRenderedContinuously) {
-    render();
-  }
 }
 
 var rootNodes = [];
@@ -366,11 +362,8 @@ function render() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   rootNodes.forEach(rootNode => rootNode.render(gl));
-
-  // Make recursive call if and only if the app is set to render continuously
-  if (isRenderedContinuously) {
+  
       window.requestAnimationFrame(render);
-  }
 }
 
 
@@ -443,9 +436,6 @@ function onCanvasKeydown(event) {
   phi = new_phi;
   theta = new_theta;
   updateViewMatrix();
-  if (!isRenderedContinuously) {
-    render();
-  }
 }
 
 /**
@@ -456,9 +446,6 @@ let MAX_HEIGHT = 1080;
 let MAX_WIDTH = 1440;
 
 function adjustViewport() {
-    let backUpIsRenderedContinuously = isRenderedContinuously;
-    isRenderedContinuously = false;
-
     let rect = canvas.parentElement.getBoundingClientRect()
     let width = parseInt(rect.width * window.devicePixelRatio);
     let height = parseInt(rect.height * window.devicePixelRatio);
@@ -478,10 +465,6 @@ function adjustViewport() {
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
   
     gl.viewport(0, 0, width, height);
-  
-    // Flag to prevent trigger another render while being renderedContinuously
-    // thus creating two render() function running simultaneously.
-    isRenderedContinuously = backUpIsRenderedContinuously;
   }
 
 var isMenuShown = true;
