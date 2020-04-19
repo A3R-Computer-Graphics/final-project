@@ -329,6 +329,9 @@ window.addEventListener("load", function init() {
   canvas.addEventListener("keydown", onCanvasKeydown);
   canvas.focus();
   render();
+
+  adjustViewport();
+  window.addEventListener('resize', adjustViewport);
 });
 
 /**
@@ -441,3 +444,25 @@ function onCanvasKeydown(event) {
     render();
   }
 }
+
+/**
+ * Adjust viewport so the canvas stays clear even if window resolution changes.
+ */
+
+function adjustViewport() {
+    let rect = canvas.parentElement.getBoundingClientRect()
+    let width = parseInt(rect.width * window.devicePixelRatio);
+    let height = parseInt(rect.height * window.devicePixelRatio);
+  
+    canvas.width = width;
+    canvas.height = height;
+  
+    aspect = width / height;
+    projectionMatrix = perspective(fovy, aspect, near, far);
+    gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
+  
+    gl.viewport(0, 0, width, height);
+  
+    // Flag to prevent trigger another render while being renderedContinuously
+    // thus creating two render() function running simultaneously.
+  }
