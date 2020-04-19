@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
-<title>Arm</title>
+<title>Link</title>
 <link rel="stylesheet" href="no-2.css">
+<link rel="stylesheet" href="lib/css/bootstrap.min.css">
 <script id="vertex-shader" type="x-shader/x-vertex">
-attribute vec4 vPosition;
+  attribute vec4 vPosition;
 attribute vec3 vNormal;
 varying vec4 fColor;
 
@@ -55,7 +56,7 @@ void main()
 
 <script id="fragment-shader" type="x-shader/x-fragment">
 
-precision mediump float;
+  precision mediump float;
 
 
 varying vec4 fColor;
@@ -77,15 +78,110 @@ main()
 <script type="text/javascript" src="../temp/objects-materials.js"></script>
 <script type="text/javascript" src="../temp/objects-data.js"></script>
 <script type="text/javascript" src="../temp/objects-vertices.js"></script>
+<script type="text/javascript" src="../temp/objects-animations.js"></script>
 <script type="text/javascript" src="camera-coordinates.js"></script>
 <script type="text/javascript" src="utils.js"></script>
 
+<script type="text/javascript" src="lib/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="lib/js/popper-1.16.0.min.js"></script>
+<script type="text/javascript" src="lib/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="animation.js"></script>
 <script type="text/javascript" src="no-2.js"></script>
+<script type="text/javascript" src="interaction.js"></script>
+
 
 <body>
   <canvas width="512" height="512" tabindex="1" id="gl-canvas">
     Oops ... your browser doesn't support the HTML5 canvas element
   </canvas>
+
+
+
+  <div class="container-slider">
+    <div class="container-speed">
+      <div class="row">
+        <div class="col-sm">
+          <button type="button" class="btn btn-primary" id="btn-animate">Start Animation</button>
+        </div>
+        <div class="col-sm">
+          <label>Kecepatan animasi: <b>
+              <div class="slider-value">0</div>
+            </b></label>
+          <input type="range" step="0.01" name="speed" value="0" min="0" max="4" class="custom-range range-speed">
+        </div>
+      </div>
+    </div>
+
+    <div class="container-link">
+      <h3>Slider Link:</h3>
+      <div class="row">
+        <div class="col-sm">
+          <label>Rotasi Tangan Kiri: <b>
+              <div class="slider-value">0</div>
+            </b></label>
+          <input type="range" step="0.1" name="arm.L.rotation.x" value="0" min="-45" max="135"
+            class="custom-range range-animation">
+        </div>
+        <div class="col-sm">
+          <label>Rotasi Tangan Kanan: <b>
+              <div class="slider-value">0</div>
+            </b></label>
+          <input type="range" step="0.1" name="arm.R.rotation.x" value="0" min="-45" max="135"
+            class="custom-range range-animation">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm">
+          <label>Rotasi Pedang: <b>
+              <div class="slider-value">0</div>
+            </b></label>
+          <input type="range" step="0.1" name="sword_grip.rotation.x" value="0" min="-90" max="90"
+            class="custom-range range-animation">
+        </div>
+        <div class="col-sm">
+          <label>Tolehan Kepala: <b>
+              <div class="slider-value">0</div>
+            </b></label>
+          <input type="range" step="0.1" name="head.rotation.z" value="0" min="-90" max="9  0"
+            class="custom-range range-animation" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm">
+          <label>Kedipan Mata: <b>
+              <div class="slider-value">1</div>
+            </b></label>
+          <input type="range" step="0.01" name="eye.scale.z" value="1" min="0" max="1"
+            class="custom-range range-animation">
+        </div>
+        <div class="col-sm">
+          <label>Anggukan Kepala: <b>
+              <div class="slider-value">0</div>
+            </b></label>
+          <input type="range" step="0.1" name="head.rotation.x" value="0" min="-90" max="9  0"
+            class="custom-range range-animation" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm">
+          <label>Loncatan: <b>
+              <div class="slider-value">0</div>
+            </b></label>
+          <input type="range" step="0.1" name="body.location.z" value="0" min="0" max="0.5"
+            class="custom-range range-animation">
+        </div>
+        <div class="col-sm">
+          <label>Rotasi Badan: <b>
+              <div class="slider-value">0</div>
+            </b></label>
+          <input type="range" step="0.1" name="body.rotation.x" value="0" min="-90" max="90"
+            class="custom-range range-animation">
+        </div>
+      </div>
+
+    </div>
+  </div>
 </body>
 
 </html>
