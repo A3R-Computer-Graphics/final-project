@@ -31,6 +31,21 @@ body {
   background-color: #3c3f44;
   color: #b4b4b4;
   height: 100vh;
+  overflow: hidden;
+}
+
+html {
+  background-color: black;
+  overflow: hidden;
+  width: 100%;
+}
+
+body {
+  height: 100%;
+  position: fixed;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
 }
 
 .canvas-wrapper {
