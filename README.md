@@ -5,3 +5,6 @@ Oleh A3R:
 - Albertus Angga Raharja (1606918401)
 - Mohammad Ammar Ramadhan (1606918591)
 - Rachmat Ridwan (1606886974)
+
+# Deployment:
+https://grafkom-a3r-ws2.herokuapp.com
