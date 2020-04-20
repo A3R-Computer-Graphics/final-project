@@ -1,13 +1,17 @@
 "use strict";
 
-// Camera setting
+let sceneGraph
+let animationManager
 
-let near = 0.05;
-let far = 20.0;
-let radius = 8;
-
-let fovy = 55.0; // Field-of-view in Y direction angle (in degrees)
-let aspect = 1.0; // Viewport aspect ratio
+let camera = {
+  near: 0.05,
+  far: 20.0,
+  radius: 8,
+  fovy: 55.0,
+  aspect: 1.0,
+  viewMatrix: m4.identity(),
+  projectionMatrix: m4.identity()
+}
 
 let eye;
 const at = vec3(0.0, 0.0, 0.0);
@@ -15,164 +19,14 @@ const up = vec3(0.0, 1.0, 0.0);
 
 let canvas;
 let gl;
-
-let numVertices = 0;
-
-let pointsArray = [];
-let normalsArray = [];
-
-let modelMatrix;
-let viewMatrix;
-let projectionMatrix;
-
-// GLSL variables and pointers
-
 let program;
-
-let ambientLoc;
-let specularLoc;
-let diffuseLoc;
-let shininessLoc;
-
-let lightPositionLoc;
-let viewMatrixLoc;
-let modelMatrixLoc;
-let projectionMatrixLoc;
-
-let nBuffer;
-let vBuffer;
 
 // Sphere coordinate that will be used to determine camera position.
 
-let theta = 0;
-let phi = 0;
+let theta = 0
+let phi = 0
 
-// Light data
-
-let lightPosition = vec4(0, -10, 10, 0.0);
-
-let lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
-let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
-let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-
-// Rendering variables
-
-let isAnimated = false;
 let resolution = 100;
-
-/**
- * List of materials in dictionary-style.
- * Every material object has Phong parameters
- * (ambient, specular, diffuse), name, and computed product
- * of light and intrinsic material params.
- */
-
-var materialDict = {};
-
-function initMaterials() {
-  materials_definition.forEach((material) => {
-    materialDict[material.name] = material;
-  });
-  updateMaterialsLighting();
-}
-
-/**
- * Recompute product values of material's own ambient, diffuse,
- * and specular, with the one from lighting.
- */
-
-function updateMaterialsLighting() {
-  Object.keys(materialDict).forEach((materialName) => {
-    let material = materialDict[materialName];
-    material.ambientProduct = flatten(mult(lightAmbient, material.ambient));
-    material.diffuseProduct = flatten(mult(lightDiffuse, material.diffuse));
-    material.specularProduct = flatten(mult(lightSpecular, material.specular));
-  });
-}
-
-function updateLightSetup(data) {
-  let isChangingParameters = false;
-  if (data.ambient) {
-    lightAmbient = data.ambient;
-    isChangingParameters = true;
-  }
-  if (data.diffuse) {
-    lightDiffuse = data.diffuse;
-    isChangingParameters = true;
-  }
-  if (data.specular) {
-    lightSpecular = data.specular;
-    isChangingParameters = true;
-  }
-  if (data.position) {
-    lightPosition = [data.position[0], data.position[1], data.position[2], 0.0];
-    updateLightingPosition();
-  }
-  if (isChangingParameters) {
-    updateMaterialsLighting();
-  }
-}
-
-function updateLightingPosition() {
-  gl.uniform4fv(lightPositionLoc, flatten(lightPosition));
-}
-
-/**
- * List of root nodes.
- */
-
-var rootNodes = [];
-
-function init3DModelsFromConfig() {
-
-  // Compute how many triangles will be needed to draw a convex polygon.
-  // For a face with n vertices, it will take n - 2 triangles.
-
-  let triangleCount = Object.keys(objects_vertices)
-    .map(key => objects_vertices[key].indices
-      .reduce((p, c) => p + c.length - 2, 0))
-    .reduce((p, c) => p + c)
-
-  // Create matrix with the size of points count
-
-  pointsArray = new Array(triangleCount * 3);
-  normalsArray = new Array(triangleCount * 3);
-
-  // Iterate over the objects_vertices and objects_data
-  // to initiate node data.
-
-  Object.keys(objects_vertices).forEach(modelName => {
-    let numVertsBefore = numVertices;
-    let objVertsData = objects_vertices[modelName];
-    let objImportedData = objects_info[modelName];
-
-    let newData = populatePointsAndNormalsArrayFromObject({
-      vertices: objVertsData.vertices,
-      polygonIndices: objVertsData.indices
-    }, numVertices, pointsArray, normalsArray)
-
-    numVertices = newData.newStartIndex;
-    let vertexCount = numVertices - numVertsBefore;
-
-    // Init 3d model info and its nodes.
-
-    let model = new Model({
-      name: modelName,
-      origin: [0, 0, 0],
-      location: objImportedData.location,
-      rotation: objImportedData.rotation,
-      scale: objImportedData.scale,
-      parentName: objImportedData.parent,
-      bufferStartIndex: numVertsBefore,
-      vertexCount: vertexCount,
-      material: materialDict[objImportedData.material_name] || materialDict["Default"],
-    });
-
-    if (!model.node.hasParent) rootNodes.push(model.node);
-  });
-
-  rootNodes.forEach((rootNode) => rootNode.updateTransformations());
-}
 
 function initCanvasAndGL() {
   canvas = document.getElementById("gl-canvas");
@@ -188,43 +42,6 @@ function initCanvasAndGL() {
   gl.enable(gl.DEPTH_TEST);
   program = initShaders(gl, "vertex-shader", "fragment-shader");
   gl.useProgram(program);
-}
-
-function initWebGLVariables() {
-  ambientLoc = gl.getUniformLocation(program, "ambientProduct");
-  diffuseLoc = gl.getUniformLocation(program, "diffuseProduct");
-  specularLoc = gl.getUniformLocation(program, "specularProduct");
-  shininessLoc = gl.getUniformLocation(program, "shininess");
-  lightPositionLoc = gl.getUniformLocation(program, "lightPosition");
-
-  modelMatrixLoc = gl.getUniformLocation(program, "modelMatrix");
-  viewMatrixLoc = gl.getUniformLocation(program, "viewMatrix");
-  projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix");
-
-  gl.ambientLoc = ambientLoc;
-  gl.diffuseLoc = diffuseLoc;
-  gl.specularLoc = specularLoc;
-  gl.shininessLoc = shininessLoc;
-  gl.modelMatrixLoc = modelMatrixLoc;
-
-  nBuffer = gl.createBuffer();
-  vBuffer = gl.createBuffer();
-}
-
-function initBufferFromPoints() {
-  gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(normalsArray), gl.STATIC_DRAW);
-
-  let vNormal = gl.getAttribLocation(program, "vNormal");
-  gl.vertexAttribPointer(vNormal, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vNormal);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW);
-
-  let vPosition = gl.getAttribLocation(program, "vPosition");
-  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vPosition);
 }
 
 var cameraPosIndex = 17;
@@ -246,8 +63,9 @@ function initializeCameraPosition() {
 }
 
 function initializeProjectionMatrix() {
-  projectionMatrix = perspective(fovy, aspect, near, far);
-  gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
+  let projectionMatrix = perspective(camera.fovy, camera.aspect, camera.near, camera.far)
+  let matrixGlLocation = sceneGraph.glLocations.projectionMatrix
+  gl.uniformMatrix4fv(matrixGlLocation, false, flatten(projectionMatrix))
 }
 
 // Animation
@@ -258,8 +76,8 @@ function initAnimateBtn() {
 
 function animateFunc() {
   const animateBtn = document.getElementById("btn-animate");
-  if (isAnimated) {
-    stopAnimation();
+  if (animationManager.isAnimating) {
+    animationManager.stopAnimation()
     animateBtn.innerHTML = "Mulai Animasi";
     animateBtn.classList.remove('btn-danger');
     animateBtn.classList.add('btn-primary');
@@ -269,7 +87,7 @@ function animateFunc() {
       })
   }
   else {
-    startAnimation();
+    animationManager.startAnimation();
     animateBtn.innerHTML = "Hentikan Animasi";
     animateBtn.classList.remove('btn-primary');
     animateBtn.classList.add('btn-danger');
@@ -281,29 +99,77 @@ function animateFunc() {
 }
 
 window.addEventListener("load", function init() {
-  initCanvasAndGL();
-  initWebGLVariables();
+  initCanvasAndGL()
 
-  initMaterials();
-  init3DModelsFromConfig();
-  initBufferFromPoints();
+  sceneGraph = new SceneGraph({gl})
+  sceneGraph.initWebGLVariables()
+  
+  sceneGraph.updateLightPosition()
+  sceneGraph.updateLightSetup({
+    position: vec4(0, -10, 10, 0.0)
+  })
+
+  sceneGraph.initMaterialsFromConfig(materials_definition)
+  sceneGraph.initModelsFromConfig({
+    modelsVerticesData: objects_vertices,
+    modelsInfoData: objects_info
+  })
+  sceneGraph.initBufferFromPoints()
+  sceneGraph.updateRootNodesTransformations()
+
+  animationManager = new AnimationManager({ sceneGraph })
+  animationManager.speed = 0.5
+  animationManager.maxFrameNumber = 120
+  animationManager.initFromConfig(animations_definition)
 
   initAnimateBtn()
-  initAnimationValues();
+  initAnimationValues()
 
   initializeCameraPosition();
   initializeProjectionMatrix();
   updateViewMatrix();
-  updateLightingPosition();
-
-  adjustViewport();
-  render();
 
   canvas.addEventListener("keydown", onCanvasKeydown);
   window.addEventListener('resize', adjustViewport);
   document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
   document.querySelector('input[name="resolution"]').addEventListener('input', adjustResolution)
   canvas.focus();
+
+  this.document.querySelectorAll('input[type="range"]').forEach(elem => {
+    const sliderName = elem.getAttribute('name')
+    const propertyData = parsePropertyString(sliderName);
+    if (propertyData === undefined) {
+      return
+    }
+
+    const { modelName, propertyName, axisId } = propertyData;
+    elem.addEventListener('input', function (event) {
+      ObjectNode.cache[modelName].model[propertyName][axisId] = parseFloat(event.target.value);
+      ObjectNode.cache[modelName].updateTransformations()
+      let textVal = event.target.parentElement.querySelector('.slider-value')
+      textVal.innerHTML = parseFloat(event.target.value);
+    })
+  })
+
+  let SPEED_MIN = 0.05;
+  let SPEED_MAX = 4;
+  let speedSlider = document.querySelector('input[name="speed"]');
+  let speedValueDisplay = speedSlider.parentElement.querySelector('.slider-value');
+
+  speedSlider.addEventListener('input', event => {
+    let value = parseFloat(event.target.value);
+    value = interpolateExponentially(SPEED_MIN, SPEED_MAX, value);
+    speedValueDisplay.innerText = Math.round(value * 100) + '%';
+    animationManager.speed = value;
+  })
+
+  // Init slider position from inverse of exponential (logarithm)
+  let sliderInitValue = interpolateLogarithmatically(SPEED_MIN, SPEED_MAX, animationManager.speed);
+  speedSlider.value = sliderInitValue;
+  speedValueDisplay.innerText = Math.round(animationManager.speed * 100) + '%';
+
+  adjustViewport();
+  render();
 });
 
 /**
@@ -312,7 +178,7 @@ window.addEventListener("load", function init() {
  */
 
 function updateViewMatrix() {
-  let r = radius;
+  let r = camera.radius;
   let sin_t = Math.sin(theta);
   let sin_p = Math.sin(phi);
   let cos_t = Math.cos(theta);
@@ -327,14 +193,14 @@ function updateViewMatrix() {
   var lookAtMatrix = flatten(lookAt(eye, at, up));
   // Adjust the object axis from Blender to match this representation's axis.
   // This is based on personal observation.
-  viewMatrix = m4.xRotate(lookAtMatrix, degToRad(-90));
-  gl.uniformMatrix4fv(viewMatrixLoc, false, flatten(viewMatrix));
+  var viewMatrix = m4.xRotate(lookAtMatrix, degToRad(-90));
+  gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(viewMatrix));
 }
 
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  rootNodes.forEach(rootNode => rootNode.render(gl));
-  window.requestAnimationFrame(render);
+  sceneGraph.rootNodes.forEach(rootNode => rootNode.render(gl))
+  window.requestAnimationFrame(render)
 }
 
 /**
@@ -430,9 +296,8 @@ function adjustViewport() {
   canvas.width = width;
   canvas.height = height;
 
-  aspect = width / height;
-  projectionMatrix = perspective(fovy, aspect, near, far);
-  gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
+  camera.aspect = width / height;
+  initializeProjectionMatrix()
 
   gl.viewport(0, 0, width, height);
 }

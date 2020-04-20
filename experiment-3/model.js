@@ -132,13 +132,15 @@ class Model {
       specularProduct,
       shininess,
     } = this.material;
-    gl.uniform4fv(gl.ambientLoc, ambientProduct);
-    gl.uniform4fv(gl.diffuseLoc, diffuseProduct);
-    gl.uniform4fv(gl.specularLoc, specularProduct);
-    gl.uniform1f(gl.shininessLoc, shininess);
+
+    const loc = gl.locations
+    gl.uniform4fv(loc.ambient, ambientProduct);
+    gl.uniform4fv(loc.diffuse, diffuseProduct);
+    gl.uniform4fv(loc.specular, specularProduct);
+    gl.uniform1f(loc.shininess, shininess);
 
     gl.uniformMatrix4fv(
-      gl.modelMatrixLoc,
+      loc.modelMatrix,
       false,
       flatten(this.fullTransformMatrix)
     );
