@@ -49,9 +49,19 @@ body {
 }
 
 .canvas-wrapper {
-  flex-grow: 1;
+  position: absolute;
   height: 100%;
+  top: 0;
   overflow: hidden;
+  width: 100%;
+}
+
+canvas {
+  position: absolute;
+  height: 100%;
+  left: 0;
+  top: 0;
+  width: 100%;
 }
 
 #menu-toggler-wrapper {
@@ -116,11 +126,6 @@ body {
 
 .submenu>*:last-child {
   margin-bottom: 0;
-}
-
-canvas {
-  height: 100%;
-  left: 0;
 }
 
 #menu-toggler-button {
