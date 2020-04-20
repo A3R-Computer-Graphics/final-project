@@ -3,6 +3,8 @@
 let sceneGraph
 let animationManager
 
+// Camera variables
+
 let camera = {
   near: 0.05,
   far: 20.0,
@@ -13,20 +15,32 @@ let camera = {
   projectionMatrix: m4.identity()
 }
 
-let eye;
-const at = vec3(0.0, 0.0, 0.0);
-const up = vec3(0.0, 1.0, 0.0);
-
-let canvas;
-let gl;
-let program;
-
-// Sphere coordinate that will be used to determine camera position.
-
 let theta = 0
 let phi = 0
+let cameraPosIndex = 17
+let coordinateDirectionOrder = ["UP", "LEFT", "DOWN", "RIGHT"]
 
-let resolution = 100;
+let eye
+let at = vec3(0.0, 0.0, 0.0)
+let up = vec3(0.0, 1.0, 0.0)
+
+// rendering engine variables variables
+
+let canvas
+let gl
+let program
+let resolution = 100
+
+// Interaction variables
+
+let isMenuShown = true
+let sliderList = []
+
+/**
+ * Function to update animation slider that has been throttled
+ * so that it's not executed too often.
+ */
+let throttledSliderHandler = function () { }
 
 function initCanvasAndGL() {
   canvas = document.getElementById("gl-canvas");
@@ -43,9 +57,6 @@ function initCanvasAndGL() {
   program = initShaders(gl, "vertex-shader", "fragment-shader");
   gl.useProgram(program);
 }
-
-var cameraPosIndex = 17;
-let coordinateDirectionOrder = ["UP", "LEFT", "DOWN", "RIGHT"];
 
 /**
  * Initialize camera position from chosen camera position index
@@ -68,13 +79,7 @@ function initializeProjectionMatrix() {
   gl.uniformMatrix4fv(matrixGlLocation, false, flatten(projectionMatrix))
 }
 
-// Animation
-function initAnimateBtn() {
-  var animateBtn = document.getElementById("btn-animate");
-  animateBtn.addEventListener("click", animateFunc);
-}
-
-function animateFunc() {
+function handleAnimateButtonClicked() {
   const animateBtn = document.getElementById("btn-animate");
   if (animationManager.isAnimating) {
     animationManager.stopAnimation()
@@ -98,44 +103,8 @@ function animateFunc() {
   }
 }
 
-window.addEventListener("load", function init() {
-  initCanvasAndGL()
-
-  sceneGraph = new SceneGraph({gl})
-  sceneGraph.initWebGLVariables()
-  
-  sceneGraph.updateLightPosition()
-  sceneGraph.updateLightSetup({
-    position: vec4(0, -10, 10, 0.0)
-  })
-
-  sceneGraph.initMaterialsFromConfig(materials_definition)
-  sceneGraph.initModelsFromConfig({
-    modelsVerticesData: objects_vertices,
-    modelsInfoData: objects_info
-  })
-  sceneGraph.initBufferFromPoints()
-  sceneGraph.updateRootNodesTransformations()
-
-  animationManager = new AnimationManager({ sceneGraph })
-  animationManager.speed = 0.5
-  animationManager.maxFrameNumber = 120
-  animationManager.initFromConfig(animations_definition)
-
-  initAnimateBtn()
-  initAnimationValues()
-
-  initializeCameraPosition();
-  initializeProjectionMatrix();
-  updateViewMatrix();
-
-  canvas.addEventListener("keydown", onCanvasKeydown);
-  window.addEventListener('resize', adjustViewport);
-  document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
-  document.querySelector('input[name="resolution"]').addEventListener('input', adjustResolution)
-  canvas.focus();
-
-  this.document.querySelectorAll('input[type="range"]').forEach(elem => {
+function connectSlidersToModelData() {
+  document.querySelectorAll('input[type="range"]').forEach(elem => {
     const sliderName = elem.getAttribute('name')
     const propertyData = parsePropertyString(sliderName);
     if (propertyData === undefined) {
@@ -150,7 +119,9 @@ window.addEventListener("load", function init() {
       textVal.innerHTML = parseFloat(event.target.value);
     })
   })
+}
 
+function connectSpeedSlider() {
   let SPEED_MIN = 0.05;
   let SPEED_MAX = 4;
   let speedSlider = document.querySelector('input[name="speed"]');
@@ -167,10 +138,7 @@ window.addEventListener("load", function init() {
   let sliderInitValue = interpolateLogarithmatically(SPEED_MIN, SPEED_MAX, animationManager.speed);
   speedSlider.value = sliderInitValue;
   speedValueDisplay.innerText = Math.round(animationManager.speed * 100) + '%';
-
-  adjustViewport();
-  render();
-});
+}
 
 /**
  * Update eye coordinate calculation from global
@@ -190,17 +158,16 @@ function updateViewMatrix() {
 
   eye = vec3(x, y, z);
 
-  var lookAtMatrix = flatten(lookAt(eye, at, up));
-  // Adjust the object axis from Blender to match this representation's axis.
-  // This is based on personal observation.
-  var viewMatrix = m4.xRotate(lookAtMatrix, degToRad(-90));
-  gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(viewMatrix));
-}
+  let lookAtMatrix = flatten(lookAt(eye, at, up));
 
-function render() {
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-  Renderer.render(sceneGraph)
-  window.requestAnimationFrame(render)
+  // Blender and the camera's UP vector points has different axis.
+  // Blender points Z+ axis to up while this lookAt setup points Y+ axis instead.
+  // One quick fix for this is to rotate this camera 90 deg back along X axis.
+  // This rotates Z+ from pointing front to pointing up, and Y+ from pointing
+  // up to pointing back.
+
+  let viewMatrix = m4.xRotate(lookAtMatrix, degToRad(-90));
+  gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(viewMatrix));
 }
 
 /**
@@ -302,7 +269,12 @@ function adjustViewport() {
   gl.viewport(0, 0, width, height);
 }
 
-var isMenuShown = true;
+function adjustResolution(event) {
+  resolution = Math.min(100, Math.max(1, event.target.value))
+  event.target.parentElement.querySelector('.slider-value').innerText = resolution + "%"
+  adjustViewport()
+}
+
 function toggleMenu() {
   let wrapperDOM = document.getElementById('menu-toggler-wrapper');
   let menuTogglerButtonText = document.querySelector('#menu-toggler-button > .button-text');
@@ -316,8 +288,111 @@ function toggleMenu() {
   isMenuShown = !isMenuShown;
 }
 
-function adjustResolution(event) {
-  resolution = Math.min(100, Math.max(1, event.target.value));
-  event.target.parentElement.querySelector('.slider-value').innerText = resolution + "%";
-  adjustViewport();
+/**
+ * List all sliders in the document and for each slider,
+ * see if the slider is in the animation dictionary and is actually
+ * defined in the sceneGraph nodes.
+ */
+
+function listCustomSliders() {
+  let listName = []
+
+  document.querySelectorAll('input[type="range"]')
+    .forEach(elem => {
+      const sliderName = elem.getAttribute('name')
+      const data = parsePropertyString(sliderName)
+
+      if (!data) {
+        return
+      }
+
+      const { modelName, propertyName, axisId } = data
+      if (!sceneGraph.nodes.hasOwnProperty(modelName)) {
+        return
+      }
+
+      listName.push({
+        sliderName,
+        modelName,
+        propertyName,
+        axisId
+      });
+    })
+
+  return listName;
+}
+
+function attachListenerOnAnimationUpdate() {
+  // Throttle update animation slider so that it gets called
+  // at most 25 fps.
+  sliderList = listCustomSliders()
+  throttledSliderHandler = throttle(matchSlidersToAnimation, 50)
+  animationManager.addListener('animationupdate', throttledSliderHandler)
+}
+
+function matchSlidersToAnimation() {
+  sliderList.forEach(({ sliderName, modelName, propertyName, axisId }) => {
+    let animationValue = sceneGraph.nodes[modelName].model[propertyName][axisId]
+    let sliderElement = document.querySelector(`input[name="${sliderName}"]`)
+    let displayElement = sliderElement.parentElement.querySelector('.slider-value')
+    sliderElement.value = animationValue
+    displayElement.innerHTML = Math.round(animationValue * 100) / 100
+  })
+}
+
+window.addEventListener("load", function init() {
+  // Initialize canvas and GL first
+
+  initCanvasAndGL()
+
+  // Initialize scene graph and model data from:
+  // - coordinates of vertices specified in objects-vertices.js
+  // - object position, rotation, and scale info in objects-data.js
+  // - materials from objects-materials.js
+
+  sceneGraph = new SceneGraph({ gl })
+  sceneGraph.initWebGLVariables()
+
+  sceneGraph.initMaterialsFromConfig(materials_definition)
+  sceneGraph.initModelsFromConfig({
+    modelsVerticesData: objects_vertices, // this is a variable inside objects-vertices.js
+    modelsInfoData: objects_info // this is a variable inside objects-data.js
+  })
+  sceneGraph.movePointsToBufferData()
+  sceneGraph.updateModelsTransformations()
+
+  sceneGraph.updateLightPosition()
+  sceneGraph.updateLightSetup({
+    position: vec4(0, -10, 10, 0.0)
+  })
+
+  animationManager = new AnimationManager({ sceneGraph, speed: 0.5, maxFrameNumber: 120 })
+  animationManager.initFromConfig(animations_definition)
+
+  initializeCameraPosition()
+  initializeProjectionMatrix()
+  updateViewMatrix()
+
+  // Attach event listener handles
+
+  canvas.addEventListener("keydown", onCanvasKeydown)
+  window.addEventListener('resize', adjustViewport)
+  document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
+  document.querySelector('input[name="resolution"]').addEventListener('input', adjustResolution)
+  document.querySelector('#btn-animate').addEventListener("click", handleAnimateButtonClicked)
+  connectSlidersToModelData()
+  connectSpeedSlider()
+  attachListenerOnAnimationUpdate()
+
+  // Set focus to canvas from the start
+  canvas.focus()
+
+  adjustViewport()
+  render()
+})
+
+function render() {
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+  Renderer.render(sceneGraph)
+  window.requestAnimationFrame(render)
 }

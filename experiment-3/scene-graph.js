@@ -13,13 +13,13 @@ class SceneGraph {
     this.pointsArray = []
     this.normalsArray = []
 
-
     /**
      * List of materials in dictionary-style.
      * Every material object has Phong parameters
      * (ambient, specular, diffuse), name, and computed product
      * of light and intrinsic material params.
      */
+    
     this.materials = {}
 
     this.lightPosition = vec4(0, -10, 10, 0.0)
@@ -39,6 +39,11 @@ class SceneGraph {
     });
     this.updateMaterialsLighting()
   }
+
+  /**
+   * Initialize scene and model data from external configuration.
+   * @param {*} modelData model data comprising of vertices and info data
+   */
 
   initModelsFromConfig({ modelsVerticesData, modelsInfoData }) {
 
@@ -98,7 +103,13 @@ class SceneGraph {
     })
   }
 
-  updateRootNodesTransformations() {
+  /**
+   * Update model matrix transformations for all model in the scene
+   * by traversing from the root node and going recursively deep
+   * to each of its children.
+   */
+
+  updateModelsTransformations() {
     this.rootNodes.forEach(rootNode => rootNode.updateTransformations())
   }
 
@@ -168,7 +179,11 @@ class SceneGraph {
     this.vBuffer = gl.createBuffer()
   }
 
-  initBufferFromPoints() {
+  /**
+   * Move points and normals array data into GL array buffer.
+   */
+
+  movePointsToBufferData() {
     let gl = this.gl
     let program = this.program
 
@@ -192,5 +207,4 @@ class SceneGraph {
       this.nodes[key] = new ObjectNode({ key: key });
     return this.nodes[key];
   }
-
 }

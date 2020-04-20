@@ -10,6 +10,7 @@ class Renderer {
     Renderer.renderModel(node.model, gl, sceneGraph.glLocations);
     
     // Traverse the whole tree and render every visited node
+    
     node.children.forEach(childNode => {
       Renderer.recursivelyRenderNodes(childNode, sceneGraph);
     });

@@ -66,16 +66,16 @@ function getLinerpValue(frameNumbers, values, currFrame) {
 }
 
 class AnimationManager extends EventDispatcher {
-  constructor({ sceneGraph }) {
+  constructor({ sceneGraph, speed, maxFrameNumber }) {
     super()
     this.sceneGraph = sceneGraph
     /** List of animation keyframe values
      */
     this.animationValues = {}
     this.frameNow = 0
-    this._speed = 0.5
+    this._speed = speed
     this.speed = this._speed
-    this.maxFrameNumber = 100
+    this.maxFrameNumber = maxFrameNumber
     this.isAnimating = false
   }
 
@@ -136,7 +136,7 @@ class AnimationManager extends EventDispatcher {
     })
 
     // Update transformation matrices, starting from root nodes
-    this.sceneGraph.updateRootNodesTransformations()
+    this.sceneGraph.updateModelsTransformations()
     this.dispatchEvent('animationupdate', { currentFrame: frameNow })
 
     // Update frame number
