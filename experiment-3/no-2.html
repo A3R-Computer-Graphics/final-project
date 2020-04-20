@@ -112,6 +112,97 @@ main()
       <img class="arrow" src="arrow.svg" />
     </button>
     <div class="menu">
+      <div class="submenu">
+        <h3 class="submenu-title">Tree Objek</h3>
+        <label class="note">Bantuan: untuk memilih objek, klik kanan (pada desktop)
+          atau tekan dan tahan yang lama (pada mobile)</label>
+        <div id="tree">
+          <div class="obj-name" id="root-node">Root</div>
+          <ul>
+          </ul>
+        </div>
+      </div>
+      <div class="submenu" id="selected-object-menu">
+        <h3 class="submenu-title">Pengaturan Objek yang Dipilih</h3>
+        <div class="property-section">
+          <h4>Translasi</h4>
+          <div class="submenu-section">
+            <div class="slider-container">
+              <label>X<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-location-x" value="0" min="-10" max="10"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Y<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-location-y" value="0" min="-10" max="10"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Z<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-location-z" value="0" min="-10" max="10"
+                class="custom-range range-animation">
+            </div>
+          </div>
+        </div>
+        <div class="property-section">
+          <h4>Rotasi</h4>
+          <div class="submenu-section">
+            <div class="slider-container">
+              <label>X<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.1" name="selected-object-rotation-x" value="0" min="-360" max="360"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Y<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.1" name="selected-object-rotation-y" value="0" min="-360" max="360"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Z<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.1" name="selected-object-rotation-z" value="0" min="-360" max="360"
+                class="custom-range range-animation">
+            </div>
+          </div>
+        </div>
+        <div class="property-section">
+          <h4>Skala</h4>
+          <div class="submenu-section">
+            <div class="slider-container">
+              <label>X<b>
+                  <div class="slider-value">1</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-scale-x" value="1" min="-3" max="3"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Y<b>
+                  <div class="slider-value">1</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-scale-y" value="1" min="-3" max="3"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Z<b>
+                  <div class="slider-value">1</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-scale-z" value="1" min="-3" max="3"
+                class="custom-range range-animation">
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="submenu-two-list-container">
         <div class="submenu">
           <h3 class="submenu-title">Kontrol animasi</h3>
@@ -277,7 +368,7 @@ main()
         <h3 class="submenu-title">Bantuan</h3>
         <div id="help-content">
           <p>Tekan <strong>panah keyboard</strong> untuk memindahkan posisi kamera.
-          <br/>Tekan <strong>spasi</strong> untuk memulai/menghentikan animasi.
+            <br />Tekan <strong>spasi</strong> untuk memulai/menghentikan animasi.
           </p>
         </div>
       </div>

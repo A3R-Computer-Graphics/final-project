@@ -362,6 +362,68 @@ function matchSlidersToAnimation() {
   })
 }
 
+let currentSelection = ''
+
+function replaceSelection(newSelection) {
+  let selectedElement = document.querySelector(`li[data-model-name="${currentSelection}"]`)
+  let newSelectedElement = document.querySelector(`li[data-model-name="${newSelection}"]`)
+  if (newSelectedElement) {
+    if (selectedElement) {
+      selectedElement.classList.remove('selected')
+    }
+    newSelectedElement.classList.add('selected')
+    currentSelection = newSelection
+  }
+}
+
+function displayTree() {
+  function createHTMLNode(node) {
+    let nodeElement = document.createElement('li')
+    let modelName = node.model.name
+    nodeElement.dataset['modelName'] = modelName
+
+    let collapsedCheckElement = document.createElement('input')
+    collapsedCheckElement.type = 'checkbox'
+    collapsedCheckElement.checked = false
+    nodeElement.appendChild(collapsedCheckElement)
+
+    let displayElement = document.createElement('div')
+    displayElement.classList.add('obj-name')
+    displayElement.innerText = node.key
+    nodeElement.appendChild(displayElement);
+
+    [collapsedCheckElement, displayElement].forEach(element => {
+      element.addEventListener('contextmenu', event => {
+        event.preventDefault()
+        replaceSelection(modelName)
+      })
+    })
+
+    if (node.children && node.children.length > 0) {
+      let childListElement = document.createElement('ul')
+      childListElement.classList.add('collapsed')
+      nodeElement.appendChild(childListElement)
+
+      let collapseSignElement = document.createElement('div')
+      collapseSignElement.classList.add('collapsed-sign')
+      childListElement.appendChild(collapseSignElement)
+
+      node.children.forEach(children => {
+        let childrenNode = createHTMLNode(children)
+        childListElement.appendChild(childrenNode)
+      })
+
+    }
+    return nodeElement
+  }
+
+  let rootListHTMLNode = document.querySelector('#tree > ul')
+  sceneGraph.rootNodes.forEach(node => {
+    let HTMLNode = createHTMLNode(node)
+    rootListHTMLNode.appendChild(HTMLNode)
+  })
+}
+
 window.addEventListener('load', function init() {
   // Initialize canvas and GL first
 
@@ -414,6 +476,7 @@ window.addEventListener('load', function init() {
   // Set focus to canvas from the start
   canvas.focus()
 
+  displayTree()
   adjustViewport()
   render()
 })
