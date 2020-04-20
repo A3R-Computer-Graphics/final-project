@@ -41,17 +41,19 @@ class Model {
   }
 
   updateTransformationMatrix() {
-    var mat = m4.translation(
+    // Convert rotations value from degrees to radians
+    let rotation = this.rotation.map(val => degToRad(val));
+    let scale = this.scale;
+
+    let mat = m4.translation(
       this.location[0] + this.origin[0],
       this.location[1] + this.origin[1],
       this.location[2] + this.origin[2]
     );
     mat = m4.multiply(mat,
       m4.xyzRotationScale(
-        degToRad(this.rotation[0]), degToRad(this.rotation[1]), degToRad(this.rotation[2]),
-        this.scale[0], this.scale[1], this.scale[2]
-      )
-    );
+        rotation[0], rotation[1], rotation[2],
+        scale[0], scale[1], scale[2]));
     mat = m4.translate(mat, this.origin[0], this.origin[1], this.origin[2]);
     this.transformationMatrix = mat;
   }
@@ -62,10 +64,6 @@ class Model {
    * this operation.
    */
   updateFullTransformationMatrix() {
-    // objectNodesList and objectNameToId is a global variable
-    // I know, it looks dirty to call those variables here
-    // but this is the fastest way to call it.
-
     // If the node already has parent and the model is already initialized
     if (this.node.hasParent && !!this.node.parent.model) {
       var parentNode = this.node.parent;
@@ -74,6 +72,7 @@ class Model {
         parentMatrix,
         this.transformationMatrix
       );
+    // Else use transformation matrix directly
     } else {
       this.fullTransformMatrix = this.transformationMatrix;
     }

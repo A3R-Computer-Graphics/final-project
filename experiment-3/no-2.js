@@ -141,10 +141,10 @@ function init3DModelsFromConfig() {
   // Iterate over the objects_vertices and objects_data
   // to initiate node data.
 
-  Object.keys(objects_vertices).forEach(objectName => {
+  Object.keys(objects_vertices).forEach(modelName => {
     let numVertsBefore = numVertices;
-    let objVertsData = objects_vertices[objectName];
-    let objImportedData = objects_info[objectName];
+    let objVertsData = objects_vertices[modelName];
+    let objImportedData = objects_info[modelName];
 
     let newData = populatePointsAndNormalsArrayFromObject({
       vertices: objVertsData.vertices,
@@ -157,7 +157,7 @@ function init3DModelsFromConfig() {
     // Init 3d model info and its nodes.
 
     let model = new Model({
-      name: objectName,
+      name: modelName,
       origin: [0, 0, 0],
       location: objImportedData.location,
       rotation: objImportedData.rotation,
@@ -289,7 +289,7 @@ window.addEventListener("load", function init() {
   initBufferFromPoints();
 
   initAnimateBtn()
-  initAnimationDict();
+  initAnimationValues();
 
   initializeCameraPosition();
   initializeProjectionMatrix();
