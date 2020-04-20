@@ -1,19 +1,5 @@
 "use strict";
 
-/* Cara kerja:
-
-Cara rendering dengan tree yang ada di Angel sudah baik, namun
-ada hal yang bisa ditingkatkan: memisahkan logic untuk rendering
-dengan logic untuk menghitung model view matrix.
-
-Saat ini, model view matrix dihitung setiap kali rendering. Jika
-jumlah 3d model tidak banyak, ini tidak masalah. Namun, jika jumlah 3d model
-semakin bertambah banyak komputasinya menjadi tidak baik. Oleh karena
-itu, kita bisa mengalokasikan sedikit memori untuk menyimpan matriks
-model view untuk **setiap** 3d model.
-
-*/
-
 // Camera setting
 
 let near = 0.05;
@@ -60,7 +46,6 @@ let vBuffer;
 
 let theta = 0;
 let phi = 0;
-let resolution = 100;
 
 // Light data
 
@@ -73,11 +58,11 @@ let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 // Rendering variables
 
 let isAnimated = false;
-
-// Variables related to objects and materials
+let resolution = 100;
 
 /**
- * List of materials. Every material object has Phong parameters
+ * List of materials in dictionary-style.
+ * Every material object has Phong parameters
  * (ambient, specular, diffuse), name, and computed product
  * of light and intrinsic material params.
  */
@@ -91,6 +76,11 @@ function initMaterials() {
   updateMaterialsLighting();
 }
 
+/**
+ * Recompute product values of material's own ambient, diffuse,
+ * and specular, with the one from lighting.
+ */
+
 function updateMaterialsLighting() {
   Object.keys(materialDict).forEach((materialName) => {
     let material = materialDict[materialName];
@@ -100,88 +90,73 @@ function updateMaterialsLighting() {
   });
 }
 
-function updateLight(data) {
+function updateLightSetup(data) {
+  let isChangingParameters = false;
   if (data.ambient) {
     lightAmbient = data.ambient;
+    isChangingParameters = true;
   }
   if (data.diffuse) {
     lightDiffuse = data.diffuse;
+    isChangingParameters = true;
   }
   if (data.specular) {
     lightSpecular = data.specular;
+    isChangingParameters = true;
   }
   if (data.position) {
     lightPosition = [data.position[0], data.position[1], data.position[2], 0.0];
+    updateLightingPosition();
   }
-  updateLightingPosition();
-  updateMaterialsLighting();
+  if (isChangingParameters) {
+    updateMaterialsLighting();
+  }
 }
+
+function updateLightingPosition() {
+  gl.uniform4fv(lightPositionLoc, flatten(lightPosition));
+}
+
+/**
+ * List of root nodes.
+ */
 
 var rootNodes = [];
 
-function initObjects() {
+function init3DModelsFromConfig() {
 
-  // Estimate points count by counting how many triangles needed to
-  // make a face, for each face in model, for all models.
-  // Formula: (vertex count - 2) * 3
-  // example a square (having 4 vertex) will need 2 triangles
+  // Compute how many triangles will be needed to draw a convex polygon.
+  // For a face with n vertices, it will take n - 2 triangles.
 
-  let triangleCount = Object.keys(objects_vertices).map(key =>
-      objects_vertices[key].indices
+  let triangleCount = Object.keys(objects_vertices)
+    .map(key => objects_vertices[key].indices
       .reduce((p, c) => p + c.length - 2, 0))
     .reduce((p, c) => p + c)
 
-  // create matrix with size of points count
+  // Create matrix with the size of points count
+
   pointsArray = new Array(triangleCount * 3);
   normalsArray = new Array(triangleCount * 3);
 
   // Iterate over the objects_vertices and objects_data
   // to initiate node data.
+
   Object.keys(objects_vertices).forEach(objectName => {
-    var numVertsBefore = numVertices;
-    var objVertsData = objects_vertices[objectName];
+    let numVertsBefore = numVertices;
+    let objVertsData = objects_vertices[objectName];
+    let objImportedData = objects_info[objectName];
 
-    /* 
-    // Appending new data to points and normals array, without allocating space.
-    // Inspecting performance shows scripting takes ~600ms for 20000 vertex.
-
-    var vertices = objVertsData.vertices;
-    objVertsData.indices.forEach(polygonIndices => {
-      let faceData = getScaledVertexPointsAndNormals(vertices, polygonIndices)
-      pointsArray = [...pointsArray, ...faceData.points];
-      normalsArray = [...normalsArray, ...faceData.normals];
-    });
-    numVertices = pointsArray.length;
-    */
-
-    /* 
-    // Appending new data to points & normals array, but this time,
-    // allocating single model vertex count.
-    // Scripting takes ~200ms.
-    
-    var facesData = getScaledModelPointsAndNormals(
-      objVertsData.vertices, objVertsData.indices
-    )
-    pointsArray = [...pointsArray, ...facesData.points];
-    normalsArray = [...normalsArray, ...facesData.normals];
-    numVertices = pointsArray.length;
-    */
-
-    // Estimating vertex count for all models and assigning
-    // points and normals without appending/destructuring.
-    // Scripting takes ~160ms.
-
-    var newData = populatePointsAndNormalsArray({
+    let newData = populatePointsAndNormalsArrayFromObject({
       vertices: objVertsData.vertices,
       polygonIndices: objVertsData.indices
     }, numVertices, pointsArray, normalsArray)
+
     numVertices = newData.newStartIndex;
+    let vertexCount = numVertices - numVertsBefore;
 
-    var vertexCount = numVertices - numVertsBefore;
-
-    var objImportedData = objects_info[objectName];
     // Init 3d model info and its nodes.
-    var model = new Model({
+
+    let model = new Model({
       name: objectName,
       origin: [0, 0, 0],
       location: objImportedData.location,
@@ -192,8 +167,10 @@ function initObjects() {
       vertexCount: vertexCount,
       material: materialDict[objImportedData.material_name] || materialDict["Default"],
     });
+
     if (!model.node.hasParent) rootNodes.push(model.node);
   });
+
   rootNodes.forEach((rootNode) => rootNode.updateTransformations());
 }
 
@@ -213,7 +190,7 @@ function initCanvasAndGL() {
   gl.useProgram(program);
 }
 
-function initGraphicsLibraryVariables() {
+function initWebGLVariables() {
   ambientLoc = gl.getUniformLocation(program, "ambientProduct");
   diffuseLoc = gl.getUniformLocation(program, "diffuseProduct");
   specularLoc = gl.getUniformLocation(program, "specularProduct");
@@ -248,10 +225,6 @@ function initBufferFromPoints() {
   let vPosition = gl.getAttribLocation(program, "vPosition");
   gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vPosition);
-}
-
-function updateLightingPosition() {
-  gl.uniform4fv(lightPositionLoc, flatten(lightPosition));
 }
 
 var cameraPosIndex = 17;
@@ -291,9 +264,9 @@ function animateFunc() {
     animateBtn.classList.remove('btn-danger');
     animateBtn.classList.add('btn-primary');
     document.querySelectorAll('.range-animation')
-    .forEach(elem => {
-      elem.disabled = false;
-    })
+      .forEach(elem => {
+        elem.disabled = false;
+      })
   }
   else {
     startAnimation();
@@ -301,36 +274,36 @@ function animateFunc() {
     animateBtn.classList.remove('btn-primary');
     animateBtn.classList.add('btn-danger');
     document.querySelectorAll('.range-animation')
-    .forEach(elem => {
-      elem.disabled = true;
-    })
-  } 
+      .forEach(elem => {
+        elem.disabled = true;
+      })
+  }
 }
 
 window.addEventListener("load", function init() {
   initCanvasAndGL();
-  initGraphicsLibraryVariables();
+  initWebGLVariables();
 
   initMaterials();
-  initObjects();
+  init3DModelsFromConfig();
+  initBufferFromPoints();
+
   initAnimateBtn()
   initAnimationDict();
-
-  initBufferFromPoints();
-  updateLightingPosition();
 
   initializeCameraPosition();
   initializeProjectionMatrix();
   updateViewMatrix();
-
-  canvas.addEventListener("keydown", onCanvasKeydown);
-  canvas.focus();
-  render();
+  updateLightingPosition();
 
   adjustViewport();
+  render();
+
+  canvas.addEventListener("keydown", onCanvasKeydown);
   window.addEventListener('resize', adjustViewport);
   document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
   document.querySelector('input[name="resolution"]').addEventListener('input', adjustResolution)
+  canvas.focus();
 });
 
 /**
@@ -360,18 +333,12 @@ function updateViewMatrix() {
 
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
   rootNodes.forEach(rootNode => rootNode.render(gl));
-  
-      window.requestAnimationFrame(render);
+  window.requestAnimationFrame(render);
 }
 
-
-
 /**
- * Convert keyboard into direction, with respect to three
- * mechanism currently implemented in browser: `event.code`,
- * `event.key`, and `event.which`.
+ * Convert keyboard into directions: "LEFT", "RIGHT", "UP", and "DOWN".
  *
  * @param {Event} event
  */
@@ -406,7 +373,7 @@ function convertKeyboardIntoDirection(event) {
  * it will later be transformed into next camera position
  * accoding to `cameraMovementCoordinates`.
  *
- * @param {*} event
+ * @param {Event} event
  */
 
 function onCanvasKeydown(event) {
@@ -437,42 +404,45 @@ function onCanvasKeydown(event) {
   theta = new_theta;
   updateViewMatrix();
 }
+let MAX_HEIGHT = 1080;
+let MAX_WIDTH = 1440;
 
 /**
  * Adjust viewport so the canvas stays clear even if window resolution changes.
  */
 
-let MAX_HEIGHT = 1080;
-let MAX_WIDTH = 1440;
-
 function adjustViewport() {
-    let rect = canvas.parentElement.getBoundingClientRect()
-    let width = parseInt(rect.width * window.devicePixelRatio);
-    let height = parseInt(rect.height * window.devicePixelRatio);
+  let rect = canvas.parentElement.getBoundingClientRect()
+  let width = rect.width * window.devicePixelRatio;
+  let height = rect.height * window.devicePixelRatio;
 
-    let widthToHeightRatio = rect.width / rect.height;
-    width = Math.min(MAX_WIDTH, width);
-    height = Math.min(MAX_HEIGHT, width / widthToHeightRatio) * resolution / 100;
-    width = height * widthToHeightRatio;
+  // Get w:h ratio of canvas size as displayed in the screen.
+  let widthToHeightRatio = rect.width / rect.height;
 
-    width = Math.ceil(width);
+  // Limit width and height resolution to MAX_HEIGHT and MAX_WIDTH,
+  // while at the same time maintaining the w:h ratio.
 
-    canvas.width = width;
-    canvas.height = height;
-  
-    aspect = width / height;
-    projectionMatrix = perspective(fovy, aspect, near, far);
-    gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
-  
-    gl.viewport(0, 0, width, height);
-  }
+  width = Math.min(MAX_WIDTH, width);
+  height = Math.min(MAX_HEIGHT, width / widthToHeightRatio) * resolution / 100;
+  width = Math.round(height * widthToHeightRatio);
+  height = Math.round(height);
+
+  canvas.width = width;
+  canvas.height = height;
+
+  aspect = width / height;
+  projectionMatrix = perspective(fovy, aspect, near, far);
+  gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
+
+  gl.viewport(0, 0, width, height);
+}
 
 var isMenuShown = true;
 function toggleMenu() {
   let wrapperDOM = document.getElementById('menu-toggler-wrapper');
   let menuTogglerButtonText = document.querySelector('#menu-toggler-button > .button-text');
   if (!isMenuShown) {
-    wrapperDOM.className = "show-menu";  
+    wrapperDOM.className = "show-menu";
     menuTogglerButtonText.innerText = 'Tutup';
   } else {
     wrapperDOM.className = "hide-menu";
