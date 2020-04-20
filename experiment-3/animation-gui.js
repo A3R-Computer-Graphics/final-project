@@ -3,7 +3,7 @@
 /**
  * List all sliders in the document and for each slider,
  * see if the slider is in the animation dictionary and is actually
- * defined in the ObjectNode cache.
+ * defined in the sceneGraph nodes.
  */
 
 function listCustomSliders() {
@@ -19,7 +19,7 @@ function listCustomSliders() {
       }
 
       const { modelName, propertyName, axisId } = data;
-      if (!ObjectNode.cache.hasOwnProperty(modelName)) {
+      if (!sceneGraph.nodes.hasOwnProperty(modelName)) {
         return
       }
 
@@ -51,7 +51,7 @@ function initAnimationValues() {
 
 function updateSliderToMatchAnimation() {
   sliderList.forEach(({ sliderName, modelName, propertyName, axisId }) => {
-    let animationValue = ObjectNode.cache[modelName].model[propertyName][axisId];
+    let animationValue = sceneGraph.nodes[modelName].model[propertyName][axisId];
     let sliderElement = document.querySelector(`input[name="${sliderName}"]`);
     let displayElement = sliderElement.parentElement.querySelector('.slider-value');
     sliderElement.value = animationValue;

@@ -144,8 +144,8 @@ window.addEventListener("load", function init() {
 
     const { modelName, propertyName, axisId } = propertyData;
     elem.addEventListener('input', function (event) {
-      ObjectNode.cache[modelName].model[propertyName][axisId] = parseFloat(event.target.value);
-      ObjectNode.cache[modelName].updateTransformations()
+      sceneGraph.nodes[modelName].model[propertyName][axisId] = parseFloat(event.target.value);
+      sceneGraph.nodes[modelName].updateTransformations()
       let textVal = event.target.parentElement.querySelector('.slider-value')
       textVal.innerHTML = parseFloat(event.target.value);
     })

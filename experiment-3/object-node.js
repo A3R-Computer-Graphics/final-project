@@ -1,11 +1,5 @@
 class ObjectNode {
-  static cache = {};
-  static getOrCreate(key) {
-    if (!(key in ObjectNode.cache))
-      ObjectNode.cache[key] = new ObjectNode({ key: key });
-    return ObjectNode.cache[key];
-  }
-
+  
   constructor({ key }) {
     this.key = key;
     this.parent = null;

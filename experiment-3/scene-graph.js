@@ -87,7 +87,10 @@ class SceneGraph {
         material: self.materials[modelInfo.material_name] || self.materials["Default"],
       })
 
-      self.nodes[modelName] = model.node
+      let parentExists = !!modelInfo.parent
+      let modelNode = self.getOrCreateNode(modelName)
+      let parentNode = parentExists ? self.getOrCreateNode(modelInfo.parent) : undefined
+      modelNode.updateWith({ model, parent: parentNode })
 
       if (!model.node.hasParent) {
         self.rootNodes.push(model.node)
@@ -183,4 +186,11 @@ class SceneGraph {
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(vPosition)
   }
+
+  getOrCreateNode(key) {
+    if (!this.nodes.hasOwnProperty(key))
+      this.nodes[key] = new ObjectNode({ key: key });
+    return this.nodes[key];
+  }
+
 }

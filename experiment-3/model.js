@@ -8,8 +8,8 @@ class Model {
     material,
     bufferStartIndex,
     vertexCount,
-    parentName,
   }) {
+    
     this.name = name;
     this.origin = [...origin];
     this.location = [...location];
@@ -20,20 +20,11 @@ class Model {
     this.bufferStartIndex = bufferStartIndex;
     this.vertexCount = vertexCount;
 
-    this.node = ObjectNode.getOrCreate(name).updateWith({
-      model: this,
-      parent: !!parentName
-        ? ObjectNode.getOrCreate(parentName)
-        : undefined,
-    });
-
     // Transformation matrix computed from loc, rot, and scale.
     this.transformationMatrix = m4.identity();
 
     // Full transformation matrix, computed from this model as well as from the parent.
     this.fullTransformMatrix = m4.identity();
-
-    this.updateMatrices();
   }
 
   getParentName() {
