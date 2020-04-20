@@ -18,7 +18,7 @@ let camera = {
 let theta = 0
 let phi = 0
 let cameraPosIndex = 17
-let coordinateDirectionOrder = ["UP", "LEFT", "DOWN", "RIGHT"]
+let coordinateDirectionOrder = ['UP', 'LEFT', 'DOWN', 'RIGHT']
 
 let eye
 let at = vec3(0.0, 0.0, 0.0)
@@ -43,7 +43,7 @@ let sliderList = []
 let throttledSliderHandler = function () { }
 
 function initCanvasAndGL() {
-  canvas = document.getElementById("gl-canvas");
+  canvas = document.getElementById('gl-canvas');
 
   gl = WebGLUtils.setupWebGL(canvas);
   if (!gl) {
@@ -54,7 +54,7 @@ function initCanvasAndGL() {
   gl.clearColor(0.2, 0.2, 0.2, 1.0);
 
   gl.enable(gl.DEPTH_TEST);
-  program = initShaders(gl, "vertex-shader", "fragment-shader");
+  program = initShaders(gl, 'vertex-shader', 'fragment-shader');
   gl.useProgram(program);
 }
 
@@ -79,11 +79,11 @@ function initializeProjectionMatrix() {
   gl.uniformMatrix4fv(matrixGlLocation, false, flatten(projectionMatrix))
 }
 
-function handleAnimateButtonClicked() {
-  const animateBtn = document.getElementById("btn-animate");
+function toggleAnimation() {
+  const animateBtn = document.getElementById('btn-animate');
   if (animationManager.isAnimating) {
     animationManager.stopAnimation()
-    animateBtn.innerHTML = "Mulai Animasi";
+    animateBtn.innerHTML = 'Mulai Animasi';
     animateBtn.classList.remove('btn-danger');
     animateBtn.classList.add('btn-primary');
     document.querySelectorAll('.range-animation')
@@ -93,7 +93,7 @@ function handleAnimateButtonClicked() {
   }
   else {
     animationManager.startAnimation();
-    animateBtn.innerHTML = "Hentikan Animasi";
+    animateBtn.innerHTML = 'Hentikan Animasi';
     animateBtn.classList.remove('btn-primary');
     animateBtn.classList.add('btn-danger');
     document.querySelectorAll('.range-animation')
@@ -177,20 +177,20 @@ function updateViewMatrix() {
  */
 
 function convertKeyboardIntoDirection(event) {
-  let direction = "";
+  let direction = '';
   let whichToDirection = {
-    37: "LEFT",
-    38: "UP",
-    39: "RIGHT",
-    40: "DOWN",
+    37: 'LEFT',
+    38: 'UP',
+    39: 'RIGHT',
+    40: 'DOWN',
   };
   if (event.code) {
     // Remove 'Arrow' token in the string
-    direction = event.code.replace("Arrow", "");
+    direction = event.code.replace('Arrow', '');
   } else if (event.key) {
-    direction = event.code.replace("Arrow", "");
+    direction = event.code.replace('Arrow', '');
   } else {
-    direction = whichToDirection[event.which] || "";
+    direction = whichToDirection[event.which] || '';
   }
 
   if (direction.length > 0) {
@@ -209,7 +209,7 @@ function convertKeyboardIntoDirection(event) {
  * @param {Event} event
  */
 
-function onCanvasKeydown(event) {
+function processCanvasArrowKeydown(event) {
   let direction = convertKeyboardIntoDirection(event);
   if (!direction) {
     return;
@@ -237,8 +237,30 @@ function onCanvasKeydown(event) {
   theta = new_theta;
   updateViewMatrix();
 }
-let MAX_HEIGHT = 1080;
-let MAX_WIDTH = 1440;
+
+let isSpaceKeyPressed = false
+
+function handleSpaceKeydown(event) {
+  if (isSpaceKeyPressed) {
+    return
+  }
+  if (event.code === 'Space' || event.key === ' ' || event.keyCode === 32) {
+    toggleAnimation()
+    isSpaceKeyPressed = true
+  }
+}
+
+function handleSpaceKeyup(event) {
+  if (!isSpaceKeyPressed) {
+    return
+  }
+  if (event.code === 'Space' || event.key === ' ' || event.keyCode === 32) {
+    isSpaceKeyPressed = false
+  }
+}
+
+let MAX_HEIGHT = 1080
+let MAX_WIDTH = 1440
 
 /**
  * Adjust viewport so the canvas stays clear even if window resolution changes.
@@ -271,7 +293,7 @@ function adjustViewport() {
 
 function adjustResolution(event) {
   resolution = Math.min(100, Math.max(1, event.target.value))
-  event.target.parentElement.querySelector('.slider-value').innerText = resolution + "%"
+  event.target.parentElement.querySelector('.slider-value').innerText = resolution + '%'
   adjustViewport()
 }
 
@@ -279,10 +301,10 @@ function toggleMenu() {
   let wrapperDOM = document.getElementById('menu-toggler-wrapper');
   let menuTogglerButtonText = document.querySelector('#menu-toggler-button > .button-text');
   if (!isMenuShown) {
-    wrapperDOM.className = "show-menu";
+    wrapperDOM.className = 'show-menu';
     menuTogglerButtonText.innerText = 'Tutup';
   } else {
-    wrapperDOM.className = "hide-menu";
+    wrapperDOM.className = 'hide-menu';
     menuTogglerButtonText.innerText = 'Buka Menu';
   }
   isMenuShown = !isMenuShown;
@@ -340,7 +362,7 @@ function matchSlidersToAnimation() {
   })
 }
 
-window.addEventListener("load", function init() {
+window.addEventListener('load', function init() {
   // Initialize canvas and GL first
 
   initCanvasAndGL()
@@ -375,11 +397,16 @@ window.addEventListener("load", function init() {
 
   // Attach event listener handles
 
-  canvas.addEventListener("keydown", onCanvasKeydown)
+  canvas.addEventListener('keydown', processCanvasArrowKeydown)
+  canvas.addEventListener('keydown', handleSpaceKeydown)
+  canvas.addEventListener('keyup', handleSpaceKeyup)
+
   window.addEventListener('resize', adjustViewport)
+
   document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
   document.querySelector('input[name="resolution"]').addEventListener('input', adjustResolution)
-  document.querySelector('#btn-animate').addEventListener("click", handleAnimateButtonClicked)
+  document.querySelector('#btn-animate').addEventListener('click', toggleAnimation)
+
   connectSlidersToModelData()
   connectSpeedSlider()
   attachListenerOnAnimationUpdate()
