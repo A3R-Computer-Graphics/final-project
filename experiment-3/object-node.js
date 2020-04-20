@@ -25,6 +25,16 @@ class ObjectNode {
    return !!this.parent; 
   }
 
+  get parentNameList() {
+    let parents = []
+    let node = this
+    while (node.parent) {
+      node = node.parent
+      parents.push(node.key)
+    }
+    return parents
+  }
+
   updateTransformations() {
     this.model.updateMatrices();
     this.children.forEach(children => {

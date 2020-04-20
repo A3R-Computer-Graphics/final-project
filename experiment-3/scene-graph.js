@@ -13,6 +13,8 @@ class SceneGraph {
     this.pointsArray = []
     this.normalsArray = []
 
+    this.selectedNodeName = ''
+
     /**
      * List of materials in dictionary-style.
      * Every material object has Phong parameters
@@ -172,6 +174,8 @@ class SceneGraph {
     locations.modelMatrix = gl.getUniformLocation(program, "modelMatrix")
     locations.viewMatrix = gl.getUniformLocation(program, "viewMatrix")
     locations.projectionMatrix = gl.getUniformLocation(program, "projectionMatrix")
+    locations.selectingFactor = gl.getUniformLocation(program, "selectingFactor")
+    gl.uniform1f(locations.selectingFactor, 0.0)
 
     gl.locations = locations
 

@@ -7,7 +7,7 @@ class Renderer {
 
   static recursivelyRenderNodes(node, sceneGraph) {
     let gl = sceneGraph.gl;
-    Renderer.renderModel(node.model, gl, sceneGraph.glLocations);
+    Renderer.renderModel(node.model, gl, sceneGraph.glLocations, sceneGraph);
     
     // Traverse the whole tree and render every visited node
     
@@ -26,7 +26,9 @@ class Renderer {
    * to avoid calling `flatten()` every time an object is rendered.
    */
 
-  static renderModel(model, gl, glLocations) {
+  static renderModel(model, gl, glLocations, sceneGraph) {
+    let selected = sceneGraph.selectedNodeName === model.name;
+
     const {
       ambientProduct,
       diffuseProduct,
@@ -44,6 +46,13 @@ class Renderer {
       false,
       flatten(model.fullTransformMatrix)
     );
+    
+    if (selected) {
+      gl.uniform1f(glLocations.selectingFactor, 1.0);
+    }
     gl.drawArrays(gl.TRIANGLES, model.bufferStartIndex, model.vertexCount);
+    if (selected) {
+      gl.uniform1f(glLocations.selectingFactor, 0.0);
+    }
   }
 }

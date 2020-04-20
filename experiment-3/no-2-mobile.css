@@ -7,7 +7,7 @@
         height: 100%;
     }
     #screen-info {
-        top: 0;
+        top: 5px;
         bottom: auto;
     }
     .menu {

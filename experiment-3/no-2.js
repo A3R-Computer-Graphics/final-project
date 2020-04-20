@@ -362,18 +362,54 @@ function matchSlidersToAnimation() {
   })
 }
 
-let currentSelection = ''
+function deselect(modelName) {
+  let selectedElement = document.querySelector(`li[data-model-name="${modelName}"]`)
+  if (selectedElement) {
+    selectedElement.classList.remove('selected')
+  }
+}
 
 function replaceSelection(newSelection) {
-  let selectedElement = document.querySelector(`li[data-model-name="${currentSelection}"]`)
-  let newSelectedElement = document.querySelector(`li[data-model-name="${newSelection}"]`)
-  if (newSelectedElement) {
-    if (selectedElement) {
-      selectedElement.classList.remove('selected')
+  let currentSelection = sceneGraph.selectedNodeName
+  if (newSelection === currentSelection) {
+    deselect(currentSelection)
+    sceneGraph.selectedNodeName = ''
+  } else {
+    let newSelectedElement = document.querySelector(`li[data-model-name="${newSelection}"]`)
+    if (newSelectedElement) {
+      deselect(currentSelection)
+      newSelectedElement.classList.add('selected')
+      sceneGraph.selectedNodeName = newSelection
     }
-    newSelectedElement.classList.add('selected')
-    currentSelection = newSelection
   }
+  displaySelectionHierarchyText()
+}
+
+function displaySelectionHierarchyText() {
+
+  let hierarchyElem = document.querySelector('#selobj-hierarchy')
+  let child = hierarchyElem.lastElementChild
+
+  while (child) {
+    hierarchyElem.removeChild(child)
+    child = hierarchyElem.lastElementChild
+  }
+
+  let selectionModelName = sceneGraph.selectedNodeName
+  let selectionNode = sceneGraph.nodes[selectionModelName]
+
+  if (!selectionNode) {
+    return
+  }
+
+  let parentNameList = selectionNode.parentNameList
+  let hierarchyList = [...parentNameList, selectionModelName]
+
+  hierarchyList.forEach(modelName => {
+    let childElem = document.createElement('span')
+    childElem.innerHTML = modelName
+    hierarchyElem.appendChild(childElem)
+  })
 }
 
 function displayTree() {

@@ -312,17 +312,21 @@ div#speed-slider {
   position: absolute;
   bottom: 0;
   z-index: 1;
-  display: none;
   color: white;
   padding-bottom: 10px;
   padding-left: 10px;
+  text-shadow: 0 0 8px rgba(0,0,0,0.3);
+  font-size: 14px;
+  letter-spacing: calc(3rem / 100);
+  color: #d7d7d7;
 }
 
 #canvas-status {
   margin-bottom: 0;
+  display: none;
 }
 
-canvas:focus+#screen-info {
+canvas:focus + * > #canvas-status {
   display: block;
 }
 
@@ -349,6 +353,9 @@ canvas:focus+#screen-info {
   font-weight: normal;
 }
 
+
+/* Tree */
+
 #tree li {
   position: relative;
 }
@@ -374,7 +381,7 @@ canvas:focus+#screen-info {
   overflow-y: scroll;
   padding: 11px;
   margin: 10px 0;
-  background-color: #0000004d;
+  background-color: #131313;
 }
 
 li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
@@ -403,7 +410,7 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   position: absolute;
   content: "";
   top: -5px;
-  left: 11px;
+  left: 12px;
   height: calc(100% - 6px);
   width: 1px;
   border-left: 1px solid #a2a2a2;
@@ -485,7 +492,51 @@ li.selected > ul > .collapsed-sign::before {
   color: black;
 }
 
+ul > li:last-child::before {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 10px;
+  height: calc(100% - 24px);
+  background-color: #131313;
+  top: 16px;
+  left: -17px;
+}
+
+#tree li > input[type="checkbox"]:checked + * + ul::after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 10px;
+  background-color: #acacac;
+  top: -8px;
+  left: 10px;
+}
+
+
 .note {
   font-size: 12px;
   line-height: 1.2;
+}
+
+/* Selected object hierarchy */
+
+#selobj-hierarchy > * {
+  display: inline-block;
+  margin-right: 0.5rem;
+  color: orange;
+}
+
+#selobj-hierarchy > *:not(:last-child)::after {
+  content: "\25B2";
+  color: white;
+  margin-left: 0.5rem;
+  transform: rotate(90deg);
+  display: inline-block;
+}
+
+#selobj-hierarchy > *:last-child {
+  font-weight: bold;
 }

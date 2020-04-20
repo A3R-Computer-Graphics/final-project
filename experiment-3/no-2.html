@@ -16,6 +16,9 @@ uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec4 lightPosition;
 uniform float shininess;
+
+uniform float selectingFactor;
+
 void main()
 {
     // pos is vertex position in eye coordinates
@@ -50,7 +53,14 @@ void main()
     vec4 ambient = ambientProduct;
 
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vPosition;
-    fColor = ambient + diffuse +specular;
+    fColor = (ambient + diffuse + specular);
+    float sel = selectingFactor;
+    // fColor = vec4(fColor.r * invSel, fColor.g * invSel, fColor.b * invSel, 0.0);
+
+    vec4 selectedColor = vec4(0.94, 0.64, 0.09, 1.0);
+    vec4 selMult = vec4(sel, sel, sel, 0.0);
+    vec4 invSelMult = vec4(1.0 - sel, 1.0 - sel, 1.0 - sel, 0.0);
+    fColor = fColor * invSelMult + selectedColor * selMult;
     
     fColor.a = 1.0;
 }
@@ -104,6 +114,7 @@ main()
     </canvas>
     <div id="screen-info">
       <p id="canvas-status">Canvas aktif dipilih</p>
+      <div>Objek dipilih: <span id="selobj-hierarchy"><span>body</span><span>black-body</span></span></div>
     </div>
   </div>
   <div id="menu-toggler-wrapper" class="show-menu">
