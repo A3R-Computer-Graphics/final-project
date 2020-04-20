@@ -9,7 +9,7 @@ class Model {
     bufferStartIndex,
     vertexCount,
   }) {
-    
+
     this.name = name;
     this.origin = [...origin];
     this.location = [...location];
@@ -25,10 +25,6 @@ class Model {
 
     // Full transformation matrix, computed from this model as well as from the parent.
     this.fullTransformMatrix = m4.identity();
-  }
-
-  getParentName() {
-    return (((this.node || {}).parent || {}).model || {}).name;
   }
 
   updateTransformationMatrix() {
@@ -105,36 +101,5 @@ class Model {
 
   deltaLocation(x, y, z) {
     this.deltaGeneral(this.location, x, y, z);
-  }
-
-  /**
-   * Generic function to render 3D object, given model matrix,
-   * Phong parameters (ambient, diffuse, specular, and shininess),
-   * and object's buffer ranges.
-   *
-   * NOTE: The Phong variables need to be flattened first!
-   * Since materials change rarely, we can store its flattened product
-   * to avoid calling `flatten()` every time an object is rendered.
-   */
-  render(gl) {
-    const {
-      ambientProduct,
-      diffuseProduct,
-      specularProduct,
-      shininess,
-    } = this.material;
-
-    const loc = gl.locations
-    gl.uniform4fv(loc.ambient, ambientProduct);
-    gl.uniform4fv(loc.diffuse, diffuseProduct);
-    gl.uniform4fv(loc.specular, specularProduct);
-    gl.uniform1f(loc.shininess, shininess);
-
-    gl.uniformMatrix4fv(
-      loc.modelMatrix,
-      false,
-      flatten(this.fullTransformMatrix)
-    );
-    gl.drawArrays(gl.TRIANGLES, this.bufferStartIndex, this.vertexCount);
   }
 }

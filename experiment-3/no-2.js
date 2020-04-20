@@ -198,8 +198,8 @@ function updateViewMatrix() {
 }
 
 function render() {
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  sceneGraph.rootNodes.forEach(rootNode => rootNode.render(gl))
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+  Renderer.render(sceneGraph)
   window.requestAnimationFrame(render)
 }
 

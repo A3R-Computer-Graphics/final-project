@@ -1,5 +1,5 @@
 class ObjectNode {
-  
+
   constructor({ key }) {
     this.key = key;
     this.parent = null;
@@ -23,12 +23,6 @@ class ObjectNode {
 
   get hasParent() {
    return !!this.parent; 
-  }
-
-  // Traverse the whole tree and render every visited node
-  render(gl) {
-    this.model.render(gl);
-    this.children.forEach(child => child.render(gl));
   }
 
   updateTransformations() {
