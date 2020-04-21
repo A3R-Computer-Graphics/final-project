@@ -11,10 +11,10 @@ class Model {
   }) {
 
     this.name = name;
-    this.origin = [...origin];
-    this.location = [...location];
-    this.rotation = [...rotation];
-    this.scale = [...scale];
+    this.origin = [...(origin || [0, 0, 0])];
+    this.location = [...(location || [0, 0, 0])];
+    this.rotation = [...(rotation || [0, 0, 0])];
+    this.scale = [...(scale || [1, 1, 1])];
     this.material = material;
 
     this.bufferStartIndex = bufferStartIndex;
@@ -59,7 +59,7 @@ class Model {
         parentMatrix,
         this.transformationMatrix
       );
-    // Else use transformation matrix directly
+      // Else use transformation matrix directly
     } else {
       this.fullTransformMatrix = this.transformationMatrix;
     }
@@ -101,5 +101,13 @@ class Model {
 
   deltaLocation(x, y, z) {
     this.deltaGeneral(this.location, x, y, z);
+  }
+
+  setMaterial(materialName, materialList) {
+    if (materialList[materialName]) {
+      this.material = materialList[materialName]
+    } else {
+      throw Error('Material name not found')
+    }
   }
 }
