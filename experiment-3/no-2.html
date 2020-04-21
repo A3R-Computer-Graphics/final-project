@@ -57,12 +57,11 @@ void main()
     float sel = selectingFactor;
     // fColor = vec4(fColor.r * invSel, fColor.g * invSel, fColor.b * invSel, 0.0);
 
-    vec4 selectedColor = vec4(0.94, 0.64, 0.09, 1.0);
-    vec4 selMult = vec4(sel, sel, sel, 0.0);
-    vec4 invSelMult = vec4(1.0 - sel, 1.0 - sel, 1.0 - sel, 0.0);
-    fColor = fColor * invSelMult + selectedColor * selMult;
-    
     fColor.a = 1.0;
+    vec4 selectedColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 0.1);
+    vec4 selMult = vec4(sel, sel, sel, 1.0);
+    vec4 invSelMult = vec4(1.0 - sel, 1.0 - sel, 1.0 - sel, 1.0);
+    fColor = fColor * invSelMult + selectedColor * selMult;
 }
 </script>
 
