@@ -330,7 +330,7 @@ canvas:focus + * > #canvas-status {
   display: block;
 }
 
-#help-content strong {
+.note strong, #help-content strong {
   color: white;
 }
 
@@ -539,4 +539,8 @@ ul > li:last-child::before {
 
 #selobj-hierarchy > *:last-child {
   font-weight: bold;
+}
+
+#selected-object-menu.no-selection {
+  display: none;
 }

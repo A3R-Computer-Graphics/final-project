@@ -31,6 +31,17 @@ function replaceSelection(newSelection) {
       updateSliderOnObjectSelected()
     }
   }
+  updateSelectionView()
+}
+
+function updateSelectionView() {
+  let currentSelection = sceneGraph.selectedNodeName
+  let node = sceneGraph.nodes[currentSelection]
+  if (!node) {
+    document.querySelector('#selected-object-menu').classList.add('no-selection')
+  } else {
+    document.querySelector('#selected-object-menu').classList.remove('no-selection')
+  }
   displaySelectionHierarchyText()
 }
 
@@ -52,6 +63,10 @@ function displaySelectionHierarchyText() {
   }
 
   let parentNameList = selectionNode.parentNameList
+
+  // Reverse parent name list
+  let count = parentNameList.length
+  parentNameList = parentNameList.map((data, i) => parentNameList[count - i - 1])
   let hierarchyList = [...parentNameList, selectionModelName]
 
   hierarchyList.forEach(modelName => {
