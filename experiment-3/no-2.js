@@ -140,6 +140,22 @@ function connectSpeedSlider() {
   speedValueDisplay.innerText = Math.round(animationManager.speed * 100) + '%';
 }
 
+function connectLightPositionSliders() {
+  document.querySelectorAll('input[name^=light]').forEach(lightPositionSlider => {
+    const valueDisplay = lightPositionSlider.parentElement.querySelector('.slider-value');
+    const name = lightPositionSlider.getAttribute('name');
+    valueDisplay.innerText = sceneGraph[name];
+    lightPositionSlider.value = `${sceneGraph[name]}`;
+    
+    lightPositionSlider.addEventListener('input', function(event) {
+        let value = parseFloat(event.target.value);
+        valueDisplay.innerText = value;
+        sceneGraph[name] = value;
+        sceneGraph.updateLightPosition();
+    });
+  });
+}
+
 /**
  * Update eye coordinate calculation from global
  * variables `radius`, `theta`, and `phi`.
@@ -339,6 +355,7 @@ window.addEventListener('load', function init() {
 
   connectSlidersToModelData()
   connectSpeedSlider()
+  connectLightPositionSliders()
   attachListenerOnAnimationUpdate()
   
   if (typeof initObjectSelectionMechanism !== 'undefined') {
