@@ -59,8 +59,8 @@ function processCanvasArrowKeydown(event) {
   let cameraPosCoords = cameraCoordinates[cameraPosIndex];
   let cameraSpherePos = cartesianToSphere(
     cameraPosCoords[0],
-    cameraPosCoords[1],
-    cameraPosCoords[2]
+    -cameraPosCoords[2],
+    cameraPosCoords[1]
   );
   let new_phi = cameraSpherePos[1];
   let new_theta = cameraSpherePos[2];

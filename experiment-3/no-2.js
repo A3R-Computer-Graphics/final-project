@@ -22,7 +22,7 @@ let coordinateDirectionOrder = ['UP', 'LEFT', 'DOWN', 'RIGHT']
 
 let eye
 let at = vec3(0.0, 0.0, 0.0)
-let up = vec3(0.0, 1.0, 0.0)
+let up = vec3(0.0, 0.0, 1.0)
 
 // rendering engine variables variables
 
@@ -64,10 +64,12 @@ function initCanvasAndGL() {
 
 function initializeCameraPosition() {
   let cameraPosCoords = cameraCoordinates[cameraPosIndex];
+  // Match camera coordinate (Y+ axis pointing up) to Blender's.
+  // (Z+ pointing up)
   let cameraSpherePos = cartesianToSphere(
     cameraPosCoords[0],
-    cameraPosCoords[1],
-    cameraPosCoords[2]
+    -cameraPosCoords[2],
+    cameraPosCoords[1]
   );
   phi = cameraSpherePos[1];
   theta = cameraSpherePos[2];
@@ -158,16 +160,18 @@ function updateViewMatrix() {
 
   eye = vec3(x, y, z);
 
-  let lookAtMatrix = flatten(lookAt(eye, at, up));
+  // Compute angle between up and eye - at.
+  let eyeAt = subtract(eye, at)
+  let angle = radToDeg(Math.acos(dot(eyeAt, up) / length(eyeAt) / length(up)))
 
-  // Blender and the camera's UP vector points has different axis.
-  // Blender points Z+ axis to up while this lookAt setup points Y+ axis instead.
-  // One quick fix for this is to rotate this camera 90 deg back along X axis.
-  // This rotates Z+ from pointing front to pointing up, and Y+ from pointing
-  // up to pointing back.
+  // point up at Y axis if angle is near 0 or near 180.
+  let usedUp = up
+  if (angle < 0.01 || angle > 179.9) {
+    usedUp = [0, 1, 0]
+  }
 
-  let viewMatrix = m4.xRotate(lookAtMatrix, degToRad(-90));
-  gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(viewMatrix));
+  let lookAtMatrix = flatten(lookAt(eye, at, usedUp));
+  gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(lookAtMatrix));
 }
 
 let isSpaceKeyPressed = false
