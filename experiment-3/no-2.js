@@ -83,7 +83,7 @@ function toggleAnimation() {
   const animateBtn = document.getElementById('btn-animate');
   if (animationManager.isAnimating) {
     animationManager.stopAnimation()
-    animateBtn.innerHTML = 'Mulai Animasi';
+    animateBtn.innerText = 'Mulai Animasi';
     animateBtn.classList.remove('btn-danger');
     animateBtn.classList.add('btn-primary');
     document.querySelectorAll('.range-animation')
@@ -93,7 +93,7 @@ function toggleAnimation() {
   }
   else {
     animationManager.startAnimation();
-    animateBtn.innerHTML = 'Hentikan Animasi';
+    animateBtn.innerText = 'Hentikan Animasi';
     animateBtn.classList.remove('btn-primary');
     animateBtn.classList.add('btn-danger');
     document.querySelectorAll('.range-animation')
@@ -116,7 +116,7 @@ function connectSlidersToModelData() {
       sceneGraph.nodes[modelName].model[propertyName][axisId] = parseFloat(event.target.value);
       sceneGraph.nodes[modelName].updateTransformations()
       let textVal = event.target.parentElement.querySelector('.slider-value')
-      textVal.innerHTML = parseFloat(event.target.value);
+      textVal.innerText = parseFloat(event.target.value)
     })
   })
 }
@@ -358,8 +358,9 @@ function matchSlidersToAnimation() {
     let sliderElement = document.querySelector(`input[name="${sliderName}"]`)
     let displayElement = sliderElement.parentElement.querySelector('.slider-value')
     sliderElement.value = animationValue
-    displayElement.innerHTML = Math.round(animationValue * 100) / 100
+    displayElement.innerText = Math.round(animationValue * 100) / 100
   })
+  updateSliderOnObjectSelected()
 }
 
 function deselect(modelName) {
@@ -380,6 +381,7 @@ function replaceSelection(newSelection) {
       deselect(currentSelection)
       newSelectedElement.classList.add('selected')
       sceneGraph.selectedNodeName = newSelection
+      updateSliderOnObjectSelected()
     }
   }
   displaySelectionHierarchyText()
@@ -460,6 +462,77 @@ function displayTree() {
   })
 }
 
+let isMatchingSelectedPropertyToSlider = false
+
+let updateSelectedProperty = throttle(
+  function (propertyName, axisId, value) {
+    if (isMatchingSelectedPropertyToSlider) {
+      return
+    }
+    let node = sceneGraph.nodes[sceneGraph.selectedNodeName]
+    if (!node) {
+      return
+    }
+    node.model[propertyName][axisId] = value
+    node.updateTransformations()
+  }, 50)
+
+function connectSelectedObjectSlider() {
+  let axis = ['x', 'y', 'z']
+  let properties = ['location', 'rotation', 'scale']
+
+  properties.forEach(propertyName => {
+    axis.forEach((axisName, index) => {
+
+      let axisId = index
+      let sliderName = `selected-object-${propertyName}-${axisName}`
+
+      let sliderElement = document.querySelector(`input[name="${sliderName}"]`)
+      let displayElement = sliderElement.parentElement.querySelector('.slider-value')
+
+      sliderElement.addEventListener('input',
+        event => {
+          if (sceneGraph.selectedNodeName) {
+            let value = event.target.value
+            updateSelectedProperty(propertyName, axisId, parseFloat(value))
+            displayElement.innerText = Math.round(value * 100) / 100
+          }
+        })
+
+    })
+  })
+
+}
+
+function updateSliderOnObjectSelected() {
+  let selectedNode = sceneGraph.nodes[sceneGraph.selectedNodeName]
+  if (!selectedNode) {
+    return
+  }
+
+  isMatchingSelectedPropertyToSlider = true
+
+  let axis = ['x', 'y', 'z']
+  let properties = ['location', 'rotation', 'scale']
+
+  let selectedModel = selectedNode.model
+
+  properties.forEach(propertyName => {
+    axis.forEach((axisName, index) => {
+      let axisId = index
+      let sliderName = `selected-object-${propertyName}-${axisName}`
+      let slider = document.querySelector(`input[name="${sliderName}"]`)
+      if (slider) {
+        let value = Math.round(selectedModel[propertyName][axisId] * 100) / 100
+        slider.value = value
+        slider.parentElement.querySelector('.slider-value').innerText = value
+      }
+    })
+  })
+
+  isMatchingSelectedPropertyToSlider = false
+}
+
 window.addEventListener('load', function init() {
   // Initialize canvas and GL first
 
@@ -507,6 +580,7 @@ window.addEventListener('load', function init() {
 
   connectSlidersToModelData()
   connectSpeedSlider()
+  connectSelectedObjectSlider()
   attachListenerOnAnimationUpdate()
 
   // Set focus to canvas from the start
