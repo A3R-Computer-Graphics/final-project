@@ -236,22 +236,22 @@ main()
         <div class="submenu">
           <h3 class="submenu-title">Lokasi Cahaya</h3>
           <div class="slider-container">
-            <label>Lorem<b>
+            <label>X<b>
                 <div class="slider-value">0</div>
               </b></label>
-            <input type="range" step="0.01" name="speed" value="0" min="0" max="4" class="custom-range range-speed">
+            <input type="range" step="0.01" name="lightPositionX" value="0" min="-10" max="10" class="custom-range range-speed">
           </div>
           <div class="slider-container">
-            <label>Ipsum<b>
+            <label>Y<b>
                 <div class="slider-value">0</div>
               </b></label>
-            <input type="range" step="0.01" name="speed" value="0" min="0" max="4" class="custom-range range-speed">
+            <input type="range" step="0.01" name="lightPositionY" value="0" min="-10" max="10" class="custom-range range-speed">
           </div>
           <div class="slider-container">
-            <label>Dolor<b>
+            <label>Z<b>
                 <div class="slider-value">0</div>
               </b></label>
-            <input type="range" step="0.01" name="speed" value="0" min="0" max="4" class="custom-range range-speed">
+            <input type="range" step="0.01" name="lightPositionZ" value="0" min="-10" max="10" class="custom-range range-speed">
           </div>
         </div>
       </div>
@@ -270,6 +270,34 @@ main()
                 <div class="slider-value">0</div>
               </b></label>
             <input type="range" step="0.1" name="arm.R.rotation.x" value="0" min="-45" max="135"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Kaki Kiri<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="leg.L.rotation.x" value="0" min="-60" max="60"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Kaki Kanan<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="leg.R.rotation.x" value="0" min="-60" max="60"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Telapak Kaki Kiri<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="boot_lower.L.rotation.x" value="0" min="-5.5" max="22.7"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Telapak Kaki Kanan<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="boot_lower.R.rotation.x" value="0" min="-5.5" max="22.7"
               class="custom-range range-animation">
           </div>
           <div class="slider-container">
@@ -297,7 +325,7 @@ main()
             <label>Rotasi Anggukan Kepala<b>
                 <div class="slider-value">0</div>
               </b></label>
-            <input type="range" step="0.1" name="head.rotation.x" value="0" min="-90" max="9  0"
+            <input type="range" step="0.1" name="head.rotation.x" value="0" min="-90" max="90"
               class="custom-range range-animation" />
           </div>
           <div class="slider-container">
@@ -318,61 +346,74 @@ main()
         <!-- TODO: Change Slider Ayam-->
         <div class="submenu">
           <h3 class="submenu-title">Gerakan Ayam</h3>
-
           <div class="slider-container">
-            <label>Rotasi Tangan Kiri: <b>
-                <div class="slider-value">0</div>
-              </b></label>
-            <input type="range" step="0.1" name="arm.L.rotation.x" value="0" min="-45" max="135"
-              class="custom-range range-animation">
-          </div>
-          <div class="slider-container">
-            <label>Rotasi Tangan Kanan: <b>
-                <div class="slider-value">0</div>
-              </b></label>
-            <input type="range" step="0.1" name="arm.R.rotation.x" value="0" min="-45" max="135"
-              class="custom-range range-animation">
-          </div>
-          <div class="slider-container">
-            <label>Rotasi Pedang: <b>
-                <div class="slider-value">0</div>
-              </b></label>
-            <input type="range" step="0.1" name="sword_grip.rotation.x" value="0" min="-90" max="90"
-              class="custom-range range-animation">
-          </div>
-          <div class="slider-container">
-            <label>Tolehan Kepala: <b>
-                <div class="slider-value">0</div>
-              </b></label>
-            <input type="range" step="0.1" name="head.rotation.z" value="0" min="-90" max="9  0"
-              class="custom-range range-animation" />
-          </div>
-          <div class="slider-container">
-            <label>Kedipan Mata: <b>
+            <label>Rotasi Kepala <b>
                 <div class="slider-value">1</div>
               </b></label>
-            <input type="range" step="0.01" name="eye.scale.z" value="1" min="0" max="1"
+            <input type="range" step="0.01" name="chicken.head.rotation.x" value="1" min="-5" max="10"
               class="custom-range range-animation">
           </div>
           <div class="slider-container">
-            <label>Anggukan Kepala: <b>
+            <label>Rotasi Badan <b>
                 <div class="slider-value">0</div>
               </b></label>
-            <input type="range" step="0.1" name="head.rotation.x" value="0" min="-90" max="9  0"
+            <input type="range" step="0.1" name="chicken.body.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Sisir Ayam <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.comb.rotation.x" value="0" min="-16" max="11"
               class="custom-range range-animation" />
           </div>
           <div class="slider-container">
-            <label>Loncatan: <b>
+            <label>Rotasi Sayap Kiri <b>
                 <div class="slider-value">0</div>
               </b></label>
-            <input type="range" step="0.1" name="body.location.z" value="0" min="0" max="0.5"
+            <input type="range" step="0.1" name="chicken.wing.L.rotation.z" value="0" min="-60" max="0"
               class="custom-range range-animation">
           </div>
           <div class="slider-container">
-            <label>Rotasi Badan: <b>
+            <label>Rotasi Sayap Kanan <b>
                 <div class="slider-value">0</div>
               </b></label>
-            <input type="range" step="0.1" name="body.rotation.x" value="0" min="-90" max="90"
+            <input type="range" step="0.1" name="chicken.wing.R.rotation.z" value="0" min="0" max="60"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Kaki Kanan <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.leg.R.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Kaki Kiri <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.leg.L.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Cakar Kanan <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.claw.R.rotation.x" value="0" min="-12" max="25"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Cakar Kiri <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.claw.L.rotation.x" value="0" min="-12" max="25"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Lompatan <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.body.location.z" value="0" min="-1" max="1"
               class="custom-range range-animation">
           </div>
         </div>

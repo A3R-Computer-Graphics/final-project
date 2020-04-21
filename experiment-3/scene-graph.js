@@ -24,7 +24,10 @@ class SceneGraph {
     
     this.materials = {}
 
-    this.lightPosition = vec4(0, -10, 10, 0.0)
+    this.lightPositionX = 0;
+    this.lightPositionY = -10;
+    this.lightPositionZ = 10;
+    
     this.lightParams = {
       ambient: vec4(0.2, 0.2, 0.2, 1.0),
       diffuse: vec4(1.0, 1.0, 1.0, 1.0),
@@ -33,6 +36,23 @@ class SceneGraph {
 
     this.nBuffer = []
     this.vBuffer = []
+  }
+
+  get lightPosition() {
+    return vec4(
+      this.lightPositionX,
+      this.lightPositionY,
+      this.lightPositionZ,
+      0.0
+    );
+  }
+
+  set lightPosition(lightPosition) {
+    if (lightPosition.length >= 3) {
+      this.lightPositionX = lightPosition[0];
+      this.lightPositionY = lightPosition[1];
+      this.lightPositionZ = lightPosition[2];
+    }
   }
 
   initMaterialsFromConfig(materialsData) {
