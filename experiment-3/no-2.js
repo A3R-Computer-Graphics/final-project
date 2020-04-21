@@ -170,74 +170,6 @@ function updateViewMatrix() {
   gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(viewMatrix));
 }
 
-/**
- * Convert keyboard into directions: "LEFT", "RIGHT", "UP", and "DOWN".
- *
- * @param {Event} event
- */
-
-function convertKeyboardIntoDirection(event) {
-  let direction = '';
-  let whichToDirection = {
-    37: 'LEFT',
-    38: 'UP',
-    39: 'RIGHT',
-    40: 'DOWN',
-  };
-  if (event.code) {
-    // Remove 'Arrow' token in the string
-    direction = event.code.replace('Arrow', '');
-  } else if (event.key) {
-    direction = event.code.replace('Arrow', '');
-  } else {
-    direction = whichToDirection[event.which] || '';
-  }
-
-  if (direction.length > 0) {
-    direction = direction.toUpperCase();
-    if (coordinateDirectionOrder.indexOf(direction) >= 0) {
-      return direction;
-    }
-  }
-}
-
-/**
- * Process canvas keydown event. If arrow key is pressed,
- * it will later be transformed into next camera position
- * accoding to `cameraMovementCoordinates`.
- *
- * @param {Event} event
- */
-
-function processCanvasArrowKeydown(event) {
-  let direction = convertKeyboardIntoDirection(event);
-  if (!direction) {
-    return;
-  }
-
-  let directionIdx = coordinateDirectionOrder.indexOf(direction);
-  let newAllowedCoords = cameraMovementCoordinates[cameraPosIndex];
-  let newCameraPosIdx = newAllowedCoords[directionIdx];
-  if (newCameraPosIdx < 0) {
-    return;
-  }
-
-  cameraPosIndex = newCameraPosIdx;
-
-  let cameraPosCoords = cameraCoordinates[cameraPosIndex];
-  let cameraSpherePos = cartesianToSphere(
-    cameraPosCoords[0],
-    cameraPosCoords[1],
-    cameraPosCoords[2]
-  );
-  let new_phi = cameraSpherePos[1];
-  let new_theta = cameraSpherePos[2];
-
-  phi = new_phi;
-  theta = new_theta;
-  updateViewMatrix();
-}
-
 let isSpaceKeyPressed = false
 
 function handleSpaceKeydown(event) {
@@ -360,177 +292,6 @@ function matchSlidersToAnimation() {
     sliderElement.value = animationValue
     displayElement.innerText = Math.round(animationValue * 100) / 100
   })
-  updateSliderOnObjectSelected()
-}
-
-function deselect(modelName) {
-  let selectedElement = document.querySelector(`li[data-model-name="${modelName}"]`)
-  if (selectedElement) {
-    selectedElement.classList.remove('selected')
-  }
-}
-
-function replaceSelection(newSelection) {
-  let currentSelection = sceneGraph.selectedNodeName
-  if (newSelection === currentSelection) {
-    deselect(currentSelection)
-    sceneGraph.selectedNodeName = ''
-  } else {
-    let newSelectedElement = document.querySelector(`li[data-model-name="${newSelection}"]`)
-    if (newSelectedElement) {
-      deselect(currentSelection)
-      newSelectedElement.classList.add('selected')
-      sceneGraph.selectedNodeName = newSelection
-      updateSliderOnObjectSelected()
-    }
-  }
-  displaySelectionHierarchyText()
-}
-
-function displaySelectionHierarchyText() {
-
-  let hierarchyElem = document.querySelector('#selobj-hierarchy')
-  let child = hierarchyElem.lastElementChild
-
-  while (child) {
-    hierarchyElem.removeChild(child)
-    child = hierarchyElem.lastElementChild
-  }
-
-  let selectionModelName = sceneGraph.selectedNodeName
-  let selectionNode = sceneGraph.nodes[selectionModelName]
-
-  if (!selectionNode) {
-    return
-  }
-
-  let parentNameList = selectionNode.parentNameList
-  let hierarchyList = [...parentNameList, selectionModelName]
-
-  hierarchyList.forEach(modelName => {
-    let childElem = document.createElement('span')
-    childElem.innerHTML = modelName
-    hierarchyElem.appendChild(childElem)
-  })
-}
-
-function displayTree() {
-  function createHTMLNode(node) {
-    let nodeElement = document.createElement('li')
-    let modelName = node.model.name
-    nodeElement.dataset['modelName'] = modelName
-
-    let collapsedCheckElement = document.createElement('input')
-    collapsedCheckElement.type = 'checkbox'
-    collapsedCheckElement.checked = false
-    nodeElement.appendChild(collapsedCheckElement)
-
-    let displayElement = document.createElement('div')
-    displayElement.classList.add('obj-name')
-    displayElement.innerText = node.key
-    nodeElement.appendChild(displayElement);
-
-    [collapsedCheckElement, displayElement].forEach(element => {
-      element.addEventListener('contextmenu', event => {
-        event.preventDefault()
-        replaceSelection(modelName)
-      })
-    })
-
-    if (node.children && node.children.length > 0) {
-      let childListElement = document.createElement('ul')
-      childListElement.classList.add('collapsed')
-      nodeElement.appendChild(childListElement)
-
-      let collapseSignElement = document.createElement('div')
-      collapseSignElement.classList.add('collapsed-sign')
-      childListElement.appendChild(collapseSignElement)
-
-      node.children.forEach(children => {
-        let childrenNode = createHTMLNode(children)
-        childListElement.appendChild(childrenNode)
-      })
-
-    }
-    return nodeElement
-  }
-
-  let rootListHTMLNode = document.querySelector('#tree > ul')
-  sceneGraph.rootNodes.forEach(node => {
-    let HTMLNode = createHTMLNode(node)
-    rootListHTMLNode.appendChild(HTMLNode)
-  })
-}
-
-let isMatchingSelectedPropertyToSlider = false
-
-let updateSelectedProperty = throttle(
-  function (propertyName, axisId, value) {
-    if (isMatchingSelectedPropertyToSlider) {
-      return
-    }
-    let node = sceneGraph.nodes[sceneGraph.selectedNodeName]
-    if (!node) {
-      return
-    }
-    node.model[propertyName][axisId] = value
-    node.updateTransformations()
-  }, 50)
-
-function connectSelectedObjectSlider() {
-  let axis = ['x', 'y', 'z']
-  let properties = ['location', 'rotation', 'scale']
-
-  properties.forEach(propertyName => {
-    axis.forEach((axisName, index) => {
-
-      let axisId = index
-      let sliderName = `selected-object-${propertyName}-${axisName}`
-
-      let sliderElement = document.querySelector(`input[name="${sliderName}"]`)
-      let displayElement = sliderElement.parentElement.querySelector('.slider-value')
-
-      sliderElement.addEventListener('input',
-        event => {
-          if (sceneGraph.selectedNodeName) {
-            let value = event.target.value
-            updateSelectedProperty(propertyName, axisId, parseFloat(value))
-            displayElement.innerText = Math.round(value * 100) / 100
-          }
-        })
-
-    })
-  })
-
-}
-
-function updateSliderOnObjectSelected() {
-  let selectedNode = sceneGraph.nodes[sceneGraph.selectedNodeName]
-  if (!selectedNode) {
-    return
-  }
-
-  isMatchingSelectedPropertyToSlider = true
-
-  let axis = ['x', 'y', 'z']
-  let properties = ['location', 'rotation', 'scale']
-
-  let selectedModel = selectedNode.model
-
-  properties.forEach(propertyName => {
-    axis.forEach((axisName, index) => {
-      let axisId = index
-      let sliderName = `selected-object-${propertyName}-${axisName}`
-      let slider = document.querySelector(`input[name="${sliderName}"]`)
-      if (slider) {
-        let value = Math.round(selectedModel[propertyName][axisId] * 100) / 100
-        slider.value = value
-        slider.parentElement.querySelector('.slider-value').innerText = value
-      }
-    })
-  })
-
-  isMatchingSelectedPropertyToSlider = false
 }
 
 window.addEventListener('load', function init() {
@@ -568,10 +329,8 @@ window.addEventListener('load', function init() {
 
   // Attach event listener handles
 
-  canvas.addEventListener('keydown', processCanvasArrowKeydown)
   canvas.addEventListener('keydown', handleSpaceKeydown)
   canvas.addEventListener('keyup', handleSpaceKeyup)
-
   window.addEventListener('resize', adjustViewport)
 
   document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
@@ -580,13 +339,19 @@ window.addEventListener('load', function init() {
 
   connectSlidersToModelData()
   connectSpeedSlider()
-  connectSelectedObjectSlider()
   attachListenerOnAnimationUpdate()
+  
+  if (typeof initObjectSelectionMechanism !== 'undefined') {
+    initObjectSelectionMechanism()
+  }
+
+  if (typeof initNavigableCamera !== 'undefined') {
+    initNavigableCamera()
+  }
 
   // Set focus to canvas from the start
   canvas.focus()
 
-  displayTree()
   adjustViewport()
   render()
 })
