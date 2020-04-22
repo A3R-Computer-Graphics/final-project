@@ -6,75 +6,75 @@
 <link rel="stylesheet" href="no-2.css">
 <link rel="stylesheet" href="no-2-mobile.css">
 <script id="vertex-shader" type="x-shader/x-vertex">
-  attribute vec4 vPosition;
+precision mediump float;
+attribute vec4 vPosition;
 attribute vec3 vNormal;
-varying vec4 fColor;
 
-uniform vec4 ambientProduct, diffuseProduct, specularProduct;
-uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
-uniform vec4 lightPosition;
-uniform float shininess;
+uniform mat4 modelMatrix, viewMatrix, projectionMatrix;
 
-uniform float selectingFactor;
+varying vec3 normalInterp;
+varying vec4 vertPos4;
 
 void main()
 {
-    // pos is vertex position in eye coordinates
+    vertPos4 = viewMatrix * modelMatrix * vPosition;
+    // Multiply normal to model matrix view.
+    normalInterp = (modelMatrix * vec4(vNormal.xyz, 0.0)).xyz;
+    gl_Position = projectionMatrix * vertPos4;
+}
+</script>
+  
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
 
-    vec3 pos = -(viewMatrix * modelMatrix * vPosition).xyz;
-    
+// Percentage of mix between normal material shader
+// and material shader
+
+uniform float selectingFactor;
+
+uniform mat4 viewMatrix;
+
+varying vec3 normalInterp;  // Surface normal
+varying vec4 vertPos4;      // Vertex position
+
+uniform vec4 lightPosition;
+
+uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+uniform float shininess;
+
+void main()
+{
     // vector from vertex position to light source
-    
-    vec3 L = normalize( lightPosition.xyz - pos );
-	
-    vec3 E = normalize( -pos );
+    vec3 L = normalize( (viewMatrix * lightPosition - vertPos4).xyz );
+
+    vec3 E = normalize( -(vertPos4).xyz );
     vec3 H = normalize( L + E );
-    
-    vec4 NN = vec4(vNormal, 0);
 
     // Transform vertex normal into eye coordinates
-    vec3 N = normalize(NN.xyz);
+
+    vec3 N = normalize(normalInterp.xyz);
 
     // Compute diffuse reflection term (see p. 286 Angel 7th ed)
+
     float Kd = max( dot(L, N), 0.0 );
     vec4  diffuse  = Kd * diffuseProduct;
 
     // Compute specular reflection term (see p. 287 Angel 7th ed)
+
     float Ks = pow( max(dot(N, H), 0.0), shininess );
     vec4  specular = Ks * specularProduct;
 
     if( dot(L, N) < 0.0 ) {
-	    specular = vec4(0.0, 0.0, 0.0, 1.0);
+      specular = vec4(0.0, 0.0, 0.0, 1.0);
     }
 
     // Use ambient
     vec4 ambient = ambientProduct;
-
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vPosition;
-    fColor = (ambient + diffuse + specular);
-    float sel = selectingFactor;
-    // fColor = vec4(fColor.r * invSel, fColor.g * invSel, fColor.b * invSel, 0.0);
-
+    
+    vec4 selectedColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
+    vec4 fColor = (ambient + diffuse + specular) * (1.0 - selectingFactor) + selectedColor * selectingFactor;
     fColor.a = 1.0;
-    vec4 selectedColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 0.1);
-    vec4 selMult = vec4(sel, sel, sel, 1.0);
-    vec4 invSelMult = vec4(1.0 - sel, 1.0 - sel, 1.0 - sel, 1.0);
-    fColor = fColor * invSelMult + selectedColor * selMult;
-}
-</script>
 
-<script id="fragment-shader" type="x-shader/x-fragment">
-
-  precision mediump float;
-
-
-varying vec4 fColor;
-
-void
-main()
-{
     gl_FragColor = fColor;
 }
 </script>
