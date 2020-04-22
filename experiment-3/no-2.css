@@ -1,29 +1,3 @@
-.container-slider {
-  width: 495px;
-  padding-left: 10px;
-}
-
-.container-speed {
-  background-color: antiquewhite;
-}
-
-.container-link {
-  background-color: lightgreen;
-}
-
-.container-slider {
-  width: 495px;
-  padding-left: 10px;
-}
-
-.container-speed {
-  background-color: antiquewhite;
-}
-
-.container-link {
-  background-color: lightgreen;
-}
-
 body {
   display: flex;
   flex-flow: row;

@@ -40,7 +40,7 @@ let sliderList = []
  * Function to update animation slider that has been throttled
  * so that it's not executed too often.
  */
-let throttledSliderHandler = function () { }
+let throttledSliderHandler = function () {}
 
 function initCanvasAndGL() {
   canvas = document.getElementById('gl-canvas');
@@ -92,8 +92,7 @@ function toggleAnimation() {
       .forEach(elem => {
         elem.disabled = false;
       })
-  }
-  else {
+  } else {
     animationManager.startAnimation();
     animateBtn.innerText = 'Hentikan Animasi';
     animateBtn.classList.remove('btn-primary');
@@ -113,7 +112,11 @@ function connectSlidersToModelData() {
       return
     }
 
-    const { modelName, propertyName, axisId } = propertyData;
+    const {
+      modelName,
+      propertyName,
+      axisId
+    } = propertyData;
     elem.addEventListener('input', function (event) {
       sceneGraph.nodes[modelName].model[propertyName][axisId] = parseFloat(event.target.value);
       sceneGraph.nodes[modelName].updateTransformations()
@@ -148,12 +151,12 @@ function connectLightPositionSliders() {
     const name = lightPositionSlider.getAttribute('name');
     valueDisplay.innerText = sceneGraph[name];
     lightPositionSlider.value = `${sceneGraph[name]}`;
-    
-    lightPositionSlider.addEventListener('input', function(event) {
-        let value = parseFloat(event.target.value);
-        valueDisplay.innerText = value;
-        sceneGraph[name] = value;
-        sceneGraph.updateLightPosition();
+
+    lightPositionSlider.addEventListener('input', function (event) {
+      let value = parseFloat(event.target.value);
+      valueDisplay.innerText = value;
+      sceneGraph[name] = value;
+      sceneGraph.updateLightPosition();
     });
   });
 }
@@ -280,7 +283,11 @@ function listCustomSliders() {
         return
       }
 
-      const { modelName, propertyName, axisId } = data
+      const {
+        modelName,
+        propertyName,
+        axisId
+      } = data
       if (!sceneGraph.nodes.hasOwnProperty(modelName)) {
         return
       }
@@ -305,7 +312,12 @@ function attachListenerOnAnimationUpdate() {
 }
 
 function matchSlidersToAnimation() {
-  sliderList.forEach(({ sliderName, modelName, propertyName, axisId }) => {
+  sliderList.forEach(({
+    sliderName,
+    modelName,
+    propertyName,
+    axisId
+  }) => {
     let animationValue = sceneGraph.nodes[modelName].model[propertyName][axisId]
     let sliderElement = document.querySelector(`input[name="${sliderName}"]`)
     let displayElement = sliderElement.parentElement.querySelector('.slider-value')
@@ -313,6 +325,48 @@ function matchSlidersToAnimation() {
     displayElement.innerText = Math.round(animationValue * 100) / 100
   })
 }
+
+function createCubeLight() {
+  let cube_objects = {
+    "vertices": [
+      [-0.5, -0.5, -0.5],
+      [-0.5, -0.5, 0.5],
+      [-0.5, 0.5, -0.5],
+      [-0.5, 0.5, 0.5],
+      [0.5, -0.5, -0.5],
+      [0.5, -0.5, 0.5],
+      [0.5, 0.5, -0.5],
+      [0.5, 0.5, 0.5]
+    ],
+    "indices": [
+      [0, 1, 3, 2],
+      [2, 3, 7, 6],
+      [6, 7, 5, 4],
+      [4, 5, 1, 0],
+      [2, 6, 4, 0],
+      [7, 3, 1, 5]
+    ],
+    "location": [0.0, -10.0, 10.0],
+    "scale": [1.0, 1.0, 1.0],
+    "rotation": [0.0, 0.0, 0.0],
+    "material_name": "white"
+  }
+
+  // let triangleCount = cube_objects.indices.reduce((p, c) => p + c.length - 2, 0)
+  
+  let model = new Model({
+    name: "cubeLight",
+    origin: [0, 0, 0],
+    location: cube_objects.location,
+    rotation: cube_objects.rotation,
+    scale: cube_objects.scale,
+    bufferStartIndex: numVertsBefore,
+    vertexCount: vertexCount,
+    material: cube_objects.material_name
+  })
+
+}
+
 
 window.addEventListener('load', function init() {
   // Initialize canvas and GL first
@@ -324,7 +378,9 @@ window.addEventListener('load', function init() {
   // - object position, rotation, and scale info in objects-data.js
   // - materials from objects-materials.js
 
-  sceneGraph = new SceneGraph({ gl })
+  sceneGraph = new SceneGraph({
+    gl
+  })
   sceneGraph.initWebGLVariables()
 
   sceneGraph.initMaterialsFromConfig(materials_definition)
@@ -339,8 +395,13 @@ window.addEventListener('load', function init() {
   sceneGraph.updateLightSetup({
     position: vec4(0, -10, 10, 0.0)
   })
+  // sceneGraph.createCube()
 
-  animationManager = new AnimationManager({ sceneGraph, speed: 0.5, maxFrameNumber: 120 })
+  animationManager = new AnimationManager({
+    sceneGraph,
+    speed: 0.5,
+    maxFrameNumber: 120
+  })
   animationManager.initFromConfig(animations_definition)
 
   initializeCameraPosition()
@@ -361,7 +422,7 @@ window.addEventListener('load', function init() {
   connectSpeedSlider()
   connectLightPositionSliders()
   attachListenerOnAnimationUpdate()
-  
+
   if (typeof initObjectSelectionMechanism !== 'undefined') {
     initObjectSelectionMechanism()
   }
