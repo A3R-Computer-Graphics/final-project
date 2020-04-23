@@ -46,6 +46,12 @@ class Renderer {
       false,
       flatten(model.fullTransformMatrix)
     );
+
+    gl.uniformMatrix4fv(
+      glLocations.normalMatrix,
+      false,
+      flatten(m4.transpose(m4.inverse(m4.multiply(flatten(camera.viewMatrix), model.fullTransformMatrix))))
+    );
     
     if (selected) {
       gl.uniform1f(glLocations.selectingFactor, 1.0);

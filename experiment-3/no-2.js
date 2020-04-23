@@ -76,9 +76,9 @@ function initializeCameraPosition() {
 }
 
 function initializeProjectionMatrix() {
-  let projectionMatrix = perspective(camera.fovy, camera.aspect, camera.near, camera.far)
+  camera.projectionMatrix = perspective(camera.fovy, camera.aspect, camera.near, camera.far)
   let matrixGlLocation = sceneGraph.glLocations.projectionMatrix
-  gl.uniformMatrix4fv(matrixGlLocation, false, flatten(projectionMatrix))
+  gl.uniformMatrix4fv(matrixGlLocation, false, flatten(camera.projectionMatrix))
 }
 
 function toggleAnimation() {
@@ -189,8 +189,8 @@ function updateViewMatrix() {
     usedUp = [0, 1, 0]
   }
 
-  let lookAtMatrix = flatten(lookAt(eye, at, usedUp));
-  gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(lookAtMatrix));
+  camera.viewMatrix = flatten(lookAt(eye, at, usedUp));
+  gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(camera.viewMatrix));
 }
 
 let isSpaceKeyPressed = false
