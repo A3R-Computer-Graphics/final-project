@@ -368,9 +368,7 @@ window.addEventListener('load', function init() {
   // - object position, rotation, and scale info in objects-data.js
   // - materials from objects-materials.js
 
-  sceneGraph = new SceneGraph({
-    gl
-  })
+  sceneGraph = new SceneGraph({gl, camera})
   sceneGraph.initWebGLVariables()
 
   sceneGraph.initMaterialsFromConfig(materials_definition)
