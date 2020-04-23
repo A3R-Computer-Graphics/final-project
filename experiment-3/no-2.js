@@ -177,7 +177,6 @@ function connectSpeedSlider() {
 
   slider.addEventListener('input', () => {
     let value = parseFloat(slider.value);
-    console.log(SPEED_MAX, value)
     value = interpolateExponentially(SPEED_MIN, SPEED_MAX, value);
     updateSliderDisplay(slider, Math.round(value * 100) + '%');
     animationManager.speed = value;
@@ -195,8 +194,8 @@ function connectLightPositionSliders() {
   document.querySelectorAll('input[name^=light-position]').forEach(slider => {
 
     const name = slider.getAttribute('name');
-    const positionAxisName = name.match(/light-position-(x|y|z)$/)[1];
-    const axisId = ['x', 'y', 'z'].indexOf(positionAxisName);
+    const axisName = name.match(/light-position-(x|y|z)$/)[1];
+    const axisId = ['x', 'y', 'z'].indexOf(axisName);
 
     let value = lightingCubeModel.location[axisId];
     updateSliderValueAndDisplay(slider, value)
@@ -211,7 +210,24 @@ function connectLightPositionSliders() {
       sceneGraph.updateGlLightPosition();
 
       updateSliderDisplay(slider, value);
+
+      // Update selected slider as well
+
+      if (sceneGraph.selectedNodeName === 'cube-lighting') {
+        updateSliderValueAndDisplay(`selected-object-location-${axisName}`, value)
+      }
     });
+
+    // Hook selected object slider
+    
+    let selectedSlider = document.querySelector(`input[name="selected-object-location-${axisName}"]`)
+    if (selectedSlider) {
+      selectedSlider.addEventListener('input', function() {
+        if (sceneGraph.selectedNodeName === 'cube-lighting') {
+          updateSliderValueAndDisplay(slider, parseFloat(selectedSlider.value))
+        }
+      })
+    }
   });
 }
 
