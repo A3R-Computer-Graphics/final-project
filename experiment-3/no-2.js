@@ -20,7 +20,6 @@ let phi = 0
 let cameraPosIndex = 17
 let coordinateDirectionOrder = ['UP', 'LEFT', 'DOWN', 'RIGHT']
 
-let eye
 let at = vec3(0.0, 0.0, 0.0)
 let up = vec3(0.0, 0.0, 1.0)
 
@@ -235,7 +234,7 @@ function updateViewMatrix() {
   let y = r * sin_t * sin_p;
   let z = r * cos_t;
 
-  eye = vec3(x, y, z);
+  let eye = add(at, vec3(x, y, z));
 
   camera.viewMatrix = flatten(lookAt(eye, at, up));
   gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(camera.viewMatrix));

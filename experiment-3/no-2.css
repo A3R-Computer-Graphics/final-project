@@ -390,7 +390,7 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   border-left: 1px solid #a2a2a2;
 }
 
-.obj-name::before {
+#tree .obj-name::before {
   content: "";
   position: absolute;
   bottom: 10px;
@@ -401,7 +401,7 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   
 }
 
-.collapsed-sign::before {
+#tree .collapsed-sign::before {
   content: "\25B2";
   color: #b9b9b9;
   position: absolute;
@@ -441,7 +441,8 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   cursor: pointer;
 }
 
-li.selected > .obj-name, li.selected > input[type="checkbox"]:hover + .obj-name {
+#tree li.selected > .obj-name,
+#tree li.selected > input[type="checkbox"]:hover + .obj-name {
   background-color: #f2a518;
   border-color: #f2a518;
   margin-bottom: 0px;
@@ -449,11 +450,11 @@ li.selected > .obj-name, li.selected > input[type="checkbox"]:hover + .obj-name 
   color: black;
 }
 
-li.selected > input[type="checkbox"]:focus {
+#tree li.selected > input[type="checkbox"]:focus {
   outline: none;
 }
 
-li.selected > input[type="checkbox"]:focus + .obj-name {
+#tree li.selected > input[type="checkbox"]:focus + .obj-name {
   border-color: white;
   border-width: 2px;
   margin-left: -1px;
@@ -462,11 +463,11 @@ li.selected > input[type="checkbox"]:focus + .obj-name {
   margin-bottom: -1px;
 }
 
-li.selected > ul > .collapsed-sign::before {
+#tree li.selected > ul > .collapsed-sign::before {
   color: black;
 }
 
-ul > li:last-child::before {
+#tree ul > li:last-child::before {
   content: "";
   display: block;
   position: absolute;

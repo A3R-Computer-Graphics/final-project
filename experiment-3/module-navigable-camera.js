@@ -3,8 +3,10 @@
 let scrollDetector;
 let scrollInitial;
 
+let MAX_FOCUS_PROGRESS_FRAME_DURATION = 15;
+
 function initNavigableCamera() {
-  
+
   scrollDetector = document.querySelector('#scroll-detector > *')
   scrollDetector.scrollTop = scrollDetector.clientHeight / 2;
   scrollInitial = scrollDetector.scrollTop;
@@ -17,8 +19,9 @@ function initNavigableCamera() {
   scrollDetector.parentElement.addEventListener('touchstart', startTrackballOnDevice)
   document.addEventListener('touchmove', trackMouseForTrackballOnDevice)
   document.addEventListener('touchend', stopTrackballOnDevice)
-  
+
   canvas.parentElement.addEventListener('keydown', processCanvasArrowKeydown)
+  canvas.parentElement.addEventListener('keydown', processCanvasFocusKeydown)
 }
 
 /**
@@ -94,7 +97,7 @@ function processCanvasArrowKeydown(event) {
  * values.
  */
 
-function zoomCameraFromScrollDetector () {
+function zoomCameraFromScrollDetector() {
   let deltaScroll = scrollDetector.scrollTop - scrollInitial;
   scrollDetector.scrollTop = scrollInitial;
   let newRadius = Math.pow(Math.E, Math.log(camera.radius) + deltaScroll / 10);
@@ -131,7 +134,7 @@ function startTrackball(event) {
     posXInit = event.touches[0].screenX;
     posYInit = event.touches[1].screenY;
   }
-  
+
   initPhi = phi;
   initTheta = theta;
 
@@ -224,4 +227,61 @@ function trackMouseForTrackballOnDevice(event) {
 
 function stopTrackballOnDevice(event) {
   stopTrackball(event)
+}
+
+function getPressedAlphabet(event) {
+  let key = undefined
+  if (event.code) {
+    key = (event.code.match(/Key([A-Z])/) || {})[1]
+  } else if (event.key) {
+    key = (event.key.match(/^([a-zA-Z])/) || {})[1]
+  }
+  if (key) {
+    return key.toUpperCase()
+  }
+}
+
+let cancelFocusAnimation = function () { }
+
+function processCanvasFocusKeydown(event) {
+  let key = getPressedAlphabet(event)
+  if (key === 'F') {
+    let node = sceneGraph.nodes[sceneGraph.selectedNodeName]
+    if (node) {
+      let model = node.model;
+
+      let oldAt = at;
+      let newAt = vec3(mat4(model.fullTransformMatrix)[3].slice(0, 3));
+
+      let oldRadius = camera.radius;
+      let newRadius = 4;
+
+      cancelFocusAnimation()
+      let progress = 0;
+      let cancelAnimation = false
+
+      cancelFocusAnimation = function () {
+        cancelAnimation = true
+      }
+
+      let animateFocus = function () {
+        if (progress > MAX_FOCUS_PROGRESS_FRAME_DURATION || cancelAnimation) {
+          return
+        }
+
+        let x = progress / MAX_FOCUS_PROGRESS_FRAME_DURATION;
+        let y = 1 - Math.pow(x - 1, 2)
+
+        at = mix(oldAt, newAt, y)
+        camera.radius = oldRadius * (1 - y) + newRadius * y
+        updateViewMatrix()
+
+        progress += 1
+        window.requestAnimationFrame(animateFocus)
+      }
+
+      window.requestAnimationFrame(animateFocus)
+
+    }
+  }
 }
