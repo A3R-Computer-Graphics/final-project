@@ -1,12 +1,15 @@
 import bpy
 import json
 import math
+import os
+
+DIR = os.path.dirname(os.path.abspath(__file__))
 
 rad_to_deg = 180 / math.pi
 
 C = bpy.context
 D = bpy.data
-ANIMATION_FPATH = 'D:\\kuliah\\Grafkom\\a3r\\ws-2\\temp\\objects-animations.js'
+ANIMATION_FPATH = os.join.path(DIR, '../src/resources/objects/objects-animations.js')
 
 objs_animation_data = {}
 objs = C.selected_objects
