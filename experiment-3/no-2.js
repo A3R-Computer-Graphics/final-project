@@ -168,6 +168,9 @@ function connectLightPositionSliders() {
 
 function updateViewMatrix() {
   let r = camera.radius;
+  
+  theta = (Math.sign(theta) || 1) * Math.max(Math.abs(theta), 0.1)
+  
   let sin_t = Math.sin(theta);
   let sin_p = Math.sin(phi);
   let cos_t = Math.cos(theta);
@@ -179,17 +182,7 @@ function updateViewMatrix() {
 
   eye = vec3(x, y, z);
 
-  // Compute angle between up and eye - at.
-  let eyeAt = subtract(eye, at)
-  let angle = radToDeg(Math.acos(dot(eyeAt, up) / length(eyeAt) / length(up)))
-
-  // point up at Y axis if angle is near 0 or near 180.
-  let usedUp = up
-  if (angle < 0.01 || angle > 179.9) {
-    usedUp = [0, 1, 0]
-  }
-
-  camera.viewMatrix = flatten(lookAt(eye, at, usedUp));
+  camera.viewMatrix = flatten(lookAt(eye, at, up));
   gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(camera.viewMatrix));
 }
 
