@@ -10,15 +10,15 @@ function initNavigableCamera() {
   scrollInitial = scrollDetector.scrollTop;
   scrollDetector.addEventListener('scroll', zoomCameraFromScrollDetector)
 
-  scrollDetector.addEventListener('mousedown', startTrackball)
+  scrollDetector.parentElement.addEventListener('mousedown', startTrackball)
   document.addEventListener('mousemove', trackMouseForTrackball)
   document.addEventListener('mouseup', stopTrackball)
 
-  scrollDetector.addEventListener('touchstart', startTrackballOnDevice)
+  scrollDetector.parentElement.addEventListener('touchstart', startTrackballOnDevice)
   document.addEventListener('touchmove', trackMouseForTrackballOnDevice)
   document.addEventListener('touchend', stopTrackballOnDevice)
   
-  scrollDetector.parentElement.addEventListener('keydown', processCanvasArrowKeydown)
+  canvas.parentElement.addEventListener('keydown', processCanvasArrowKeydown)
 }
 
 /**

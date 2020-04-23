@@ -454,8 +454,8 @@ window.addEventListener('load', function init() {
 
   // Attach event listener handles
 
-  canvas.addEventListener('keydown', handleSpaceKeydown)
-  canvas.addEventListener('keyup', handleSpaceKeyup)
+  canvas.parentElement.addEventListener('keydown', handleSpaceKeydown)
+  canvas.parentElement.addEventListener('keyup', handleSpaceKeyup)
   window.addEventListener('resize', adjustViewport)
 
   document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)

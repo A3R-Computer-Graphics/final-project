@@ -106,19 +106,19 @@ void main()
 
 
 <body>
-  <div class="canvas-wrapper">
+  <div tabindex="1" class="canvas-wrapper">
     <canvas id="gl-canvas">
       Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
-    <div id="screen-info">
-      <p id="canvas-status">Canvas aktif dipilih</p>
-      <div>Objek dipilih: <span id="selobj-hierarchy"><span>body</span><span>black-body</span></span></div>
-    </div>
-    <div tabindex="1" id="scroll-detector">
+    <div id="scroll-detector">
       <div>
         <div></div>
       </div>
     </div>
+  </div>
+  <div id="screen-info">
+    <p id="canvas-status">Canvas aktif dipilih</p>
+    <div>Objek dipilih: <span id="selobj-hierarchy"><span>body</span><span>black-body</span></span></div>
   </div>
   <div id="menu-toggler-wrapper" class="show-menu">
     <button type="button" class="btn btn-primary" id="menu-toggler-button">
@@ -126,6 +126,16 @@ void main()
       <img class="arrow" src="arrow.svg" />
     </button>
     <div class="menu">
+      <div class="submenu">
+        <h3 class="submenu-title">Bantuan</h3>
+        <div id="help-content">
+          <p>Tekan kanvas terlebih dahulu untuk melakukan perintah di bawah.
+          <br />Tekan <strong>panah keyboard</strong> untuk memindahkan posisi kamera.
+            <br />Tekan <strong>spasi</strong> untuk memulai/menghentikan animasi.
+            <br />Tekan dan <strong>tahan kanvas</strong> untuk memutar kamera.
+          </p>
+        </div>
+      </div>
       <div class="submenu">
         <h3 class="submenu-title">Tree Objek</h3>
         <label class="note">Bantuan: untuk memilih objek, <strong>klik kanan</strong> (pada desktop)
@@ -417,14 +427,6 @@ void main()
             <input type="range" step="0.1" name="chicken.body.location.z" value="0" min="-1" max="1"
               class="custom-range range-animation">
           </div>
-        </div>
-      </div>
-      <div class="submenu">
-        <h3 class="submenu-title">Bantuan</h3>
-        <div id="help-content">
-          <p>Tekan <strong>panah keyboard</strong> untuk memindahkan posisi kamera.
-            <br />Tekan <strong>spasi</strong> untuk memulai/menghentikan animasi.
-          </p>
         </div>
       </div>
     </div>

@@ -300,7 +300,7 @@ div#speed-slider {
   display: none;
 }
 
-canvas:focus + * > #canvas-status {
+.canvas-wrapper:focus + * > #canvas-status {
   display: block;
 }
 
