@@ -1,185 +1,436 @@
 <!DOCTYPE html>
 <html>
 <title>Link</title>
-<link rel="stylesheet" href="no-2.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="lib/css/bootstrap.min.css">
+<link rel="stylesheet" href="no-2.css">
+<link rel="stylesheet" href="no-2-mobile.css">
 <script id="vertex-shader" type="x-shader/x-vertex">
-  attribute vec4 vPosition;
+attribute vec4 vPosition;
 attribute vec3 vNormal;
-varying vec4 fColor;
 
-uniform vec4 ambientProduct, diffuseProduct, specularProduct;
-uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
+uniform mat4 modelMatrix, viewMatrix, projectionMatrix, normalMatrix;
+
 uniform vec4 lightPosition;
-uniform float shininess;
+
+varying vec3 normalInterp;
+varying vec3 vertPos;
+varying vec3 lightPos;
+
 void main()
 {
-    // pos is vertex position in eye coordinates
+    vec4 vertPos4 = viewMatrix * modelMatrix * vPosition;
 
-    vec3 pos = -(viewMatrix * modelMatrix * vPosition).xyz;
+    vec3 worldPos = vertPos4.xyz;
+    lightPos = (viewMatrix * vec4(lightPosition.xyz, 1.0)).xyz;
+
+    vertPos = vertPos4.xyz;
+    normalInterp = vec3(normalMatrix * vec4(vNormal, 0.0));
     
-    // vector from vertex position to light source
-    
-    vec3 L = normalize( lightPosition.xyz - pos );
-	
-    vec3 E = normalize( -pos );
-    vec3 H = normalize( L + E );
-    
-    vec4 NN = vec4(vNormal, 0);
-
-    // Transform vertex normal into eye coordinates
-    vec3 N = normalize(NN.xyz);
-
-    // Compute diffuse reflection term (see p. 286 Angel 7th ed)
-    float Kd = max( dot(L, N), 0.0 );
-    vec4  diffuse  = Kd * diffuseProduct;
-
-    // Compute specular reflection term (see p. 287 Angel 7th ed)
-    float Ks = pow( max(dot(N, H), 0.0), shininess );
-    vec4  specular = Ks * specularProduct;
-
-    if( dot(L, N) < 0.0 ) {
-	    specular = vec4(0.0, 0.0, 0.0, 1.0);
-    }
-
-    // Use ambient
-    vec4 ambient = ambientProduct;
-
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vPosition;
-    fColor = ambient + diffuse +specular;
-    
-    fColor.a = 1.0;
+    gl_Position = projectionMatrix * vertPos4;
 }
 </script>
 
 <script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
 
-  precision mediump float;
+varying vec3 normalInterp;  // Surface normal
+varying vec3 vertPos;       // Vertex position
+varying vec3 lightPos;      // Light position, interpolated
 
+uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+uniform float shininess;
 
-varying vec4 fColor;
+// Percentage of mix between normal material shader
+// and material shader
 
-void
-main()
+uniform float selectingFactor;
+
+void main()
 {
+    vec3 N = normalize(normalInterp);
+
+    vec3 L = normalize(lightPos - vertPos);
+    vec3 E = normalize(-vertPos);
+    vec3 H = normalize(L + E); // Half vector
+
+    // Compute diffuse reflection term using Lambert cosine law (see p. 286 Angel 7th ed)
+
+    float lambertian = max(dot(N, L), 0.0);
+    float specular = 0.0;
+
+    if (lambertian > 0.0) {
+      // Compute specular reflection term (see p. 287 Angel 7th ed)
+      float specAngle = max(dot(N, H), 0.0);
+      specular = pow(specAngle, shininess);
+    }
+    
+    vec4 fColor = (ambientProduct + lambertian * diffuseProduct + specular * specularProduct);
+    
+    vec4 selectedColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
+    fColor = fColor * (1.0 - selectingFactor) + selectedColor * selectingFactor;
+    fColor.a = 1.0;
+
     gl_FragColor = fColor;
 }
 </script>
+
+<script type="text/javascript" src="./lib/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="./lib/js/popper-1.16.0.min.js"></script>
+<script type="text/javascript" src="./lib/js/bootstrap.min.js"></script>
 
 <script type="text/javascript" src="../Common/webgl-utils.js"></script>
 <script type="text/javascript" src="../Common/initShaders.js"></script>
 <script type="text/javascript" src="../Common/MV.js"></script>
 <script type="text/javascript" src="./m4.js"></script>
 
+<script type="text/javascript" src="./utils.js"></script>
+<script type="text/javascript" src="./event-dispatcher.js"></script>
+
+<script type="text/javascript" src="./scene-graph.js"></script>
 <script type="text/javascript" src="./object-node.js"></script>
 <script type="text/javascript" src="./model.js"></script>
+<script type="text/javascript" src="./animation-manager.js"></script>
+<script type="text/javascript" src="./renderer.js"></script>
+
 <script type="text/javascript" src="../temp/objects-materials.js"></script>
 <script type="text/javascript" src="../temp/objects-data.js"></script>
 <script type="text/javascript" src="../temp/objects-vertices.js"></script>
 <script type="text/javascript" src="../temp/objects-animations.js"></script>
 <script type="text/javascript" src="./camera-coordinates.js"></script>
-<script type="text/javascript" src="./utils.js"></script>
 
-<script type="text/javascript" src="./lib/js/jquery-3.4.1.min.js"></script>
-<script type="text/javascript" src="./lib/js/popper-1.16.0.min.js"></script>
-<script type="text/javascript" src="./lib/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="./module-navigable-camera.js"></script>
+<script type="text/javascript" src="./module-select-object.js"></script>
 
-<script type="text/javascript" src="./animation.js"></script>
 <script type="text/javascript" src="./no-2.js"></script>
-<script type="text/javascript" src="./interaction.js"></script>
 
 
 <body>
-  <canvas width="512" height="512" tabindex="1" id="gl-canvas">
-    Oops ... your browser doesn't support the HTML5 canvas element
-  </canvas>
-
-
-
-  <div class="container-slider">
-    <div class="container-speed">
-      <div class="row">
-        <div class="col-sm">
-          <button type="button" class="btn btn-primary" id="btn-animate">Start Animation</button>
-        </div>
-        <div class="col-sm">
-          <label>Kecepatan animasi: <b>
-              <div class="slider-value">0</div>
-            </b></label>
-          <input type="range" step="0.01" name="speed" value="0" min="0" max="4" class="custom-range range-speed">
-        </div>
+  <div tabindex="1" class="canvas-wrapper">
+    <canvas id="gl-canvas">
+      Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+    <div id="scroll-detector">
+      <div>
+        <div></div>
       </div>
     </div>
-
-    <div class="container-link">
-      <h3>Slider Link:</h3>
-      <div class="row">
-        <div class="col-sm">
-          <label>Rotasi Tangan Kiri: <b>
-              <div class="slider-value">0</div>
-            </b></label>
-          <input type="range" step="0.1" name="arm.L.rotation.x" value="0" min="-45" max="135"
-            class="custom-range range-animation">
-        </div>
-        <div class="col-sm">
-          <label>Rotasi Tangan Kanan: <b>
-              <div class="slider-value">0</div>
-            </b></label>
-          <input type="range" step="0.1" name="arm.R.rotation.x" value="0" min="-45" max="135"
-            class="custom-range range-animation">
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-sm">
-          <label>Rotasi Pedang: <b>
-              <div class="slider-value">0</div>
-            </b></label>
-          <input type="range" step="0.1" name="sword_grip.rotation.x" value="0" min="-90" max="90"
-            class="custom-range range-animation">
-        </div>
-        <div class="col-sm">
-          <label>Tolehan Kepala: <b>
-              <div class="slider-value">0</div>
-            </b></label>
-          <input type="range" step="0.1" name="head.rotation.z" value="0" min="-90" max="9  0"
-            class="custom-range range-animation" />
+  </div>
+  <div id="screen-info">
+    <p id="canvas-status">Canvas aktif dipilih</p>
+    <div>Objek dipilih: <span id="selobj-hierarchy"><span>body</span><span>black-body</span></span></div>
+  </div>
+  <div id="menu-toggler-wrapper" class="show-menu">
+    <button type="button" class="btn btn-primary" id="menu-toggler-button">
+      <span class="button-text">Tutup</span>
+      <img class="arrow" src="arrow.svg" />
+    </button>
+    <div class="menu">
+      <div class="submenu">
+        <h3 class="submenu-title">Bantuan</h3>
+        <div id="help-content">
+          Tekan kanvas terlebih dahulu untuk melakukan perintah berikut.
+            <ul>
+              <li>Tekan <strong>panah keyboard</strong> untuk memindahkan posisi kamera.</li>
+              <li>Tekan <strong>spasi</strong> untuk memulai/menghentikan animasi.</li>
+              <li>Tekan dan <strong>tahan kanvas</strong> untuk memutar kamera.</li>
+              <li>Tekan <strong>F</strong> untuk fokus pada model yang <strong>dipilih</strong>.</li>
+            </ul>
         </div>
       </div>
-      <div class="row">
-        <div class="col-sm">
-          <label>Kedipan Mata: <b>
-              <div class="slider-value">1</div>
-            </b></label>
-          <input type="range" step="0.01" name="eye.scale.z" value="1" min="0" max="1"
-            class="custom-range range-animation">
-        </div>
-        <div class="col-sm">
-          <label>Anggukan Kepala: <b>
-              <div class="slider-value">0</div>
-            </b></label>
-          <input type="range" step="0.1" name="head.rotation.x" value="0" min="-90" max="9  0"
-            class="custom-range range-animation" />
+      <div class="submenu">
+        <h3 class="submenu-title">Tree Objek</h3>
+        <label class="note">Bantuan: untuk memilih objek, <strong>klik kanan</strong> (pada desktop)
+          atau <strong>tekan dan tahan</strong> yang lama (pada mobile)</label>
+        <div id="tree">
+          <div class="obj-name" id="root-node">Root</div>
+          <ul>
+          </ul>
         </div>
       </div>
-      <div class="row">
-        <div class="col-sm">
-          <label>Loncatan: <b>
-              <div class="slider-value">0</div>
-            </b></label>
-          <input type="range" step="0.1" name="body.location.z" value="0" min="0" max="0.5"
-            class="custom-range range-animation">
+      <div class="submenu no-selection" id="selected-object-menu">
+        <h3 class="submenu-title">Pengaturan Objek yang Dipilih</h3>
+        <div class="property-section">
+          <h4>Translasi</h4>
+          <div class="submenu-section">
+            <div class="slider-container">
+              <label>X<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-location-x" value="0" min="-10" max="10"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Y<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-location-y" value="0" min="-10" max="10"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Z<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-location-z" value="0" min="-10" max="10"
+                class="custom-range range-animation">
+            </div>
+          </div>
         </div>
-        <div class="col-sm">
-          <label>Rotasi Badan: <b>
-              <div class="slider-value">0</div>
-            </b></label>
-          <input type="range" step="0.1" name="body.rotation.x" value="0" min="-90" max="90"
-            class="custom-range range-animation">
+        <div class="property-section">
+          <h4>Rotasi</h4>
+          <div class="submenu-section">
+            <div class="slider-container">
+              <label>X<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.1" name="selected-object-rotation-x" value="0" min="-360" max="360"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Y<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.1" name="selected-object-rotation-y" value="0" min="-360" max="360"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Z<b>
+                  <div class="slider-value">0</div>
+                </b></label>
+              <input type="range" step="0.1" name="selected-object-rotation-z" value="0" min="-360" max="360"
+                class="custom-range range-animation">
+            </div>
+          </div>
+        </div>
+        <div class="property-section">
+          <h4>Skala</h4>
+          <div class="submenu-section">
+            <div class="slider-container">
+              <label>X<b>
+                  <div class="slider-value">1</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-scale-x" value="1" min="-3" max="3"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Y<b>
+                  <div class="slider-value">1</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-scale-y" value="1" min="-3" max="3"
+                class="custom-range range-animation">
+            </div>
+            <div class="slider-container">
+              <label>Z<b>
+                  <div class="slider-value">1</div>
+                </b></label>
+              <input type="range" step="0.05" name="selected-object-scale-z" value="1" min="-3" max="3"
+                class="custom-range range-animation">
+            </div>
+          </div>
         </div>
       </div>
-
+      <div class="submenu-two-list-container">
+        <div class="submenu">
+          <h3 class="submenu-title">Kontrol animasi</h3>
+          <button type="button" class="btn btn-primary" id="btn-animate">Mulai Animasi</button>
+          <div class="slider-container" id="speed-slider">
+            <label>Kecepatan animasi<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.01" name="speed" value="0" min="0.05" max="4" class="custom-range">
+          </div>
+          <div class="slider-container" id="resolution-slider">
+            <label>Resolusi<b>
+                <div class="slider-value">100%</div>
+              </b></label>
+            <input type="range" step="1" name="resolution" value="100" min="1" max="100" class="custom-range">
+          </div>
+        </div>
+        <div class="submenu">
+          <h3 class="submenu-title">Lokasi Cahaya</h3>
+          <div class="slider-container">
+            <label>X<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.01" name="light-position-x" value="0" min="-10" max="10" class="custom-range">
+          </div>
+          <div class="slider-container">
+            <label>Y<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.01" name="light-position-y" value="0" min="-10" max="10" class="custom-range">
+          </div>
+          <div class="slider-container">
+            <label>Z<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.01" name="light-position-z" value="0" min="-10" max="10" class="custom-range">
+          </div>
+        </div>
+      </div>
+      <div class="submenu-two-list-container">
+        <div class="submenu" id="link-submenu">
+          <h3 class="submenu-title">Gerakan Ksatria ("Link")</h3>
+          <div class="slider-container">
+            <label>Rotasi Tangan Kiri<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="arm.L.rotation.x" value="0" min="-45" max="135"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Tangan Kanan<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="arm.R.rotation.x" value="0" min="-45" max="135"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Kaki Kiri<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="leg.L.rotation.x" value="0" min="-60" max="60"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Kaki Kanan<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="leg.R.rotation.x" value="0" min="-60" max="60"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Telapak Kaki Kiri<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="boot_lower.L.rotation.x" value="0" min="-5.5" max="22.7"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Telapak Kaki Kanan<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="boot_lower.R.rotation.x" value="0" min="-5.5" max="22.7"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Pedang<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="sword_grip.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Tolehan Kepala<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="head.rotation.z" value="0" min="-90" max="90"
+              class="custom-range range-animation" />
+          </div>
+          <div class="slider-container">
+            <label>Kedipan Mata<b>
+                <div class="slider-value">1</div>
+              </b></label>
+            <input type="range" step="0.01" name="eye.scale.z" value="1" min="0" max="1"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Anggukan Kepala<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="head.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation" />
+          </div>
+          <div class="slider-container">
+            <label>Loncatan<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.01" name="body.location.z" value="0" min="-1" max="1"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Tengkurap Badan<b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="body.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
+          </div>
+        </div>
+        <!-- TODO: Change Slider Ayam-->
+        <div class="submenu">
+          <h3 class="submenu-title">Gerakan Ayam</h3>
+          <div class="slider-container">
+            <label>Rotasi Kepala <b>
+                <div class="slider-value">1</div>
+              </b></label>
+            <input type="range" step="0.01" name="chicken.head.rotation.x" value="1" min="-5" max="10"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Badan <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.body.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Sisir Ayam <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.comb.rotation.x" value="0" min="-16" max="11"
+              class="custom-range range-animation" />
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Sayap Kiri <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.wing.L.rotation.z" value="0" min="-60" max="0"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Sayap Kanan <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.wing.R.rotation.z" value="0" min="0" max="60"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Kaki Kanan <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.leg.R.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Kaki Kiri <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.leg.L.rotation.x" value="0" min="-90" max="90"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Cakar Kanan <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.claw.R.rotation.x" value="0" min="-12" max="25"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Rotasi Cakar Kiri <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.claw.L.rotation.x" value="0" min="-12" max="25"
+              class="custom-range range-animation">
+          </div>
+          <div class="slider-container">
+            <label>Lompatan <b>
+                <div class="slider-value">0</div>
+              </b></label>
+            <input type="range" step="0.1" name="chicken.body.location.z" value="0" min="-1" max="1"
+              class="custom-range range-animation">
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </body>

@@ -7,22 +7,22 @@ function degToRad(d) {
 }
 
 function cartesianToSphere(x, y, z) {
-    var r = Math.sqrt(x * x + y * y + z * z)
-    var phi = Math.atan2(y,x)
-    var theta = Math.atan2(Math.sqrt(x * x + y * y), z)
-    return [r, phi, theta]
+  let r = Math.sqrt(x * x + y * y + z * z)
+  let phi = Math.atan2(y, x)
+  let theta = Math.atan2(Math.sqrt(x * x + y * y), z)
+  return [r, phi, theta]
 }
 
 function sphereToCartesian(r, phi, theta) {
-    var sin_t = Math.sin(theta)
-    var sin_p = Math.sin(phi)
-    var cos_t = Math.cos(theta)
-    var cos_p = Math.cos(phi)
-    
-    var x = r * sin_t * cos_p
-    var y = r * sin_t * sin_p
-    var z = r * cos_t
-    return [x, y, z]
+  let sin_t = Math.sin(theta)
+  let sin_p = Math.sin(phi)
+  let cos_t = Math.cos(theta)
+  let cos_p = Math.cos(phi)
+
+  let x = r * sin_t * cos_p
+  let y = r * sin_t * sin_p
+  let z = r * cos_t
+  return [x, y, z]
 }
 
 /**
@@ -34,7 +34,7 @@ function sphereToCartesian(r, phi, theta) {
  */
 
 function easeOut(x) {
-    return -1 * Math.pow(1 - x, 3) + 1
+  return -1 * Math.pow(1 - x, 3) + 1
 }
 
 /**
@@ -46,150 +46,39 @@ function easeOut(x) {
  */
 
 function easeInOut(x) {
-  var a = x < 1/2 ? 1 : -1
-  var b = (1 - a) / 2
+  let a = x < 1 / 2 ? 1 : -1
+  let b = (1 - a) / 2
   return b + a * Math.pow(2 * (b + a * x), 3) / 2
 }
 
-function getScaledVertexPointsAndNormals(vertices, polygonIndices, scaleFactor) {
-  if (!scaleFactor) {
-    scaleFactor = 1;
-  }
-
-  let initPoints = [];
-  for (let i = 0; i < polygonIndices.length; i++) {
-    let v = vertices[polygonIndices[i]]
-    initPoints.push([
-      v[0] * scaleFactor,
-      v[1] * scaleFactor,
-      v[2] * scaleFactor,
-      1.0])
-  }
-
-  let a = initPoints[0]
-  let b = initPoints[1]
-  let c = initPoints[2]
-
-  // Compute normal from the direction of first 3 points.
-
-  var t1 = subtract(b, a);
-  var t2 = subtract(c, b);
-  var normal = cross(t1, t2);
-  normal = vec4(normal);
-
-  // Duplicate points using triangle fan style
-  
-  let normals = [];
-  let points = [];
-  for (let i = 1; i < initPoints.length - 1; i++) {
-    b = initPoints[i];
-    c = initPoints[i+1];
-
-    points.push(a);
-    points.push(b);
-    points.push(c);
-    normals.push(normal);
-    normals.push(normal);
-    normals.push(normal);
-  }
-
-  return {
-    points,
-    normals
-  }
-}
-
-function getScaledModelPointsAndNormals(vertices, polygonIndices, scaleFactor) {
-  if (!scaleFactor) {
-    scaleFactor = 1;
-  }
-
-  // Estimate array size
-  let totalPoints = 0
-  polygonIndices.forEach(indices => {
-    totalPoints += (indices.length - 2) * 3
-  })
-
-  // Init array with size totalPoints
-  let points = new Array(totalPoints);
-  let normals = new Array(totalPoints);
-  let pointCnt = 0;
+function populatePointsAndNormalsArrayFromObject(
+  { vertices, polygonIndices },
+  startIndex, points, normals) {
 
   polygonIndices.forEach(indices => {
     let initPoints = [];
 
     for (let i = 0; i < indices.length; i++) {
       let v = vertices[indices[i]]
-      initPoints.push([
-        v[0] * scaleFactor,
-        v[1] * scaleFactor,
-        v[2] * scaleFactor,
-        1.0])
+      initPoints.push([v[0], v[1], v[2], 1.0])
     }
-  
+
     let a = initPoints[0]
     let b = initPoints[1]
     let c = initPoints[2]
-  
+
     // Compute normal from the direction of first 3 points.
-  
-    var t1 = subtract(b, a);
-    var t2 = subtract(c, b);
-    var normal = cross(t1, t2);
+
+    let t1 = subtract(b, a);
+    let t2 = subtract(c, b);
+    let normal = cross(t1, t2);
     normal = vec4(normal);
-  
+
     // Duplicate points using triangle fan style
 
     for (let i = 1; i < initPoints.length - 1; i++) {
       b = initPoints[i];
-      c = initPoints[i+1];
-
-      points[pointCnt] = a;
-      normals[pointCnt++] = normal;
-      points[pointCnt] = b;
-      normals[pointCnt++] = normal;
-      points[pointCnt] = c;
-      normals[pointCnt++] = normal;
-    }
-  })
-
-  return {
-    points,
-    normals
-  }
-}
-
-function populatePointsAndNormalsArray(
-    { vertices, polygonIndices},
-    startIndex, points, normals) {
-
-  polygonIndices.forEach(indices => {
-    let initPoints = [];
-    for (let i = 0; i < indices.length; i++) {
-      let v = vertices[indices[i]]
-      initPoints.push([
-        v[0],
-        v[1],
-        v[2],
-        1.0])
-    }
-  
-    let a = initPoints[0]
-    let b = initPoints[1]
-    let c = initPoints[2]
-  
-    // Compute normal from the direction of first 3 points.
-  
-    var t1 = subtract(b, a);
-    var t2 = subtract(c, b);
-    var normal = cross(t1, t2);
-    normal = vec4(normal);
-  
-    // Duplicate points using triangle fan style
-
-    for (let i = 1; i < initPoints.length - 1; i++) {
-      b = initPoints[i];
-      c = initPoints[i+1];
+      c = initPoints[i + 1];
 
       points[startIndex] = a;
       normals[startIndex++] = normal;
@@ -207,6 +96,62 @@ function populatePointsAndNormalsArray(
   }
 }
 
+/**
+ * Convert property name in format of string into
+ * dictionary. Supported properties are location, rotation
+ * and scale. If string does not match the format, this returns
+ * undefined.
+ * 
+ * Examples:
+ * `head.rotation.x` returns { modelName: "head", propertyName: "rotation", axisId: 0 }.
+ * 
+ * @param {String} stringPropertyName 
+ */
+function parsePropertyString(stringPropertyName) {
+  const matches = stringPropertyName.match(/^([a-zA-Z_.]+)\.(location|rotation|scale)\.(x|y|z)$/);
+  if (!matches) {
+    return
+  }
+
+  return {
+    modelName: matches[1],
+    propertyName: matches[2],
+    axisId: ['x', 'y', 'z'].indexOf(matches[3])
+  }
+}
+
+function interpolateExponentially(start, end, t) {
+  let multiplier = Math.log(end / start);
+  return start * Math.exp(multiplier * (t - start) / (end - start));
+}
+
+function interpolateLogarithmatically(start, end, t) {
+  let multiplier = Math.log(end / start);
+  return Math.log(t / start) / multiplier * (end - start) + start;
+}
+
 function cloneUsingJSON(obj) {
   return JSON.parse(JSON.stringify(obj))
+}
+
+function throttle(func, limit) {
+  let lastFunc
+  let lastRan
+
+  return function () {
+    const context = this
+    const args = arguments
+    if (!lastRan) {
+      func.apply(context, args)
+      lastRan = Date.now()
+    } else {
+      clearTimeout(lastFunc)
+      lastFunc = setTimeout(function () {
+        if ((Date.now() - lastRan) >= limit) {
+          func.apply(context, args)
+          lastRan = Date.now()
+        }
+      }, limit - (Date.now() - lastRan))
+    }
+  }
 }

@@ -1,3 +1,6 @@
+// These coordinates uses Y+ axis as world's up
+// which is inconsistent with Blender, so it will be swapped later.
+
 var cameraCoordinates = [
   [-1, +1, -1],
   [+0, +1, -1],
@@ -55,7 +58,7 @@ var cameraMovementCoordinates = {
   12: [9, 3, 14, 20],
   13: [11, 22, 16, 5],
   14: [12, 6, 15, 23],
-  15: [14, 24, 16, 7],
+  15: [7, 16, 24, 14],
   16: [13, 25, 15, 8],
   17: [-1, 9, 20, 18],
   18: [10, 17, 21, 19],

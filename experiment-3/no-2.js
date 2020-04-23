@@ -1,207 +1,93 @@
 "use strict";
 
-/* Cara kerja:
+let sceneGraph
+let animationManager
 
-Cara rendering dengan tree yang ada di Angel sudah baik, namun
-ada hal yang bisa ditingkatkan: memisahkan logic untuk rendering
-dengan logic untuk menghitung model view matrix.
+// Camera variables
 
-Saat ini, model view matrix dihitung setiap kali rendering. Jika
-jumlah 3d model tidak banyak, ini tidak masalah. Namun, jika jumlah 3d model
-semakin bertambah banyak komputasinya menjadi tidak baik. Oleh karena
-itu, kita bisa mengalokasikan sedikit memori untuk menyimpan matriks
-model view untuk **setiap** 3d model.
+let camera = {
+  near: 0.05,
+  far: 20.0,
+  radius: 8,
+  fovy: 55.0,
+  aspect: 1.0,
+  viewMatrix: m4.identity(),
+  projectionMatrix: m4.identity()
+}
 
-*/
+let theta = 0
+let phi = 0
+let cameraPosIndex = 17
+let coordinateDirectionOrder = ['UP', 'LEFT', 'DOWN', 'RIGHT']
 
-// Camera setting
+let at = vec3(0.0, 0.0, 0.0)
+let up = vec3(0.0, 0.0, 1.0)
 
-let near = 0.05;
-let far = 20.0;
-let radius = 8;
+// rendering engine variables variables
 
-let fovy = 55.0; // Field-of-view in Y direction angle (in degrees)
-let aspect = 1.0; // Viewport aspect ratio
+let canvas
+let gl
+let program
+let resolution = 100
 
-let eye;
-const at = vec3(0.0, 0.0, 0.0);
-const up = vec3(0.0, 1.0, 0.0);
+// Interaction variables
 
-let canvas;
-let gl;
+let isMenuShown = true
+let sliderList = []
 
-let numVertices = 0;
 
-let pointsArray = [];
-let normalsArray = [];
 
-let modelMatrix;
-let viewMatrix;
-let projectionMatrix;
-
-// GLSL variables and pointers
-
-let program;
-
-let ambientLoc;
-let specularLoc;
-let diffuseLoc;
-let shininessLoc;
-
-let lightPositionLoc;
-let viewMatrixLoc;
-let modelMatrixLoc;
-let projectionMatrixLoc;
-
-let nBuffer;
-let vBuffer;
-
-// Sphere coordinate that will be used to determine camera position.
-
-let theta = 0;
-let phi = 0;
-
-// Light data
-
-let lightPosition = vec4(0, -10, 10, 0.0);
-
-let lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
-let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
-let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-
-// Rendering variables
-
-let isRenderedContinuously = true;
-let isAnimated = false;
-
-// Variables related to objects and materials
+// Utility to update slider value
 
 /**
- * List of materials. Every material object has Phong parameters
- * (ambient, specular, diffuse), name, and computed product
- * of light and intrinsic material params.
+ * Update slider display from parent element
+ * 
+ * @param {[String, HTMLInputElement]} slider 
  */
 
-var materialDict = {};
-
-function initMaterials() {
-  materials_definition.forEach((material) => {
-    materialDict[material.name] = material;
-  });
-  updateMaterialsLighting();
-}
-
-function updateMaterialsLighting() {
-  Object.keys(materialDict).forEach((materialName) => {
-    let material = materialDict[materialName];
-    material.ambientProduct = flatten(mult(lightAmbient, material.ambient));
-    material.diffuseProduct = flatten(mult(lightDiffuse, material.diffuse));
-    material.specularProduct = flatten(mult(lightSpecular, material.specular));
-  });
-}
-
-function updateLight(data) {
-  if (data.ambient) {
-    lightAmbient = data.ambient;
+function updateSliderDisplay(slider, value) {
+  if (typeof slider === 'string') {
+    slider = document.querySelector(`input[name="${slider}"`)
   }
-  if (data.diffuse) {
-    lightDiffuse = data.diffuse;
+  if (typeof value == 'undefined') {
+    value = parseFloat(slider.value);
   }
-  if (data.specular) {
-    lightSpecular = data.specular;
-  }
-  if (data.position) {
-    lightPosition = [data.position[0], data.position[1], data.position[2], 0.0];
-  }
-  updateLightingPosition();
-  updateMaterialsLighting();
-  if (!isRenderedContinuously) {
-    render();
+  if (slider) {
+    slider.parentElement.querySelector('.slider-value').innerText = value;
   }
 }
 
-var rootNodes = [];
+/**
+ * Update slider value and its display
+ * 
+ * @param {[String, HTMLInputElement]} slider 
+ * @param {Number} value 
+ * @param {Number} sliderValue optional, different value for slider
+ */
 
-function initObjects() {
-
-  // Estimate points count by counting how many triangles needed to
-  // make a face, for each face in model, for all models.
-  // Formula: (vertex count - 2) * 3
-  // example a square (having 4 vertex) will need 2 triangles
-
-  let triangleCount = Object.keys(objects_vertices).map(key =>
-      objects_vertices[key].indices
-      .reduce((p, c) => p + c.length - 2, 0))
-    .reduce((p, c) => p + c)
-
-  // create matrix with size of points count
-  pointsArray = new Array(triangleCount * 3);
-  normalsArray = new Array(triangleCount * 3);
-
-  // Iterate over the objects_vertices and objects_data
-  // to initiate node data.
-  Object.keys(objects_vertices).forEach(objectName => {
-    var numVertsBefore = numVertices;
-    var objVertsData = objects_vertices[objectName];
-
-    /* 
-    // Appending new data to points and normals array, without allocating space.
-    // Inspecting performance shows scripting takes ~600ms for 20000 vertex.
-
-    var vertices = objVertsData.vertices;
-    objVertsData.indices.forEach(polygonIndices => {
-      let faceData = getScaledVertexPointsAndNormals(vertices, polygonIndices)
-      pointsArray = [...pointsArray, ...faceData.points];
-      normalsArray = [...normalsArray, ...faceData.normals];
-    });
-    numVertices = pointsArray.length;
-    */
-
-    /* 
-    // Appending new data to points & normals array, but this time,
-    // allocating single model vertex count.
-    // Scripting takes ~200ms.
-    
-    var facesData = getScaledModelPointsAndNormals(
-      objVertsData.vertices, objVertsData.indices
-    )
-    pointsArray = [...pointsArray, ...facesData.points];
-    normalsArray = [...normalsArray, ...facesData.normals];
-    numVertices = pointsArray.length;
-    */
-
-    // Estimating vertex count for all models and assigning
-    // points and normals without appending/destructuring.
-    // Scripting takes ~160ms.
-
-    var newData = populatePointsAndNormalsArray({
-      vertices: objVertsData.vertices,
-      polygonIndices: objVertsData.indices
-    }, numVertices, pointsArray, normalsArray)
-    numVertices = newData.newStartIndex;
-
-    var vertexCount = numVertices - numVertsBefore;
-
-    var objImportedData = objects_info[objectName];
-    // Init 3d model info and its nodes.
-    var model = new Model({
-      name: objectName,
-      origin: [0, 0, 0],
-      location: objImportedData.location,
-      rotation: objImportedData.rotation,
-      scale: objImportedData.scale,
-      parentName: objImportedData.parent,
-      bufferStartIndex: numVertsBefore,
-      vertexCount: vertexCount,
-      material: materialDict[objImportedData.material_name] || materialDict["Default"],
-    });
-    if (!model.node.hasParent) rootNodes.push(model.node);
-  });
-  rootNodes.forEach((rootNode) => rootNode.updateTransformations());
+function updateSliderValueAndDisplay(slider, value, sliderValue) {
+  if (value) {
+    if (typeof slider === 'string') {
+      slider = document.querySelector(`input[name="${slider}"`)      
+    }
+    if (typeof sliderValue === 'undefined') {
+      sliderValue = value;
+    }
+    if (slider) {
+      slider.value = sliderValue;
+      slider.parentElement.querySelector('.slider-value').innerText = value;
+    }
+  }
 }
+
+/**
+ * Function to update animation slider that has been throttled
+ * so that it's not executed too often.
+ */
+let throttledSliderHandler = function () {}
 
 function initCanvasAndGL() {
-  canvas = document.getElementById("gl-canvas");
+  canvas = document.getElementById('gl-canvas');
 
   gl = WebGLUtils.setupWebGL(canvas);
   if (!gl) {
@@ -212,53 +98,9 @@ function initCanvasAndGL() {
   gl.clearColor(0.2, 0.2, 0.2, 1.0);
 
   gl.enable(gl.DEPTH_TEST);
-  program = initShaders(gl, "vertex-shader", "fragment-shader");
+  program = initShaders(gl, 'vertex-shader', 'fragment-shader');
   gl.useProgram(program);
 }
-
-function initGraphicsLibraryVariables() {
-  ambientLoc = gl.getUniformLocation(program, "ambientProduct");
-  diffuseLoc = gl.getUniformLocation(program, "diffuseProduct");
-  specularLoc = gl.getUniformLocation(program, "specularProduct");
-  shininessLoc = gl.getUniformLocation(program, "shininess");
-  lightPositionLoc = gl.getUniformLocation(program, "lightPosition");
-
-  modelMatrixLoc = gl.getUniformLocation(program, "modelMatrix");
-  viewMatrixLoc = gl.getUniformLocation(program, "viewMatrix");
-  projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix");
-
-  gl.ambientLoc = ambientLoc;
-  gl.diffuseLoc = diffuseLoc;
-  gl.specularLoc = specularLoc;
-  gl.shininessLoc = shininessLoc;
-  gl.modelMatrixLoc = modelMatrixLoc;
-
-  nBuffer = gl.createBuffer();
-  vBuffer = gl.createBuffer();
-}
-
-function initBufferFromPoints() {
-  gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(normalsArray), gl.STATIC_DRAW);
-
-  let vNormal = gl.getAttribLocation(program, "vNormal");
-  gl.vertexAttribPointer(vNormal, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vNormal);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW);
-
-  let vPosition = gl.getAttribLocation(program, "vPosition");
-  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vPosition);
-}
-
-function updateLightingPosition() {
-  gl.uniform4fv(lightPositionLoc, flatten(lightPosition));
-}
-
-var cameraPosIndex = 17;
-let coordinateDirectionOrder = ["UP", "LEFT", "DOWN", "RIGHT"];
 
 /**
  * Initialize camera position from chosen camera position index
@@ -266,70 +108,128 @@ let coordinateDirectionOrder = ["UP", "LEFT", "DOWN", "RIGHT"];
 
 function initializeCameraPosition() {
   let cameraPosCoords = cameraCoordinates[cameraPosIndex];
+  // Match camera coordinate (Y+ axis pointing up) to Blender's.
+  // (Z+ pointing up)
   let cameraSpherePos = cartesianToSphere(
     cameraPosCoords[0],
-    cameraPosCoords[1],
-    cameraPosCoords[2]
+    -cameraPosCoords[2],
+    cameraPosCoords[1]
   );
   phi = cameraSpherePos[1];
   theta = cameraSpherePos[2];
 }
 
 function initializeProjectionMatrix() {
-  projectionMatrix = perspective(fovy, aspect, near, far);
-  gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
+  camera.projectionMatrix = perspective(camera.fovy, camera.aspect, camera.near, camera.far)
+  let matrixGlLocation = sceneGraph.glLocations.projectionMatrix
+  gl.uniformMatrix4fv(matrixGlLocation, false, flatten(camera.projectionMatrix))
 }
 
-// Animation
-function initAnimateBtn() {
-  var animateBtn = document.getElementById("btn-animate");
-  animateBtn.addEventListener("click", animateFunc);
-}
-
-function animateFunc() {
-  const animateBtn = document.getElementById("btn-animate");
-  if (isAnimated) {
-    stopAnimation();
-    animateBtn.innerHTML = "Start Animation";
+function toggleAnimation() {
+  const animateBtn = document.getElementById('btn-animate');
+  if (animationManager.isAnimating) {
+    animationManager.stopAnimation()
+    animateBtn.innerText = 'Mulai Animasi';
     animateBtn.classList.remove('btn-danger');
     animateBtn.classList.add('btn-primary');
     document.querySelectorAll('.range-animation')
-    .forEach(elem => {
-      elem.disabled = false;
-    })
-  }
-  else {
-    startAnimation();
-    animateBtn.innerHTML = "Stop Animation";
+      .forEach(elem => {
+        elem.disabled = false;
+      })
+  } else {
+    animationManager.startAnimation();
+    animateBtn.innerText = 'Hentikan Animasi';
     animateBtn.classList.remove('btn-primary');
     animateBtn.classList.add('btn-danger');
     document.querySelectorAll('.range-animation')
-    .forEach(elem => {
-      elem.disabled = true;
-    })
-  } 
+      .forEach(elem => {
+        elem.disabled = true;
+      })
+  }
 }
 
-window.addEventListener("load", function init() {
-  initCanvasAndGL();
-  initGraphicsLibraryVariables();
+function connectSlidersToModelData() {
+  document.querySelectorAll('input[type="range"]').forEach(elem => {
+    const sliderName = elem.getAttribute('name')
+    const propertyData = parsePropertyString(sliderName);
+    if (propertyData === undefined) {
+      return
+    }
 
-  initMaterials();
-  initObjects();
-  initAnimateBtn()
-  initAnimationDict();
+    const { modelName, propertyName, axisId } = propertyData;
+    let node = sceneGraph.nodes[modelName];
+    let modelProperties = node.model[propertyName];
 
-  initBufferFromPoints();
-  updateLightingPosition();
+    elem.addEventListener('input', () => {
+      let value = parseFloat(elem.value);
+      updateSliderValueAndDisplay(elem, value);
+      modelProperties[axisId] = value;
+      node.updateTransformations();
+    })
+  })
+}
 
-  initializeCameraPosition();
-  initializeProjectionMatrix();
-  updateViewMatrix();
+function connectSpeedSlider() {
+  let slider = document.querySelector('input[name="speed"]');
 
-  canvas.addEventListener("keydown", onCanvasKeydown);
-  canvas.focus();
-  render();
-});
+  const SPEED_MIN = parseFloat(slider.getAttribute('min'));
+  const SPEED_MAX = parseFloat(slider.getAttribute('max'));
+
+  slider.addEventListener('input', () => {
+    let value = parseFloat(slider.value);
+    value = interpolateExponentially(SPEED_MIN, SPEED_MAX, value);
+    updateSliderDisplay(slider, Math.round(value * 100) + '%');
+    animationManager.speed = value;
+  })
+
+  // Init slider position from inverse of exponential (logarithm)
+  let currentSpeed = animationManager.speed;
+  let displaySpeed = Math.round(currentSpeed * 100) + '%'
+  let sliderInitValue = interpolateLogarithmatically(SPEED_MIN, SPEED_MAX, currentSpeed);
+  
+  updateSliderValueAndDisplay(slider, displaySpeed, sliderInitValue);
+}
+
+function connectLightPositionSliders() {
+  document.querySelectorAll('input[name^=light-position]').forEach(slider => {
+
+    const name = slider.getAttribute('name');
+    const axisName = name.match(/light-position-(x|y|z)$/)[1];
+    const axisId = ['x', 'y', 'z'].indexOf(axisName);
+
+    let value = lightingCubeModel.location[axisId];
+    updateSliderValueAndDisplay(slider, value)
+
+    slider.addEventListener('input', () => {
+      let value = parseFloat(slider.value);
+
+      lightingCubeModel.location[axisId] = value;
+      lightingCubeModel.updateMatrices();
+
+      sceneGraph.updateLightSetup({position: lightingCubeModel.location});
+      sceneGraph.updateGlLightPosition();
+
+      updateSliderDisplay(slider, value);
+
+      // Update selected slider as well
+
+      if (sceneGraph.selectedNodeName === 'cube-lighting') {
+        updateSliderValueAndDisplay(`selected-object-location-${axisName}`, value)
+      }
+    });
+
+    // Hook selected object slider
+    
+    let selectedSlider = document.querySelector(`input[name="selected-object-location-${axisName}"]`)
+    if (selectedSlider) {
+      selectedSlider.addEventListener('input', function() {
+        if (sceneGraph.selectedNodeName === 'cube-lighting') {
+          updateSliderValueAndDisplay(slider, parseFloat(selectedSlider.value))
+        }
+      })
+    }
+  });
+}
 
 /**
  * Update eye coordinate calculation from global
@@ -337,7 +237,10 @@ window.addEventListener("load", function init() {
  */
 
 function updateViewMatrix() {
-  let r = radius;
+  let r = camera.radius;
+  
+  theta = (Math.sign(theta) || 1) * Math.max(Math.abs(theta), 0.1)
+  
   let sin_t = Math.sin(theta);
   let sin_p = Math.sin(phi);
   let cos_t = Math.cos(theta);
@@ -347,97 +250,255 @@ function updateViewMatrix() {
   let y = r * sin_t * sin_p;
   let z = r * cos_t;
 
-  eye = vec3(x, y, z);
+  let eye = add(at, vec3(x, y, z));
 
-  var lookAtMatrix = flatten(lookAt(eye, at, up));
-  // Adjust the object axis from Blender to match this representation's axis.
-  // This is based on personal observation.
-  viewMatrix = m4.xRotate(lookAtMatrix, degToRad(-90));
-  gl.uniformMatrix4fv(viewMatrixLoc, false, flatten(viewMatrix));
+  camera.viewMatrix = flatten(lookAt(eye, at, up));
+  gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(camera.viewMatrix));
 }
+
+let isSpaceKeyPressed = false
+
+function handleSpaceKeydown(event) {
+  if (isSpaceKeyPressed) {
+    return
+  }
+  if (event.code === 'Space' || event.key === ' ' || event.keyCode === 32) {
+    toggleAnimation()
+    isSpaceKeyPressed = true
+  }
+}
+
+function handleSpaceKeyup(event) {
+  if (!isSpaceKeyPressed) {
+    return
+  }
+  if (event.code === 'Space' || event.key === ' ' || event.keyCode === 32) {
+    isSpaceKeyPressed = false
+  }
+}
+
+let MAX_HEIGHT = 1080
+let MAX_WIDTH = 1440
+
+/**
+ * Adjust viewport so the canvas stays clear even if window resolution changes.
+ */
+
+function adjustViewport() {
+  let rect = canvas.parentElement.getBoundingClientRect()
+  let width = rect.width * window.devicePixelRatio;
+  let height = rect.height * window.devicePixelRatio;
+
+  // Get w:h ratio of canvas size as displayed in the screen.
+  let widthToHeightRatio = rect.width / rect.height;
+
+  // Limit width and height resolution to MAX_HEIGHT and MAX_WIDTH,
+  // while at the same time maintaining the w:h ratio.
+
+  width = Math.min(MAX_WIDTH, width);
+  height = Math.min(MAX_HEIGHT, width / widthToHeightRatio) * resolution / 100;
+  width = Math.round(height * widthToHeightRatio);
+  height = Math.round(height);
+
+  canvas.width = width;
+  canvas.height = height;
+
+  camera.aspect = width / height;
+  initializeProjectionMatrix()
+
+  gl.viewport(0, 0, width, height);
+}
+
+function adjustResolution(event) {
+  let slider = event.target
+  resolution = Math.min(100, Math.max(1, slider.value))
+  updateSliderDisplay(slider, resolution + '%')
+  adjustViewport()
+}
+
+function toggleMenu() {
+  let wrapperDOM = document.getElementById('menu-toggler-wrapper');
+  let menuTogglerButtonText = document.querySelector('#menu-toggler-button > .button-text');
+  if (!isMenuShown) {
+    wrapperDOM.className = 'show-menu';
+    menuTogglerButtonText.innerText = 'Tutup';
+  } else {
+    wrapperDOM.className = 'hide-menu';
+    menuTogglerButtonText.innerText = 'Buka Menu';
+  }
+  isMenuShown = !isMenuShown;
+}
+
+/**
+ * List all sliders in the document and for each slider,
+ * see if the slider is in the animation dictionary and is actually
+ * defined in the sceneGraph nodes.
+ */
+
+function listCustomSliders() {
+  let listName = []
+
+  document.querySelectorAll('input[type="range"]')
+    .forEach(elem => {
+      const sliderName = elem.getAttribute('name')
+      const data = parsePropertyString(sliderName)
+
+      if (!data) {
+        return
+      }
+
+      const {
+        modelName,
+        propertyName,
+        axisId
+      } = data
+      if (!sceneGraph.nodes.hasOwnProperty(modelName)) {
+        return
+      }
+
+      listName.push({
+        sliderName,
+        modelName,
+        propertyName,
+        axisId
+      });
+    })
+
+  return listName;
+}
+
+function attachListenerOnAnimationUpdate() {
+  // Throttle update animation slider so that it gets called
+  // at most 25 fps.
+  sliderList = listCustomSliders()
+  throttledSliderHandler = throttle(matchSlidersToAnimation, 50)
+  animationManager.addListener('animationupdate', throttledSliderHandler)
+}
+
+function matchSlidersToAnimation() {
+  sliderList.forEach(({
+    sliderName,
+    modelName,
+    propertyName,
+    axisId
+  }) => {
+    let animationValue = sceneGraph.nodes[modelName].model[propertyName][axisId]
+    animationValue = Math.round(animationValue * 100) / 100
+    updateSliderValueAndDisplay(sliderName, animationValue)
+  })
+}
+
+let lightingCubeModel
+
+function createCubeLight() {
+  let cube_objects = {
+    "vertices": [
+      [-0.5, -0.5, -0.5],
+      [-0.5, -0.5, 0.5],
+      [-0.5, 0.5, -0.5],
+      [-0.5, 0.5, 0.5],
+      [0.5, -0.5, -0.5],
+      [0.5, -0.5, 0.5],
+      [0.5, 0.5, -0.5],
+      [0.5, 0.5, 0.5]
+    ],
+    "indices": [
+      [0, 1, 3, 2],
+      [2, 3, 7, 6],
+      [6, 7, 5, 4],
+      [4, 5, 1, 0],
+      [2, 6, 4, 0],
+      [7, 3, 1, 5]
+    ],
+    "material_name": "white"
+  }
+
+  lightingCubeModel = new Model({
+    name: 'cube-lighting',
+    scale: [0.2, 0.2, 0.2],
+    location: [-1.4, -1.65, 1.45]
+  })
+
+  lightingCubeModel.vertices = cube_objects.vertices
+  lightingCubeModel.indices = cube_objects.indices
+  lightingCubeModel.setMaterial('white', sceneGraph.materials)
+
+  sceneGraph.addModelToScene(lightingCubeModel)
+}
+
+
+window.addEventListener('load', function init() {
+  // Initialize canvas and GL first
+
+  initCanvasAndGL()
+
+  // Initialize scene graph and model data from:
+  // - coordinates of vertices specified in objects-vertices.js
+  // - object position, rotation, and scale info in objects-data.js
+  // - materials from objects-materials.js
+
+  sceneGraph = new SceneGraph({gl, camera})
+  sceneGraph.initWebGLVariables()
+
+  sceneGraph.initMaterialsFromConfig(materials_definition)
+  sceneGraph.initModelsFromConfig({
+    modelsVerticesData: objects_vertices, // this is a variable inside objects-vertices.js
+    modelsInfoData: objects_info // this is a variable inside objects-data.js
+  })
+
+  createCubeLight()
+
+  sceneGraph.movePointsToBufferData()
+  sceneGraph.updateModelsTransformations()
+
+  sceneGraph.updateLightSetup({
+    position: lightingCubeModel.location
+  })
+  sceneGraph.updateGlLightPosition()
+
+  animationManager = new AnimationManager({
+    sceneGraph,
+    speed: 0.5,
+    maxFrameNumber: 120
+  })
+  animationManager.initFromConfig(animations_definition)
+
+  initializeCameraPosition()
+  initializeProjectionMatrix()
+  updateViewMatrix()
+
+  // Attach event listener handles
+
+  canvas.parentElement.addEventListener('keydown', handleSpaceKeydown)
+  canvas.parentElement.addEventListener('keyup', handleSpaceKeyup)
+  window.addEventListener('resize', adjustViewport)
+
+  document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
+  document.querySelector('input[name="resolution"]').addEventListener('input', adjustResolution)
+  document.querySelector('#btn-animate').addEventListener('click', toggleAnimation)
+
+  connectSlidersToModelData()
+  connectSpeedSlider()
+  connectLightPositionSliders()
+  attachListenerOnAnimationUpdate()
+
+  if (typeof initObjectSelectionMechanism !== 'undefined') {
+    initObjectSelectionMechanism()
+  }
+
+  if (typeof initNavigableCamera !== 'undefined') {
+    initNavigableCamera()
+  }
+
+  // Set focus to canvas from the start
+  canvas.focus()
+
+  adjustViewport()
+  render()
+})
 
 function render() {
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  rootNodes.forEach(rootNode => rootNode.render(gl));
-
-  // Make recursive call if and only if the app is set to render continuously
-  if (isRenderedContinuously) {
-      window.requestAnimationFrame(render);
-  }
-}
-
-
-
-/**
- * Convert keyboard into direction, with respect to three
- * mechanism currently implemented in browser: `event.code`,
- * `event.key`, and `event.which`.
- *
- * @param {Event} event
- */
-
-function convertKeyboardIntoDirection(event) {
-  let direction = "";
-  let whichToDirection = {
-    37: "LEFT",
-    38: "UP",
-    39: "RIGHT",
-    40: "DOWN",
-  };
-  if (event.code) {
-    // Remove 'Arrow' token in the string
-    direction = event.code.replace("Arrow", "");
-  } else if (event.key) {
-    direction = event.code.replace("Arrow", "");
-  } else {
-    direction = whichToDirection[event.which] || "";
-  }
-
-  if (direction.length > 0) {
-    direction = direction.toUpperCase();
-    if (coordinateDirectionOrder.indexOf(direction) >= 0) {
-      return direction;
-    }
-  }
-}
-
-/**
- * Process canvas keydown event. If arrow key is pressed,
- * it will later be transformed into next camera position
- * accoding to `cameraMovementCoordinates`.
- *
- * @param {*} event
- */
-
-function onCanvasKeydown(event) {
-  let direction = convertKeyboardIntoDirection(event);
-  if (!direction) {
-    return;
-  }
-
-  let directionIdx = coordinateDirectionOrder.indexOf(direction);
-  let newAllowedCoords = cameraMovementCoordinates[cameraPosIndex];
-  let newCameraPosIdx = newAllowedCoords[directionIdx];
-  if (newCameraPosIdx < 0) {
-    return;
-  }
-
-  cameraPosIndex = newCameraPosIdx;
-
-  let cameraPosCoords = cameraCoordinates[cameraPosIndex];
-  let cameraSpherePos = cartesianToSphere(
-    cameraPosCoords[0],
-    cameraPosCoords[1],
-    cameraPosCoords[2]
-  );
-  let new_phi = cameraSpherePos[1];
-  let new_theta = cameraSpherePos[2];
-
-  phi = new_phi;
-  theta = new_theta;
-  updateViewMatrix();
-  if (!isRenderedContinuously) {
-    render();
-  }
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+  Renderer.render(sceneGraph)
+  window.requestAnimationFrame(render)
 }

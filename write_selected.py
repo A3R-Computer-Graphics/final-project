@@ -57,7 +57,10 @@ def write_selected():
             for i in range(3):
                 obj_info["location"][i] -= parent.location[i]
             obj_info["parent"] = parent.name
-
+        
+        for i in range(len(obj_info["location"])):
+            obj_info["location"][i] = round(obj_info["location"][i], 3)
+        
         objs_info_data[obj.name] = obj_info
         objs_verts_data[obj.name] = {
             "vertices": vertices,

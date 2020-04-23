@@ -8,50 +8,39 @@ class Model {
     material,
     bufferStartIndex,
     vertexCount,
-    parentName,
   }) {
+
     this.name = name;
-    this.origin = [...origin];
-    this.location = [...location];
-    this.rotation = [...rotation];
-    this.scale = [...scale];
+    this.origin = [...(origin || [0, 0, 0])];
+    this.location = [...(location || [0, 0, 0])];
+    this.rotation = [...(rotation || [0, 0, 0])];
+    this.scale = [...(scale || [1, 1, 1])];
     this.material = material;
 
     this.bufferStartIndex = bufferStartIndex;
     this.vertexCount = vertexCount;
-
-    this.node = ObjectNode.getOrCreate(name).updateWith({
-      model: this,
-      parent: !!parentName
-        ? ObjectNode.getOrCreate(parentName)
-        : undefined,
-    });
 
     // Transformation matrix computed from loc, rot, and scale.
     this.transformationMatrix = m4.identity();
 
     // Full transformation matrix, computed from this model as well as from the parent.
     this.fullTransformMatrix = m4.identity();
-
-    this.updateMatrices();
-  }
-
-  getParentName() {
-    return (((this.node || {}).parent || {}).model || {}).name;
   }
 
   updateTransformationMatrix() {
-    var mat = m4.translation(
+    // Convert rotations value from degrees to radians
+    let rotation = this.rotation.map(val => degToRad(val));
+    let scale = this.scale;
+
+    let mat = m4.translation(
       this.location[0] + this.origin[0],
       this.location[1] + this.origin[1],
       this.location[2] + this.origin[2]
     );
     mat = m4.multiply(mat,
       m4.xyzRotationScale(
-        degToRad(this.rotation[0]), degToRad(this.rotation[1]), degToRad(this.rotation[2]),
-        this.scale[0], this.scale[1], this.scale[2]
-      )
-    );
+        rotation[0], rotation[1], rotation[2],
+        scale[0], scale[1], scale[2]));
     mat = m4.translate(mat, this.origin[0], this.origin[1], this.origin[2]);
     this.transformationMatrix = mat;
   }
@@ -62,10 +51,6 @@ class Model {
    * this operation.
    */
   updateFullTransformationMatrix() {
-    // objectNodesList and objectNameToId is a global variable
-    // I know, it looks dirty to call those variables here
-    // but this is the fastest way to call it.
-
     // If the node already has parent and the model is already initialized
     if (this.node.hasParent && !!this.node.parent.model) {
       var parentNode = this.node.parent;
@@ -74,6 +59,7 @@ class Model {
         parentMatrix,
         this.transformationMatrix
       );
+      // Else use transformation matrix directly
     } else {
       this.fullTransformMatrix = this.transformationMatrix;
     }
@@ -117,32 +103,11 @@ class Model {
     this.deltaGeneral(this.location, x, y, z);
   }
 
-  /**
-   * Generic function to render 3D object, given model matrix,
-   * Phong parameters (ambient, diffuse, specular, and shininess),
-   * and object's buffer ranges.
-   *
-   * NOTE: The Phong variables need to be flattened first!
-   * Since materials change rarely, we can store its flattened product
-   * to avoid calling `flatten()` every time an object is rendered.
-   */
-  render(gl) {
-    const {
-      ambientProduct,
-      diffuseProduct,
-      specularProduct,
-      shininess,
-    } = this.material;
-    gl.uniform4fv(gl.ambientLoc, ambientProduct);
-    gl.uniform4fv(gl.diffuseLoc, diffuseProduct);
-    gl.uniform4fv(gl.specularLoc, specularProduct);
-    gl.uniform1f(gl.shininessLoc, shininess);
-
-    gl.uniformMatrix4fv(
-      gl.modelMatrixLoc,
-      false,
-      flatten(this.fullTransformMatrix)
-    );
-    gl.drawArrays(gl.TRIANGLES, this.bufferStartIndex, this.vertexCount);
+  setMaterial(materialName, materialList) {
+    if (materialList[materialName]) {
+      this.material = materialList[materialName]
+    } else {
+      throw Error('Material name not found')
+    }
   }
 }

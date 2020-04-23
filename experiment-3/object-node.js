@@ -1,10 +1,4 @@
 class ObjectNode {
-  static cache = {};
-  static getOrCreate(key) {
-    if (!(key in ObjectNode.cache))
-      ObjectNode.cache[key] = new ObjectNode({ key: key });
-    return ObjectNode.cache[key];
-  }
 
   constructor({ key }) {
     this.key = key;
@@ -31,10 +25,14 @@ class ObjectNode {
    return !!this.parent; 
   }
 
-  // Traverse the whole tree and render every visited node
-  render(gl) {
-    this.model.render(gl);
-    this.children.forEach(child => child.render(gl));
+  get parentNameList() {
+    let parents = []
+    let node = this
+    while (node.parent) {
+      node = node.parent
+      parents.push(node.key)
+    }
+    return parents
   }
 
   updateTransformations() {
