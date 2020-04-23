@@ -13,6 +13,10 @@ function initNavigableCamera() {
   scrollDetector.addEventListener('mousedown', startTrackball)
   document.addEventListener('mousemove', trackMouseForTrackball)
   document.addEventListener('mouseup', stopTrackball)
+
+  scrollDetector.addEventListener('touchstart', startTrackballOnDevice)
+  document.addEventListener('touchmove', trackMouseForTrackballOnDevice)
+  document.addEventListener('touchend', stopTrackballOnDevice)
   
   scrollDetector.parentElement.addEventListener('keydown', processCanvasArrowKeydown)
 }
@@ -123,8 +127,8 @@ function startTrackball(event) {
   if (isClickingForTrackball) {
     return
   }
-  posXInit = event.screenX;
-  posYInit = event.screenY;
+  posXInit = event.screenX || event.touches[0].screenX;
+  posYInit = event.screenY || event.touches[0].screenY;
   initPhi = phi;
   initTheta = theta;
 
@@ -141,8 +145,8 @@ function trackMouseForTrackball(event) {
     return
   }
 
-  let deltaX = event.screenX - posXInit;
-  let deltaY = event.screenY - posYInit;
+  let deltaX = event.screenX || event.touches[0].screenX - posXInit;
+  let deltaY = event.screenY || event.touches[0].screenY - posYInit;
 
   if (Math.abs(deltaX) < 1 && Math.abs(deltaY) < 1) {
     return
@@ -156,10 +160,7 @@ function trackMouseForTrackball(event) {
   let cameraPosInSphere = cartesianToSphere(cameraPos[0], cameraPos[1], cameraPos[2])
 
   phi = initPhi + -deltaX * 3
-  // theta = initTheta + deltaY * 3
-
   let newTheta = initTheta + deltaY * 3;
-  console.log(newTheta)
   if (Math.abs(newTheta) < 0.1 || Math.sign(newTheta) !== Math.sign(initTheta)) {
     newTheta = (Math.sign(initTheta) || 1) * 0.1;
     initTheta = newTheta;
@@ -198,4 +199,17 @@ function stopTrackball() {
     return
   }
   isClickingForTrackball = false;
+}
+
+function startTrackballOnDevice(event) {
+  event.preventDefault()
+  startTrackball(event)
+}
+
+function trackMouseForTrackballOnDevice(event) {
+  trackMouseForTrackball(event)
+}
+
+function stopTrackballOnDevice(event) {
+  stopTrackball(event)
 }
