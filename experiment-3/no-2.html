@@ -52,18 +52,16 @@ void main()
 
     vec3 L = normalize(lightPos - vertPos);
     vec3 E = normalize(-vertPos);
-    vec3 R = normalize(-reflect(L, N));
+    vec3 H = normalize(L + E); // Half vector
 
-    // Lambert's cosine law
+    // Compute diffuse reflection term using Lambert cosine law (see p. 286 Angel 7th ed)
 
     float lambertian = max(dot(N, L), 0.0);
     float specular = 0.0;
 
     if (lambertian > 0.0) {
-      vec3 R = -reflect(L, N);
-      vec3 V = normalize(-vertPos);
-
-      float specAngle = max(dot(R, V), 0.0);
+      // Compute specular reflection term (see p. 287 Angel 7th ed)
+      float specAngle = max(dot(N, H), 0.0);
       specular = pow(specAngle, shininess);
     }
     
