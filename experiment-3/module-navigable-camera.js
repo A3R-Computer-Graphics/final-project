@@ -127,8 +127,16 @@ function startTrackball(event) {
   if (isClickingForTrackball) {
     return
   }
-  posXInit = event.screenX || event.touches[0].screenX;
-  posYInit = event.screenY || event.touches[0].screenY;
+  
+
+  posXInit = event.screenX;
+  posYInit = event.screenY;
+
+  if (event.touches) {
+    posXInit = event.touches[0].screenX;
+    posYInit = event.touches[1].screenY;
+  }
+  
   initPhi = phi;
   initTheta = theta;
 
@@ -145,8 +153,16 @@ function trackMouseForTrackball(event) {
     return
   }
 
-  let deltaX = event.screenX || event.touches[0].screenX - posXInit;
-  let deltaY = event.screenY || event.touches[0].screenY - posYInit;
+  let deltaX = event.screenX;
+  let deltaY = event.screenY;
+
+  if (event.touches) {
+    deltaX = event.touches[0].screenX;
+    deltaY = event.touches[1].screenY;
+  }
+
+  deltaX -= posXInit;
+  deltaY -= posYInit;
 
   if (Math.abs(deltaX) < 1 && Math.abs(deltaY) < 1) {
     return
