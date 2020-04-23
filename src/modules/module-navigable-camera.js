@@ -180,11 +180,19 @@ function trackMouseForTrackball(event) {
   if (touchingNorthPole || goingBeyondNorthPole) {
     newTheta = (Math.sign(initTheta) || 1) * 0.01;
     initTheta = newTheta;
-    posYInit = event.screenY;
+    if (event.touches) {
+      posYInit = event.touches[0].screenY;
+    } else {
+      posYInit = event.screenY;
+    }
   } else if (touchingSouthPole || goingBeyondSouthPole) {
     newTheta = (Math.sign(initTheta) || 1) * (Math.PI - 0.01);
     initTheta = newTheta;
-    posYInit = event.screenY;
+    if (event.touches) {
+      posYInit = event.touches[0].screenY;
+    } else {
+      posYInit = event.screenY;
+    }
   }
 
   theta = newTheta;
