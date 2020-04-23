@@ -151,14 +151,14 @@ class SceneGraph {
     }
     if (position) {
       this.lightPosition = [position[0], position[1], position[2], 0.0]
-      this.updateLightPosition()
+      this.updateGlLightPosition()
     }
     if (isChangingParameters) {
       this.updateMaterialsLighting()
     }
   }
 
-  updateLightPosition() {
+  updateGlLightPosition() {
     this.gl.uniform4fv(this.glLocations.lightPosition, flatten(this.lightPosition))
   }
 

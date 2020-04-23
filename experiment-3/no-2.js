@@ -146,17 +146,27 @@ function connectSpeedSlider() {
 }
 
 function connectLightPositionSliders() {
-  document.querySelectorAll('input[name^=light]').forEach(lightPositionSlider => {
-    const valueDisplay = lightPositionSlider.parentElement.querySelector('.slider-value');
-    const name = lightPositionSlider.getAttribute('name');
-    valueDisplay.innerText = sceneGraph[name];
-    lightPositionSlider.value = `${sceneGraph[name]}`;
+  document.querySelectorAll('input[name^=light-position]').forEach(slider => {
+    const valueDisplay = slider.parentElement.querySelector('.slider-value');
+    
+    const name = slider.getAttribute('name');
+    const positionAxisName = name.match(/light-position-(x|y|z)$/)[1];
+    const axisId = ['x', 'y', 'z'].indexOf(positionAxisName);
 
-    lightPositionSlider.addEventListener('input', function (event) {
+    let value = lightingCubeModel.location[axisId];
+    valueDisplay.innerText = value;
+    slider.value = value;
+
+    slider.addEventListener('input', function (event) {
       let value = parseFloat(event.target.value);
+
+      lightingCubeModel.location[axisId] = value;
+      lightingCubeModel.updateMatrices();
+
+      sceneGraph.updateLightSetup({position: lightingCubeModel.location});
+      sceneGraph.updateGlLightPosition();
+
       valueDisplay.innerText = value;
-      sceneGraph[name] = value;
-      sceneGraph.updateLightPosition();
     });
   });
 }
@@ -376,16 +386,16 @@ window.addEventListener('load', function init() {
     modelsVerticesData: objects_vertices, // this is a variable inside objects-vertices.js
     modelsInfoData: objects_info // this is a variable inside objects-data.js
   })
+
   createCubeLight()
 
   sceneGraph.movePointsToBufferData()
   sceneGraph.updateModelsTransformations()
 
-  sceneGraph.updateLightPosition()
   sceneGraph.updateLightSetup({
     position: lightingCubeModel.location
   })
-  // sceneGraph.createCube()
+  sceneGraph.updateGlLightPosition()
 
   animationManager = new AnimationManager({
     sceneGraph,
