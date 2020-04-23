@@ -133,8 +133,14 @@ let updateSelectedProperty = throttle(
     if (!node) {
       return
     }
-    node.model[propertyName][axisId] = value
+
+    let model = node.model
+    model[propertyName][axisId] = value
     node.updateTransformations()
+
+    if (model.name === 'cube-lighting') {
+      sceneGraph.updateLightSetup({position: model.location})
+    }
   }, 50)
 
 function connectSelectedObjectSlider() {

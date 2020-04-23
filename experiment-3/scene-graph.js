@@ -162,6 +162,30 @@ class SceneGraph {
     this.gl.uniform4fv(this.glLocations.lightPosition, flatten(this.lightPosition))
   }
 
+  addModelToScene(model, parentName) {
+
+    let numVertsBefore = this.numVertices
+    let newData = populatePointsAndNormalsArrayFromObject({
+      vertices: model.vertices,
+      polygonIndices: model.indices
+    }, this.numVertices, this.pointsArray, this.normalsArray)
+
+    this.numVertices = newData.newStartIndex;
+    model.vertexCount = this.numVertices - numVertsBefore
+    model.bufferStartIndex = numVertsBefore
+
+    let modelNode = this.getOrCreateNode(model.name)
+
+    let parentExists = !!this.nodes[parentName]
+    let parentNode = parentExists ? this.nodes[parentName] : undefined
+
+    modelNode.updateWith({ model, parent: parentNode })
+
+    if (!parentExists) {
+      this.rootNodes.push(model.node)
+    }
+  }
+
   /**
    * Recompute product values of material's own ambient, diffuse,
    * and specular, with the one from lighting.

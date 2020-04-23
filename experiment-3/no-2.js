@@ -326,6 +326,8 @@ function matchSlidersToAnimation() {
   })
 }
 
+let lightingCubeModel
+
 function createCubeLight() {
   let cube_objects = {
     "vertices": [
@@ -346,25 +348,20 @@ function createCubeLight() {
       [2, 6, 4, 0],
       [7, 3, 1, 5]
     ],
-    "location": [0.0, -10.0, 10.0],
-    "scale": [1.0, 1.0, 1.0],
-    "rotation": [0.0, 0.0, 0.0],
     "material_name": "white"
   }
 
-  // let triangleCount = cube_objects.indices.reduce((p, c) => p + c.length - 2, 0)
-  
-  let model = new Model({
-    name: "cubeLight",
-    origin: [0, 0, 0],
-    location: cube_objects.location,
-    rotation: cube_objects.rotation,
-    scale: cube_objects.scale,
-    bufferStartIndex: numVertsBefore,
-    vertexCount: vertexCount,
-    material: cube_objects.material_name
+  lightingCubeModel = new Model({
+    name: 'cube-lighting',
+    scale: [0.2, 0.2, 0.2],
+    location: [-1.4, -1.65, 1.45]
   })
 
+  lightingCubeModel.vertices = cube_objects.vertices
+  lightingCubeModel.indices = cube_objects.indices
+  lightingCubeModel.setMaterial('white', sceneGraph.materials)
+
+  sceneGraph.addModelToScene(lightingCubeModel)
 }
 
 
@@ -388,12 +385,14 @@ window.addEventListener('load', function init() {
     modelsVerticesData: objects_vertices, // this is a variable inside objects-vertices.js
     modelsInfoData: objects_info // this is a variable inside objects-data.js
   })
+  createCubeLight()
+
   sceneGraph.movePointsToBufferData()
   sceneGraph.updateModelsTransformations()
 
   sceneGraph.updateLightPosition()
   sceneGraph.updateLightSetup({
-    position: vec4(0, -10, 10, 0.0)
+    position: lightingCubeModel.location
   })
   // sceneGraph.createCube()
 
