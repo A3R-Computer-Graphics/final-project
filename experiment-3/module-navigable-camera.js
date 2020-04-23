@@ -117,17 +117,12 @@ let posXInit = 0;
 let posYInit = 0;
 let initPhi;
 let initTheta;
-let initCameraPos = [0, 0, 0];
-let initLook = [];
-let initCameraRight = [];
-let initCameraUp = [];
 let isCameraPositionTrackballed = false;
 
 function startTrackball(event) {
   if (isClickingForTrackball) {
     return
   }
-  
 
   posXInit = event.screenX;
   posYInit = event.screenY;
@@ -139,11 +134,6 @@ function startTrackball(event) {
   
   initPhi = phi;
   initTheta = theta;
-
-  initCameraPos = sphereToCartesian(camera.radius, initPhi, initTheta);
-  initLook = normalize(initCameraPos)
-  initCameraRight = cross(initLook, up);
-  initCameraUp = cross(initLook, initCameraRight)
 
   isClickingForTrackball = true;
 }
@@ -171,24 +161,30 @@ function trackMouseForTrackball(event) {
   deltaX = deltaX / window.innerWidth * 2;
   deltaY = -deltaY / window.innerHeight * 2;
 
-  let cameraPos = add(initCameraPos, scale(deltaX, initCameraRight))
-  cameraPos = add(cameraPos, scale(deltaY, initCameraUp))
-  let cameraPosInSphere = cartesianToSphere(cameraPos[0], cameraPos[1], cameraPos[2])
-
   phi = initPhi + -deltaX * 3
   let newTheta = initTheta + deltaY * 3;
-  if (Math.abs(newTheta) < 0.1 || Math.sign(newTheta) !== Math.sign(initTheta)) {
-    newTheta = (Math.sign(initTheta) || 1) * 0.1;
+
+  // Avoid making theta == 0 and changes direction (going negative from positive and vice versa).
+
+  let signChangesSinceInitial = Math.sign(newTheta) !== Math.sign(initTheta);
+
+  let touchingNorthPole = Math.abs(newTheta) < 0.01;
+  let touchingSouthPole = Math.abs(newTheta) > Math.PI - 0.01;
+
+  let goingBeyondNorthPole = Math.sign(deltaY) < 0 && signChangesSinceInitial;
+  let goingBeyondSouthPole = Math.sign(deltaY) > 0 && signChangesSinceInitial;
+
+  if (touchingNorthPole || goingBeyondNorthPole) {
+    newTheta = (Math.sign(initTheta) || 1) * 0.01;
     initTheta = newTheta;
     posYInit = event.screenY;
-  } else if (Math.abs(newTheta) > Math.PI - 0.1 || Math.sign(newTheta) !== Math.sign(initTheta)) {
-    newTheta = (Math.sign(initTheta) || 1) * (Math.PI - 0.1);
+  } else if (touchingSouthPole || goingBeyondSouthPole) {
+    newTheta = (Math.sign(initTheta) || 1) * (Math.PI - 0.01);
     initTheta = newTheta;
     posYInit = event.screenY;
   }
-  theta = newTheta;
 
-  // theta = Math.sign(theta) * Math.max(Math.abs(theta), 0.1)
+  theta = newTheta;
 
   if (!isCameraPositionTrackballed) {
     isCameraPositionTrackballed = true
