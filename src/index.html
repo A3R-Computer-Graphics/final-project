@@ -3,8 +3,8 @@
 <title>Link</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="lib/css/bootstrap.min.css">
-<link rel="stylesheet" href="no-2.css">
-<link rel="stylesheet" href="no-2-mobile.css">
+<link rel="stylesheet" href="index.css">
+<link rel="stylesheet" href="index-mobile.css">
 <script id="vertex-shader" type="x-shader/x-vertex">
 attribute vec4 vPosition;
 attribute vec3 vNormal;
@@ -75,34 +75,34 @@ void main()
 }
 </script>
 
-<script type="text/javascript" src="./lib/js/jquery-3.4.1.min.js"></script>
-<script type="text/javascript" src="./lib/js/popper-1.16.0.min.js"></script>
-<script type="text/javascript" src="./lib/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="lib/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="lib/js/popper-1.16.0.min.js"></script>
+<script type="text/javascript" src="lib/js/bootstrap.min.js"></script>
 
-<script type="text/javascript" src="../Common/webgl-utils.js"></script>
-<script type="text/javascript" src="../Common/initShaders.js"></script>
-<script type="text/javascript" src="../Common/MV.js"></script>
-<script type="text/javascript" src="./m4.js"></script>
+<script type="text/javascript" src="lib/js/webgl/webgl-utils.js"></script>
+<script type="text/javascript" src="lib/js/webgl/initShaders.js"></script>
+<script type="text/javascript" src="lib/js/webgl/MV.js"></script>
+<script type="text/javascript" src="lib/js/webgl/m4.js"></script>
 
-<script type="text/javascript" src="./utils.js"></script>
-<script type="text/javascript" src="./event-dispatcher.js"></script>
+<script type="text/javascript" src="modules/utils.js"></script>
+<script type="text/javascript" src="modules/event-dispatcher.js"></script>
 
-<script type="text/javascript" src="./scene-graph.js"></script>
-<script type="text/javascript" src="./object-node.js"></script>
-<script type="text/javascript" src="./model.js"></script>
-<script type="text/javascript" src="./animation-manager.js"></script>
-<script type="text/javascript" src="./renderer.js"></script>
+<script type="text/javascript" src="modules/scene-graph.js"></script>
+<script type="text/javascript" src="modules/object-node.js"></script>
+<script type="text/javascript" src="modules/model.js"></script>
+<script type="text/javascript" src="modules/animation-manager.js"></script>
+<script type="text/javascript" src="modules/renderer.js"></script>
 
-<script type="text/javascript" src="../temp/objects-materials.js"></script>
-<script type="text/javascript" src="../temp/objects-data.js"></script>
-<script type="text/javascript" src="../temp/objects-vertices.js"></script>
-<script type="text/javascript" src="../temp/objects-animations.js"></script>
-<script type="text/javascript" src="./camera-coordinates.js"></script>
+<script type="text/javascript" src="resources/objects/objects-materials.js"></script>
+<script type="text/javascript" src="resources/objects/objects-data.js"></script>
+<script type="text/javascript" src="resources/objects/objects-vertices.js"></script>
+<script type="text/javascript" src="resources/objects/objects-animations.js"></script>
+<script type="text/javascript" src="modules/camera-coordinates.js"></script>
 
-<script type="text/javascript" src="./module-navigable-camera.js"></script>
-<script type="text/javascript" src="./module-select-object.js"></script>
+<script type="text/javascript" src="modules/module-navigable-camera.js"></script>
+<script type="text/javascript" src="modules/module-select-object.js"></script>
 
-<script type="text/javascript" src="./no-2.js"></script>
+<script type="text/javascript" src="index.js"></script>
 
 
 <body>
@@ -123,7 +123,7 @@ void main()
   <div id="menu-toggler-wrapper" class="show-menu">
     <button type="button" class="btn btn-primary" id="menu-toggler-button">
       <span class="button-text">Tutup</span>
-      <img class="arrow" src="arrow.svg" />
+      <img class="arrow" src="resources/images/arrow.svg" />
     </button>
     <div class="menu">
       <div class="submenu">

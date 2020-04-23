@@ -1,9 +1,13 @@
 import bpy
 import json
+import os
 
 C = bpy.context
 D = bpy.data
-MATERIAL_FPATH = 'D:\\kuliah\\Grafkom\\a3r\\ws-2\\temp\\objects-materials.js'
+
+DIR = os.path.dirname(os.path.abspath(__file__))
+MATERIAL_FPATH = os.path.join(DIR, '../src/resources/objects/objects-materials.js')
+
 default_material = {
       "name": "Default",
       "ambient": [1.0, 0.0, 1.0, 1.0],

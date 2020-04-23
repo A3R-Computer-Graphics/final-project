@@ -4,10 +4,13 @@
 import bpy
 import json
 import math
+import os
+
 C = bpy.context
 
-OBJECTS_VERTEX_FPATH = 'D:\\kuliah\\Grafkom\\a3r\\ws-2\\temp\\objects-vertices.js'
-OBJECTS_INFO_PATH = 'D:\\kuliah\\Grafkom\\a3r\\ws-2\\temp\\objects-data.js'
+DIR = os.path.dirname(os.path.abspath(__file__))
+OBJECTS_VERTEX_FPATH = os.path.join(DIR, '../src/resources/objects/objects-vertices.js')
+OBJECTS_INFO_PATH = os.path.join(DIR, '../src/resources/objects/objects-data.js')
 
 def write_selected():
     # C = Convenience variables for bpy.context
