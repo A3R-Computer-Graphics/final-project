@@ -1,5 +1,20 @@
+// Detecting scroll movement
+
+let scrollDetector;
+let scrollInitial;
+
 function initNavigableCamera() {
-  canvas.addEventListener('keydown', processCanvasArrowKeydown)
+  
+  scrollDetector = document.querySelector('#scroll-detector > *')
+  scrollDetector.scrollTop = scrollDetector.clientHeight / 2;
+  scrollInitial = scrollDetector.scrollTop;
+  scrollDetector.addEventListener('scroll', zoomCameraFromScrollDetector)
+
+  scrollDetector.addEventListener('mousedown', startTrackball)
+  document.addEventListener('mousemove', trackMouseForTrackball)
+  document.addEventListener('mouseup', stopTrackball)
+  
+  scrollDetector.parentElement.addEventListener('keydown', processCanvasArrowKeydown)
 }
 
 /**
@@ -68,4 +83,119 @@ function processCanvasArrowKeydown(event) {
   phi = new_phi;
   theta = new_theta;
   updateViewMatrix();
+}
+
+/** Capture scroll movement and translate it into sphere radius coordinate
+ * or distance from origin to camera. The radius is capped between near & far
+ * values.
+ */
+
+function zoomCameraFromScrollDetector () {
+  let deltaScroll = scrollDetector.scrollTop - scrollInitial;
+  scrollDetector.scrollTop = scrollInitial;
+  let newRadius = Math.pow(Math.E, Math.log(camera.radius) + deltaScroll / 10);
+  if (newRadius < camera.near) {
+    return
+  }
+  if (newRadius > camera.far) {
+    return;
+  }
+  camera.radius = newRadius;
+  updateViewMatrix();
+}
+
+// Implement trackball using sphere coordinate.
+// Source: https://computergraphics.stackexchange.com/questions/151/how-to-implement-a-trackball-in-opengl
+
+let isClickingForTrackball = false;
+
+let posXInit = 0;
+let posYInit = 0;
+let initPhi;
+let initTheta;
+let initCameraPos = [0, 0, 0];
+let initLook = [];
+let initCameraRight = [];
+let initCameraUp = [];
+let isCameraPositionTrackballed = false;
+
+function startTrackball(event) {
+  if (isClickingForTrackball) {
+    return
+  }
+  posXInit = event.screenX;
+  posYInit = event.screenY;
+  initPhi = phi;
+  initTheta = theta;
+
+  initCameraPos = sphereToCartesian(camera.radius, initPhi, initTheta);
+  initLook = normalize(initCameraPos)
+  initCameraRight = cross(initLook, up);
+  initCameraUp = cross(initLook, initCameraRight)
+
+  isClickingForTrackball = true;
+}
+
+function trackMouseForTrackball(event) {
+  if (!isClickingForTrackball) {
+    return
+  }
+
+  let deltaX = event.screenX - posXInit;
+  let deltaY = event.screenY - posYInit;
+
+  if (Math.abs(deltaX) < 1 && Math.abs(deltaY) < 1) {
+    return
+  }
+
+  deltaX = deltaX / window.innerWidth * 2;
+  deltaY = -deltaY / window.innerHeight * 2;
+
+  let cameraPos = add(initCameraPos, scale(deltaX, initCameraRight))
+  cameraPos = add(cameraPos, scale(deltaY, initCameraUp))
+  let cameraPosInSphere = cartesianToSphere(cameraPos[0], cameraPos[1], cameraPos[2])
+
+  phi = initPhi + -deltaX * 3
+  // theta = initTheta + deltaY * 3
+
+  let newTheta = initTheta + deltaY * 3;
+  console.log(newTheta)
+  if (Math.abs(newTheta) < 0.1 || Math.sign(newTheta) !== Math.sign(initTheta)) {
+    newTheta = (Math.sign(initTheta) || 1) * 0.1;
+    initTheta = newTheta;
+    posYInit = event.screenY;
+  } else if (Math.abs(newTheta) > Math.PI - 0.1 || Math.sign(newTheta) !== Math.sign(initTheta)) {
+    newTheta = (Math.sign(initTheta) || 1) * (Math.PI - 0.1);
+    initTheta = newTheta;
+    posYInit = event.screenY;
+  }
+  theta = newTheta;
+
+  // theta = Math.sign(theta) * Math.max(Math.abs(theta), 0.1)
+
+  if (!isCameraPositionTrackballed) {
+    isCameraPositionTrackballed = true
+  }
+
+  updateViewMatrix();
+
+  // Clear selection
+  // Taken from: https://stackoverflow.com/a/3169849/10159381
+
+  if (window.getSelection) {
+    if (window.getSelection().empty) {
+      window.getSelection().empty();
+    } else if (window.getSelection().removeAllRanges) {
+      window.getSelection().removeAllRanges();
+    }
+  } else if (document.selection) {
+    document.selection.empty();
+  }
+}
+
+function stopTrackball() {
+  if (!isClickingForTrackball) {
+    return
+  }
+  isClickingForTrackball = false;
 }

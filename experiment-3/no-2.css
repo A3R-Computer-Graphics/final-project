@@ -518,3 +518,32 @@ ul > li:last-child::before {
 #selected-object-menu.no-selection {
   display: none;
 }
+
+
+
+/* Scroll detector */
+
+#scroll-detector, #scroll-detector>*, #scroll-detector>*>* {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0.1;
+  cursor: grab;
+}
+
+#scroll-detector {
+  overflow: hidden;
+}
+
+#scroll-detector>div {
+  height: 99%;
+  overflow-y: auto;
+  padding-right: 100px;
+}
+
+#scroll-detector>div>div {
+  height: 200%;
+  background: linear-gradient(black, white)
+}
