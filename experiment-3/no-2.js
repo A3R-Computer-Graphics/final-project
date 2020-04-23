@@ -36,6 +36,51 @@ let resolution = 100
 let isMenuShown = true
 let sliderList = []
 
+
+
+// Utility to update slider value
+
+/**
+ * Update slider display from parent element
+ * 
+ * @param {[String, HTMLInputElement]} slider 
+ */
+
+function updateSliderDisplay(slider, value) {
+  if (typeof slider === 'string') {
+    slider = document.querySelector(`input[name="${slider}"`)
+  }
+  if (typeof value == 'undefined') {
+    value = parseFloat(slider.value);
+  }
+  if (slider) {
+    slider.parentElement.querySelector('.slider-value').innerText = value;
+  }
+}
+
+/**
+ * Update slider value and its display
+ * 
+ * @param {[String, HTMLInputElement]} slider 
+ * @param {Number} value 
+ * @param {Number} sliderValue optional, different value for slider
+ */
+
+function updateSliderValueAndDisplay(slider, value, sliderValue) {
+  if (value) {
+    if (typeof slider === 'string') {
+      slider = document.querySelector(`input[name="${slider}"`)      
+    }
+    if (typeof sliderValue === 'undefined') {
+      sliderValue = value;
+    }
+    if (slider) {
+      slider.value = sliderValue;
+      slider.parentElement.querySelector('.slider-value').innerText = value;
+    }
+  }
+}
+
 /**
  * Function to update animation slider that has been throttled
  * so that it's not executed too often.
@@ -112,53 +157,53 @@ function connectSlidersToModelData() {
       return
     }
 
-    const {
-      modelName,
-      propertyName,
-      axisId
-    } = propertyData;
-    elem.addEventListener('input', function (event) {
-      sceneGraph.nodes[modelName].model[propertyName][axisId] = parseFloat(event.target.value);
-      sceneGraph.nodes[modelName].updateTransformations()
-      let textVal = event.target.parentElement.querySelector('.slider-value')
-      textVal.innerText = parseFloat(event.target.value)
+    const { modelName, propertyName, axisId } = propertyData;
+    let node = sceneGraph.nodes[modelName];
+    let modelProperties = node.model[propertyName];
+
+    elem.addEventListener('input', () => {
+      let value = parseFloat(elem.value);
+      updateSliderValueAndDisplay(elem, value);
+      modelProperties[axisId] = value;
+      node.updateTransformations();
     })
   })
 }
 
 function connectSpeedSlider() {
-  let SPEED_MIN = 0.05;
-  let SPEED_MAX = 4;
-  let speedSlider = document.querySelector('input[name="speed"]');
-  let speedValueDisplay = speedSlider.parentElement.querySelector('.slider-value');
+  let slider = document.querySelector('input[name="speed"]');
 
-  speedSlider.addEventListener('input', event => {
-    let value = parseFloat(event.target.value);
+  const SPEED_MIN = parseFloat(slider.getAttribute('min'));
+  const SPEED_MAX = parseFloat(slider.getAttribute('max'));
+
+  slider.addEventListener('input', () => {
+    let value = parseFloat(slider.value);
+    console.log(SPEED_MAX, value)
     value = interpolateExponentially(SPEED_MIN, SPEED_MAX, value);
-    speedValueDisplay.innerText = Math.round(value * 100) + '%';
+    updateSliderDisplay(slider, Math.round(value * 100) + '%');
     animationManager.speed = value;
   })
 
   // Init slider position from inverse of exponential (logarithm)
-  let sliderInitValue = interpolateLogarithmatically(SPEED_MIN, SPEED_MAX, animationManager.speed);
-  speedSlider.value = sliderInitValue;
-  speedValueDisplay.innerText = Math.round(animationManager.speed * 100) + '%';
+  let currentSpeed = animationManager.speed;
+  let displaySpeed = Math.round(currentSpeed * 100) + '%'
+  let sliderInitValue = interpolateLogarithmatically(SPEED_MIN, SPEED_MAX, currentSpeed);
+  
+  updateSliderValueAndDisplay(slider, displaySpeed, sliderInitValue);
 }
 
 function connectLightPositionSliders() {
   document.querySelectorAll('input[name^=light-position]').forEach(slider => {
-    const valueDisplay = slider.parentElement.querySelector('.slider-value');
-    
+
     const name = slider.getAttribute('name');
     const positionAxisName = name.match(/light-position-(x|y|z)$/)[1];
     const axisId = ['x', 'y', 'z'].indexOf(positionAxisName);
 
     let value = lightingCubeModel.location[axisId];
-    valueDisplay.innerText = value;
-    slider.value = value;
+    updateSliderValueAndDisplay(slider, value)
 
-    slider.addEventListener('input', function (event) {
-      let value = parseFloat(event.target.value);
+    slider.addEventListener('input', () => {
+      let value = parseFloat(slider.value);
 
       lightingCubeModel.location[axisId] = value;
       lightingCubeModel.updateMatrices();
@@ -166,7 +211,7 @@ function connectLightPositionSliders() {
       sceneGraph.updateLightSetup({position: lightingCubeModel.location});
       sceneGraph.updateGlLightPosition();
 
-      valueDisplay.innerText = value;
+      updateSliderDisplay(slider, value);
     });
   });
 }
@@ -250,8 +295,9 @@ function adjustViewport() {
 }
 
 function adjustResolution(event) {
-  resolution = Math.min(100, Math.max(1, event.target.value))
-  event.target.parentElement.querySelector('.slider-value').innerText = resolution + '%'
+  let slider = event.target
+  resolution = Math.min(100, Math.max(1, slider.value))
+  updateSliderDisplay(slider, resolution + '%')
   adjustViewport()
 }
 
@@ -322,10 +368,8 @@ function matchSlidersToAnimation() {
     axisId
   }) => {
     let animationValue = sceneGraph.nodes[modelName].model[propertyName][axisId]
-    let sliderElement = document.querySelector(`input[name="${sliderName}"]`)
-    let displayElement = sliderElement.parentElement.querySelector('.slider-value')
-    sliderElement.value = animationValue
-    displayElement.innerText = Math.round(animationValue * 100) / 100
+    animationValue = Math.round(animationValue * 100) / 100
+    updateSliderValueAndDisplay(sliderName, animationValue)
   })
 }
 

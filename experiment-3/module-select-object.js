@@ -153,15 +153,14 @@ function connectSelectedObjectSlider() {
       let axisId = index
       let sliderName = `selected-object-${propertyName}-${axisName}`
 
-      let sliderElement = document.querySelector(`input[name="${sliderName}"]`)
-      let displayElement = sliderElement.parentElement.querySelector('.slider-value')
+      let slider = document.querySelector(`input[name="${sliderName}"]`)
 
-      sliderElement.addEventListener('input',
-        event => {
+      slider.addEventListener('input',
+        () => {
           if (sceneGraph.selectedNodeName) {
-            let value = event.target.value
-            updateSelectedProperty(propertyName, axisId, parseFloat(value))
-            displayElement.innerText = Math.round(value * 100) / 100
+            let value = parseFloat(slider.value)
+            updateSelectedProperty(propertyName, axisId, value)
+            updateSliderDisplay(slider, value)
           }
         })
 
@@ -188,12 +187,9 @@ let updateSliderOnObjectSelected = throttle(function () {
     axis.forEach((axisName, index) => {
       let axisId = index
       let sliderName = `selected-object-${propertyName}-${axisName}`
-      let slider = document.querySelector(`input[name="${sliderName}"]`)
-      if (slider) {
-        let value = Math.round(selectedModel[propertyName][axisId] * 100) / 100
-        slider.value = value
-        slider.parentElement.querySelector('.slider-value').innerText = value
-      }
+      let value = selectedModel[propertyName][axisId]
+      value = Math.round(value * 100) / 100
+      updateSliderValueAndDisplay(sliderName, value)
     })
   })
 
