@@ -132,7 +132,7 @@ function startTrackball(event) {
 
   if (event.touches) {
     posXInit = event.touches[0].screenX;
-    posYInit = event.touches[1].screenY;
+    posYInit = event.touches[0].screenY;
   }
 
   initPhi = phi;
@@ -151,7 +151,7 @@ function trackMouseForTrackball(event) {
 
   if (event.touches) {
     deltaX = event.touches[0].screenX;
-    deltaY = event.touches[1].screenY;
+    deltaY = event.touches[0].screenY;
   }
 
   deltaX -= posXInit;
