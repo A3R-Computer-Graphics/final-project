@@ -1,0 +1,550 @@
+body {
+  display: flex;
+  flex-flow: row;
+  position: relative;
+  background-color: #3c3f44;
+  color: #b4b4b4;
+  height: 100vh;
+  overflow: hidden;
+}
+
+html {
+  background-color: black;
+  overflow: hidden;
+  width: 100%;
+}
+
+body {
+  height: 100%;
+  position: fixed;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+.canvas-wrapper {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+canvas {
+  position: absolute;
+  height: 100%;
+  left: 0;
+  top: 0;
+  width: 100%;
+}
+
+#menu-toggler-wrapper {
+  position: fixed;
+  margin: 0;
+  transition: transform 0.4s cubic-bezier(.33, 1.5, .59, 1);
+  height: 100%;
+  font-size: 14px;
+  right: 0;
+}
+
+.hide-menu {
+  transform: translateX(100%);
+}
+
+#menu-toggler-wrapper.show-menu #menu-toggler-button img {
+  transform: rotate(90deg);
+}
+
+#menu-toggler-wrapper.hide-menu #menu-toggler-button img {
+  transform: rotate(-90deg) translateX(-5px);
+  float: left;
+  margin-right: 7px;
+}
+
+#menu-toggler-wrapper.hide-menu #menu-toggler-button {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#menu-toggler-button img {
+  width: 16px;
+}
+
+.hide-menu>button>div {
+  flex-direction: row;
+}
+
+.show-menu {
+  right: 0;
+}
+
+.show-menu>button>div {
+  flex-direction: row-reverse;
+}
+
+.menu {
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 10px;
+  z-index: 1;
+  height: 100%
+}
+
+.submenu {
+  margin: 0;
+  background-color: rgba(25, 25, 25, 0.88);
+  padding: 10px;
+  border-radius: 3px;
+  margin-bottom: 10px;
+}
+
+.submenu>*:last-child {
+  margin-bottom: 0;
+}
+
+#menu-toggler-button {
+  height: 40px;
+  position: absolute;
+  text-align: center;
+  left: 0;
+  transform: translateX(-100%);
+}
+
+.rotated-text {
+  display: inline-block;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.submenu-title {
+  font-size: 16px;
+  color: white;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ffffff40;
+}
+
+.submenu-two-list-container>*:first-child {
+  margin-right: 10px;
+}
+
+.submenu>.row {
+  margin-right: -10px;
+  margin-left: -10px;
+}
+
+.submenu>.row>.col-sm {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.custom-range {
+  margin-bottom: 10px;
+}
+
+/* Addition */
+.slider-value {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  text-align: right;
+}
+
+label {
+  margin-bottom: 0;
+  display: block;
+}
+
+input[type=range] {
+  height: 5px;
+  display: block;
+  margin-top: 7px;
+}
+
+/* Special styling for WebKit/Blink */
+input[type=range]::-webkit-slider-thumb {
+  border: 1px solid transparent;
+  height: 10px;
+  width: 15px;
+  border-radius: 2px;
+  background: #ffffff;
+  cursor: pointer;
+  margin-top: -3px;
+  /* Needed for webkit, other browsers are not */
+  -webkit-appearance: none;
+}
+
+/* All the same stuff for Firefox */
+input[type=range]::-moz-range-thumb {
+  border: 1px solid transparent;
+  height: 10px;
+  width: 15px;
+  border-radius: 2px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+/* All the same stuff for IE */
+input[type=range]::-ms-thumb {
+  border: 1px solid transparent;
+  height: 10px;
+  width: 15px;
+  border-radius: 2px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 5px;
+  cursor: pointer;
+  background: #ffffff57;
+  border-radius: 2px;
+}
+
+input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #3f94ef;
+}
+
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 5px;
+  cursor: pointer;
+  background: #ffffff57;
+  border-radius: 2px;
+}
+
+input[type=range]::-ms-track {
+  width: 100%;
+  height: 5px;
+  cursor: pointer;
+  background: #ffffff57;
+  border-radius: 2px;
+}
+
+input[type=range]::-ms-fill-lower {
+  background: #ffffff57;
+  border-radius: 2px;
+}
+
+input[type=range]:focus::-ms-fill-lower {
+  background: #3f94ef;
+}
+
+input[type=range]::-ms-fill-upper {
+  background: #ffffff57;
+  border-radius: 2px;
+}
+
+input[type=range]:focus::-ms-fill-upper {
+  background: #3f94ef;
+}
+
+/* Disabled range */
+input[type=range]:disabled::-webkit-slider-thumb {
+  background: #8d8d8d;
+  box-shadow: 0 0 4px 2px #00000042;
+  cursor: initial;
+}
+
+input[type=range]:disabled::-moz-range-thumb {
+  background: #8d8d8d;
+  box-shadow: 0 0 4px 2px #00000042;
+  cursor: initial;
+}
+
+input[type=range]:disabled::-ms-thumb {
+  background: #8d8d8d;
+  box-shadow: 0 0 4px 2px #00000042;
+  cursor: initial;
+}
+
+.submenu-two-list-container {
+  display: flex;
+}
+
+.submenu-two-list-container>* {
+  flex-basis: 50%;
+}
+
+.slider-container {
+  position: relative;
+}
+
+.menu {
+  width: 480px;
+}
+
+div#speed-slider {
+  margin-top: 1rem;
+}
+
+#btn-animate {
+  width: 100%;
+}
+
+#screen-info {
+  position: absolute;
+  bottom: 0;
+  z-index: 1;
+  color: white;
+  padding-bottom: 10px;
+  padding-left: 10px;
+  text-shadow: 0 0 8px rgba(0,0,0,0.3);
+  font-size: 14px;
+  letter-spacing: calc(3rem / 100);
+  color: #d7d7d7;
+}
+
+#canvas-status {
+  margin-bottom: 0;
+  display: none;
+}
+
+.canvas-wrapper:focus + * > #canvas-status {
+  display: block;
+}
+
+.note strong, #help-content strong {
+  color: white;
+}
+
+#help-content {
+  letter-spacing: 0.03rem;
+}
+
+#selected-object-menu .submenu-section>* {
+  width: calc((100%) / 3 - 0.5rem);
+  display: inline-block;
+  margin-left: 0.5rem;
+}
+
+#selected-object-menu .submenu-section>*:first-child {
+  margin-left: 0;
+}
+
+#selected-object-menu .property-section>h4 {
+  font-size: inherit;
+  font-weight: normal;
+}
+
+
+/* Tree */
+
+#tree li {
+  position: relative;
+}
+
+.obj-name {
+  border-radius: 2px;
+  border: 1px solid #535151;
+  padding: 0.15rem;
+  padding-left: 0.5rem;
+  position: relative;
+  user-select: none;
+  margin-top: 5px;
+  word-break: break-all;
+}
+
+.obj-name#root-node {
+  border-color: transparent;
+}
+
+#tree {
+  position: relative;
+  max-height: 270px;
+  overflow-y: scroll;
+  padding: 11px;
+  margin: 10px 0;
+  background-color: #131313;
+}
+
+li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  border-color: #adadad;
+}
+
+.obj-name#root-node:hover {
+  background-color:transparent;
+  cursor: initial;
+  border-color: transparent;
+}
+
+#tree ul {
+  position: relative;
+  padding-left: 23px;
+  list-style: none;
+}
+
+#tree > .obj-name::before {
+  border-color: transparent;
+}
+
+#tree ul:before {
+  position: absolute;
+  content: "";
+  top: -5px;
+  left: 12px;
+  height: calc(100% - 6px);
+  width: 1px;
+  border-left: 1px solid #a2a2a2;
+}
+
+#tree .obj-name::before {
+  content: "";
+  position: absolute;
+  bottom: 10px;
+  right: 100%;
+  height: 1px;
+  width: 12px;
+  border-bottom: 1px solid #a2a2a2;
+  
+}
+
+#tree .collapsed-sign::before {
+  content: "\25B2";
+  color: #b9b9b9;
+  position: absolute;
+  top: 50%;
+  font-size: 10px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.collapsed-sign {
+  width: 20px;
+  height: 20px;
+  display: block;
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 3px;
+  cursor: pointer;
+}
+
+#tree input[type="checkbox"]:not(:checked) + * + ul > li {
+  display: none;
+}
+
+#tree input[type="checkbox"]:not(:checked) + * + ul .collapsed-sign {
+  transform: rotate(180deg);
+  bottom: calc(100% + 2px);
+}
+
+#tree input[type="checkbox"] {
+  width: 100%;
+  height: 26px;
+  right: 0;
+  display: block;
+  position: absolute;
+  z-index: 1;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+#tree li.selected > .obj-name,
+#tree li.selected > input[type="checkbox"]:hover + .obj-name {
+  background-color: #f2a518;
+  border-color: #f2a518;
+  margin-bottom: 0px;
+  text-overflow: ellipsis;
+  color: black;
+}
+
+#tree li.selected > input[type="checkbox"]:focus {
+  outline: none;
+}
+
+#tree li.selected > input[type="checkbox"]:focus + .obj-name {
+  border-color: white;
+  border-width: 2px;
+  margin-left: -1px;
+  margin-right: -1px;
+  margin-top: 4px;
+  margin-bottom: -1px;
+}
+
+#tree li.selected > ul > .collapsed-sign::before {
+  color: black;
+}
+
+#tree ul > li:last-child::before {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 10px;
+  height: calc(100% - 24px);
+  background-color: #131313;
+  top: 16px;
+  left: -17px;
+}
+
+#tree li > input[type="checkbox"]:checked + * + ul::after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 10px;
+  background-color: #acacac;
+  top: -8px;
+  left: 10px;
+}
+
+
+.note {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+/* Selected object hierarchy */
+
+#selobj-hierarchy > * {
+  display: inline-block;
+  margin-right: 0.5rem;
+  color: orange;
+}
+
+#selobj-hierarchy > *:not(:last-child)::after {
+  content: "\25B2";
+  color: white;
+  margin-left: 0.5rem;
+  transform: rotate(90deg);
+  display: inline-block;
+}
+
+#selobj-hierarchy > *:last-child {
+  font-weight: bold;
+}
+
+#selected-object-menu.no-selection {
+  display: none;
+}
+
+
+
+/* Scroll detector */
+
+#scroll-detector, #scroll-detector>*, #scroll-detector>*>* {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0.1;
+  cursor: grab;
+}
+
+#scroll-detector {
+  overflow: hidden;
+}
+
+#scroll-detector>div {
+  height: 99%;
+  overflow-y: auto;
+  padding-right: 100px;
+}
+
+#scroll-detector>div>div {
+  height: 200%;
+  background: linear-gradient(black, white)
+}
