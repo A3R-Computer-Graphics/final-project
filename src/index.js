@@ -456,12 +456,17 @@ window.addEventListener('load', function init() {
   })
   sceneGraph.updateGlLightPosition()
 
-  animationManager = new AnimationManager({
-    sceneGraph,
-    speed: 0.5,
-    maxFrameNumber: 120
-  })
-  animationManager.initFromConfig(animations_definition)
+  let USE_ANIMATION = false
+  
+  if (USE_ANIMATION) {
+    animationManager = new AnimationManager({
+      sceneGraph,
+      speed: 0.5,
+      maxFrameNumber: 120
+    })
+    animationManager.initFromConfig(animations_definition)
+
+  }
 
   initializeCameraPosition()
   initializeProjectionMatrix()
@@ -478,9 +483,12 @@ window.addEventListener('load', function init() {
   document.querySelector('#btn-animate').addEventListener('click', toggleAnimation)
 
   connectSlidersToModelData()
-  connectSpeedSlider()
   connectLightPositionSliders()
-  attachListenerOnAnimationUpdate()
+
+  if (USE_ANIMATION) {
+    connectSpeedSlider()
+    attachListenerOnAnimationUpdate()
+  }
 
   if (typeof initObjectSelectionMechanism !== 'undefined') {
     initObjectSelectionMechanism()

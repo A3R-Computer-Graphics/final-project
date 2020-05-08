@@ -5,7 +5,9 @@ function initObjectSelectionMechanism() {
   connectSelectedObjectSlider()
   updateSliderOnObjectSelected()
   
-  animationManager.addListener('animationupdate', updateSliderOnObjectSelected)
+  if (typeof animationManager !== 'undefined') {
+    animationManager.addListener('animationupdate', updateSliderOnObjectSelected)
+  }
 }
 
 let isMatchingSelectedPropertyToSlider = false
