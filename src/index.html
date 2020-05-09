@@ -57,8 +57,7 @@ uniform float shininess;
 
 uniform float selectingFactor;
 
-void main()
-{
+vec4 calculatePhong() {
     vec3 N = normalize(normalInterp);
 
     vec3 L = normalize(lightPos - vertPos);
@@ -71,12 +70,17 @@ void main()
     float specular = 0.0;
 
     if (lambertian > 0.0) {
-      // Compute specular reflection term (see p. 287 Angel 7th ed)
-      float specAngle = max(dot(N, H), 0.0);
-      specular = pow(specAngle, shininess);
+        // Compute specular reflection term (see p. 287 Angel 7th ed)
+        float specAngle = max(dot(N, H), 0.0);
+        specular = pow(specAngle, shininess);
     }
     
-    vec4 fColor = (ambientProduct + lambertian * diffuseProduct + specular * specularProduct);
+    return ambientProduct + lambertian * diffuseProduct + specular * specularProduct;
+}
+
+void main()
+{
+    vec4 fColor = calculatePhong();
     fColor = texture2D(u_texture, v_texcoord) * fColor;
     
     vec4 selectedColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
