@@ -231,8 +231,8 @@ class SceneGraph {
     locations.viewMatrix = gl.getUniformLocation(program, "viewMatrix")
     locations.projectionMatrix = gl.getUniformLocation(program, "projectionMatrix")
     locations.normalMatrix = gl.getUniformLocation(program, "normalMatrix")
-    locations.selectingFactor = gl.getUniformLocation(program, "selectingFactor")
-    gl.uniform1f(locations.selectingFactor, 0.0)
+    locations.isSelected = gl.getUniformLocation(program, "isSelected")
+    gl.uniform1f(locations.isSelected, 0.0)
 
     gl.locations = locations
 

@@ -73,11 +73,11 @@ class Renderer {
     gl.uniformMatrix4fv( glLocations.normalMatrix, false, normalMatrix);
     
     if (selected) {
-      gl.uniform1f(glLocations.selectingFactor, 1.0);
+      gl.uniform1f(glLocations.isSelected, true);
     }
     gl.drawArrays(gl.TRIANGLES, model.bufferStartIndex, model.vertexCount);
     if (selected) {
-      gl.uniform1f(glLocations.selectingFactor, 0.0);
+      gl.uniform1f(glLocations.isSelected, false);
     }
   }
 }

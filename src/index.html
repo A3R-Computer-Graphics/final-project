@@ -16,9 +16,7 @@ uniform mat4 modelMatrix, viewMatrix, projectionMatrix, normalMatrix;
 
 uniform vec4 lightPosition;
 
-varying vec3 normalInterp;
-varying vec3 vertPos;
-varying vec3 lightPos;
+varying vec3 normalInterp, vertPos, lightPos;
 
 void main()
 {
@@ -40,9 +38,11 @@ void main()
 <script id="fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
 
-varying vec2 v_texcoord;
+const vec4 selectedObjectColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
 
-// The texture.
+// Texture setup
+
+varying vec2 v_texcoord;
 uniform sampler2D u_texture;
 
 varying vec3 normalInterp;  // Surface normal
@@ -52,10 +52,8 @@ varying vec3 lightPos;      // Light position, interpolated
 uniform vec4 ambientProduct, diffuseProduct, specularProduct;
 uniform float shininess;
 
-// Percentage of mix between normal material shader
-// and material shader
-
-uniform float selectingFactor;
+// Flag to indicate if object is selected or not
+uniform bool isSelected;
 
 vec4 calculatePhong() {
     vec3 N = normalize(normalInterp);
@@ -80,11 +78,14 @@ vec4 calculatePhong() {
 
 void main()
 {
-    vec4 fColor = calculatePhong();
-    fColor = texture2D(u_texture, v_texcoord) * fColor;
-    
-    vec4 selectedColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
-    fColor = fColor * (1.0 - selectingFactor) + selectedColor * selectingFactor;
+    vec4 fColor;
+
+    if (!isSelected) {
+        fColor = calculatePhong();
+        fColor = texture2D(u_texture, v_texcoord) * fColor;
+    } else {
+        fColor = selectedObjectColor;
+    }
     fColor.a = 1.0;
 
     gl_FragColor = fColor;
