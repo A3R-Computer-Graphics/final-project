@@ -28,7 +28,7 @@ let up = vec3(0.0, 0.0, 1.0)
 let canvas
 let gl
 let program
-let resolution = 100
+let resolution = 40 // TODO: Reset to 100. Now is set to 10 that my computers doesn't get too hot.
 
 // Interaction variables
 
@@ -393,23 +393,54 @@ let lightingCubeModel
 function createCubeLight() {
   let cube_objects = {
     "vertices": [
-      [-0.5, -0.5, -0.5],
-      [-0.5, -0.5, 0.5],
-      [-0.5, 0.5, -0.5],
-      [-0.5, 0.5, 0.5],
+      [0.5, -0.5, 0.5], //0
       [0.5, -0.5, -0.5],
-      [0.5, -0.5, 0.5],
+      [-0.5, -0.5, 0.5], //2
+      [-0.5, -0.5, -0.5],
+      [0.5, 0.5, 0.5], //4
       [0.5, 0.5, -0.5],
-      [0.5, 0.5, 0.5]
-    ],
-    "indices": [
-      [0, 1, 3, 2],
-      [2, 3, 7, 6],
-      [6, 7, 5, 4],
-      [4, 5, 1, 0],
-      [2, 6, 4, 0],
-      [7, 3, 1, 5]
-    ],
+      [-0.5, 0.5, 0.5], //6
+      [-0.5, 0.5, -0.5]
+  ],
+  "indices": [
+      [0, 4, 6, 2],
+      [3, 2, 6, 7],
+      [7, 6, 4, 5],
+      [5, 1, 3, 7],
+      [1, 0, 2, 3],
+      [5, 4, 0, 1]
+  ],
+  "uv_coordinates": [
+      [1, 1],
+      [0, 1],
+      [0, 0],
+      [1, 0],
+
+      [1, 1],
+      [0, 1],
+      [0, 0],
+      [1, 0],
+      
+      [1, 1],
+      [0, 1],
+      [0, 0],
+      [1, 0],
+      
+      [1, 1],
+      [0, 1],
+      [0, 0],
+      [1, 0],
+      
+      [1, 1],
+      [0, 1],
+      [0, 0],
+      [1, 0],
+      
+      [1, 1],
+      [0, 1],
+      [0, 0],
+      [1, 0],
+  ],
     "material_name": "white"
   }
 
@@ -421,11 +452,92 @@ function createCubeLight() {
 
   lightingCubeModel.vertices = cube_objects.vertices
   lightingCubeModel.indices = cube_objects.indices
+  lightingCubeModel.uvCoordinates = cube_objects.uv_coordinates
   lightingCubeModel.setMaterial('white', sceneGraph.materials)
 
   sceneGraph.addModelToScene(lightingCubeModel)
 }
 
+let texcoordLocation;
+let texcoordBuffer;
+let textureLocation;
+
+let texture1;
+let texture2;
+let texture3;
+let texture4;
+
+// NOTE: RENDERER.JS IS ALSO CHANGED.
+// CHECK IT OUT.
+
+function initTextures() {
+  texcoordLocation = gl.getAttribLocation(program, "a_texcoord");
+  textureLocation = gl.getUniformLocation(program, "u_texture");
+
+  texcoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+  
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(sceneGraph.uvCoordinatesArray), gl.STATIC_DRAW);
+  gl.vertexAttribPointer(texcoordLocation, 2, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(texcoordLocation);
+
+  texture1 = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture1);
+
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+    new Uint8Array([0, 0, 255, 255]));
+
+  var image = new Image();
+  image.src = "resources/objects/material_resources/Base.png";
+  image.addEventListener('load', function() {
+    // Now that the image has loaded make copy it to the texture.
+    gl.bindTexture(gl.TEXTURE_2D, texture1);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image);
+    gl.generateMipmap(gl.TEXTURE_2D);
+  });
+
+  texture2 = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture2);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+    new Uint8Array([0, 255, 255, 255]));
+
+  var secondImage = new Image();
+  secondImage.src = "resources/objects/material_resources/F-textures.png";
+  secondImage.addEventListener('load', function() {
+    // Now that the image has loaded make copy it to the texture.
+    gl.bindTexture(gl.TEXTURE_2D, texture2);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, secondImage);
+    gl.generateMipmap(gl.TEXTURE_2D);
+  });
+
+  texture3 = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture3);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+    new Uint8Array([0, 255, 255, 255]));
+
+  var thirdImage = new Image();
+  thirdImage.src = "resources/objects/material_resources/1-64.png";
+  thirdImage.addEventListener('load', function() {
+    // Now that the image has loaded make copy it to the texture.
+    gl.bindTexture(gl.TEXTURE_2D, texture3);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, thirdImage);
+    gl.generateMipmap(gl.TEXTURE_2D);
+  });
+
+  texture4 = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture4);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+    new Uint8Array([0, 255, 255, 255]));
+
+  var fourthImage = new Image();
+  fourthImage.src = "resources/objects/material_resources/wood.png";
+  fourthImage.addEventListener('load', function() {
+    // Now that the image has loaded make copy it to the texture.
+    gl.bindTexture(gl.TEXTURE_2D, texture4);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, fourthImage);
+    gl.generateMipmap(gl.TEXTURE_2D);
+  });
+}
 
 window.addEventListener('load', function init() {
   // Initialize canvas and GL first
@@ -451,17 +563,24 @@ window.addEventListener('load', function init() {
   sceneGraph.movePointsToBufferData()
   sceneGraph.updateModelsTransformations()
 
+  initTextures()
+
   sceneGraph.updateLightSetup({
     position: lightingCubeModel.location
   })
   sceneGraph.updateGlLightPosition()
 
-  animationManager = new AnimationManager({
-    sceneGraph,
-    speed: 0.5,
-    maxFrameNumber: 120
-  })
-  animationManager.initFromConfig(animations_definition)
+  let USE_ANIMATION = false
+  
+  if (USE_ANIMATION) {
+    animationManager = new AnimationManager({
+      sceneGraph,
+      speed: 0.5,
+      maxFrameNumber: 120
+    })
+    animationManager.initFromConfig(animations_definition)
+
+  }
 
   initializeCameraPosition()
   initializeProjectionMatrix()
@@ -478,9 +597,12 @@ window.addEventListener('load', function init() {
   document.querySelector('#btn-animate').addEventListener('click', toggleAnimation)
 
   connectSlidersToModelData()
-  connectSpeedSlider()
   connectLightPositionSliders()
-  attachListenerOnAnimationUpdate()
+
+  if (USE_ANIMATION) {
+    connectSpeedSlider()
+    attachListenerOnAnimationUpdate()
+  }
 
   if (typeof initObjectSelectionMechanism !== 'undefined') {
     initObjectSelectionMechanism()
