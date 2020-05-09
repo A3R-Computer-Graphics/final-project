@@ -12,6 +12,7 @@ class SceneGraph {
     this.numVertices = 0
     this.pointsArray = []
     this.normalsArray = []
+    this.uvCoordinatesArray = []
 
     this.selectedNodeName = ''
 
@@ -81,6 +82,7 @@ class SceneGraph {
 
     this.pointsArray = new Array(triangleCount * 3)
     this.normalsArray = new Array(triangleCount * 3)
+    this.uvCoordinatesArray = new Array(triangleCount * 3)
 
     // Iterate over the modelsVerticesData and modelsInfoData
     // to initiate node data.
@@ -96,6 +98,11 @@ class SceneGraph {
         vertices: objVertsData.vertices,
         polygonIndices: objVertsData.indices
       }, self.numVertices, self.pointsArray, self.normalsArray)
+
+      populateUvCoordinates({
+        objectUvCoordinates: objVertsData.uv_coordinates,
+        polygonIndices: objVertsData.indices,
+      }, self.numVertices, self.uvCoordinatesArray)
 
       self.numVertices = newData.newStartIndex;
       let vertexCount = self.numVertices - numVertsBefore;
@@ -169,6 +176,11 @@ class SceneGraph {
       vertices: model.vertices,
       polygonIndices: model.indices
     }, this.numVertices, this.pointsArray, this.normalsArray)
+
+    populateUvCoordinates({
+      objectUvCoordinates: model.uvCoordinates,
+      polygonIndices: model.indices,
+    }, this.numVertices, this.uvCoordinatesArray)
 
     this.numVertices = newData.newStartIndex;
     model.vertexCount = this.numVertices - numVertsBefore

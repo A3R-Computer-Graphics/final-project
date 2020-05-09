@@ -47,6 +47,26 @@ class Renderer {
       flatten(model.fullTransformMatrix)
     );
 
+    if (model.name === 'cube-lighting') {
+      gl.bindTexture(gl.TEXTURE_2D, texture2);
+    } else {
+      gl.bindTexture(gl.TEXTURE_2D, texture1);
+    }
+
+    // gl.enableVertexAttribArray(texcoordLocation);
+    // gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+    
+    // var size = 2;          // 2 components per iteration
+    // var type = gl.FLOAT;   // the data is 32bit floats
+    // var normalize = false; // don't normalize the data
+    // var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+    // var offset = 0;        // start at the beginning of the buffer
+
+    // gl.vertexAttribPointer(texcoordLocation, size, type, normalize, stride, offset);
+
+    // // Tell the shader to use texture unit 0 for u_texture
+    // gl.uniform1i(textureLocation, 0);
+
     let viewMatrix = m4.multiply(sceneGraph.camera.viewMatrix, model.fullTransformMatrix)
     let normalMatrix = m4.transpose(m4.inverse(viewMatrix))
 

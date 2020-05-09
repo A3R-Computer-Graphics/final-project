@@ -6,11 +6,14 @@ import json
 import math
 import os
 
+import sys
+
 C = bpy.context
 
-DIR = os.path.dirname(os.path.abspath(__file__))
-OBJECTS_VERTEX_FPATH = os.path.join(DIR, '../src/resources/objects/objects-vertices.js')
-OBJECTS_INFO_PATH = os.path.join(DIR, '../src/resources/objects/objects-data.js')
+DIR = os.path.join(bpy.path.abspath("//"), "../kode/src/resources/objects/")
+DIR = os.path.normpath(DIR)
+OBJECTS_VERTEX_FPATH = os.path.join(DIR, 'objects-vertices.js')
+OBJECTS_INFO_PATH = os.path.join(DIR, 'objects-data.js')
 
 def write_selected():
     # C = Convenience variables for bpy.context
@@ -24,12 +27,27 @@ def write_selected():
         
         vertices = []
         indices = []
+        uv_coordinates = []
         
         for idx, vertex in enumerate(obj.data.vertices):
             vertices.append(list(map(lambda i: round(i, 3), vertex.co[0:3])))
         
         for i in range(len(obj.data.polygons)):
             indices.append(list(obj.data.polygons[i].vertices))
+        
+        uv_maps = obj.data.uv_layers
+        uv_map_exists = len(uv_maps) >= 1
+        
+        if uv_map_exists:
+            first_uv_map_key = uv_maps.keys()[0]
+            uv_map = uv_maps[first_uv_map_key]
+            coords = uv_map.data
+            
+            # Assume the UV map coords corresponds to information in indices
+            
+            for i in range(len(coords)):
+                coord = list(map(lambda i: round(i, 3), coords[i].uv))
+                uv_coordinates.append(coord)
 
         # Print object loc rot scale
         obj_info = {}
@@ -69,9 +87,11 @@ def write_selected():
             "vertices": vertices,
             "indices": indices
         }
+        if len(uv_coordinates) > 0:
+            objs_verts_data[obj.name]["uv_coordinates"] = uv_coordinates
     
     with open(OBJECTS_INFO_PATH, "w+") as outfile:
-        outfile.write("var objects_info = " + json.dumps(objs_info_data))
+        outfile.write("var objects_info = " + json.dumps(objs_info_data, sort_keys=True, indent=4))
     with open(OBJECTS_VERTEX_FPATH, "w+") as outfile:
         outfile.write("var objects_vertices = " + json.dumps(objs_verts_data))
 

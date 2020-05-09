@@ -96,6 +96,38 @@ function populatePointsAndNormalsArrayFromObject(
   }
 }
 
+function populateUvCoordinates(
+  { objectUvCoordinates, polygonIndices },
+  startIndex, uvCoordinates) {
+
+  let coordIdx = 0
+
+  objectUvCoordinates = objectUvCoordinates.map(el => [el[0], 1 - el[1]])
+
+  polygonIndices.forEach(indices => {
+    let vertexCount = indices.length
+    let a = objectUvCoordinates[coordIdx]
+
+    // Duplicate texture points using triangle fan style
+
+    for (let i = 1; i < vertexCount - 1; i++) {
+      let b = objectUvCoordinates[coordIdx + i];
+      let c = objectUvCoordinates[coordIdx + i + 1];
+
+      uvCoordinates[startIndex++] = a;
+      uvCoordinates[startIndex++] = b;
+      uvCoordinates[startIndex++] = c;
+    }
+
+    coordIdx += vertexCount
+  })
+
+  return {
+    uvCoordinates,
+    newStartIndex: startIndex
+  }
+}
+
 /**
  * Convert property name in format of string into
  * dictionary. Supported properties are location, rotation

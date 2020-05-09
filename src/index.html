@@ -9,6 +9,9 @@
 attribute vec4 vPosition;
 attribute vec3 vNormal;
 
+attribute vec2 a_texcoord;
+varying vec2 v_texcoord;
+
 uniform mat4 modelMatrix, viewMatrix, projectionMatrix, normalMatrix;
 
 uniform vec4 lightPosition;
@@ -28,11 +31,19 @@ void main()
     normalInterp = vec3(normalMatrix * vec4(vNormal, 0.0));
     
     gl_Position = projectionMatrix * vertPos4;
+
+    // Pass the texcoord to the fragment shader.
+    v_texcoord = a_texcoord;
 }
 </script>
 
 <script id="fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
+
+varying vec2 v_texcoord;
+
+// The texture.
+uniform sampler2D u_texture;
 
 varying vec3 normalInterp;  // Surface normal
 varying vec3 vertPos;       // Vertex position
@@ -66,6 +77,7 @@ void main()
     }
     
     vec4 fColor = (ambientProduct + lambertian * diffuseProduct + specular * specularProduct);
+    fColor = texture2D(u_texture, v_texcoord) * fColor;
     
     vec4 selectedColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
     fColor = fColor * (1.0 - selectingFactor) + selectedColor * selectingFactor;
@@ -94,8 +106,13 @@ void main()
 <script type="text/javascript" src="modules/renderer.js"></script>
 
 <script type="text/javascript" src="resources/objects/objects-materials.js"></script>
-<script type="text/javascript" src="resources/objects/objects-data.js"></script>
-<script type="text/javascript" src="resources/objects/objects-vertices.js"></script>
+
+<!-- TODO: REVERT BACK TO NON-SIMPLE OBJECT -->
+<script type="text/javascript" src="resources/objects/objects-data-simple.js"></script>
+<script type="text/javascript" src="resources/objects/objects-vertices-simple.js"></script>
+
+<!--script type="text/javascript" src="resources/objects/objects-data.js"></script>
+<script type="text/javascript" src="resources/objects/objects-vertices.js"></script-->
 <!--script type="text/javascript" src="resources/objects/objects-animations.js"></script-->
 <script type="text/javascript" src="modules/camera-coordinates.js"></script>
 
