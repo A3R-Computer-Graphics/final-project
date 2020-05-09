@@ -464,6 +464,8 @@ let textureLocation;
 
 let texture1;
 let texture2;
+let texture3;
+let texture4;
 
 // NOTE: RENDERER.JS IS ALSO CHANGED.
 // CHECK IT OUT.
@@ -505,6 +507,34 @@ function initTextures() {
     // Now that the image has loaded make copy it to the texture.
     gl.bindTexture(gl.TEXTURE_2D, texture2);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, secondImage);
+    gl.generateMipmap(gl.TEXTURE_2D);
+  });
+
+  texture3 = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture3);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+    new Uint8Array([0, 255, 255, 255]));
+
+  var thirdImage = new Image();
+  thirdImage.src = "resources/objects/material_resources/1-64.png";
+  thirdImage.addEventListener('load', function() {
+    // Now that the image has loaded make copy it to the texture.
+    gl.bindTexture(gl.TEXTURE_2D, texture3);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, thirdImage);
+    gl.generateMipmap(gl.TEXTURE_2D);
+  });
+
+  texture4 = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture4);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+    new Uint8Array([0, 255, 255, 255]));
+
+  var fourthImage = new Image();
+  fourthImage.src = "resources/objects/material_resources/wood.png";
+  fourthImage.addEventListener('load', function() {
+    // Now that the image has loaded make copy it to the texture.
+    gl.bindTexture(gl.TEXTURE_2D, texture4);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, fourthImage);
     gl.generateMipmap(gl.TEXTURE_2D);
   });
 }

@@ -47,7 +47,11 @@ class Renderer {
       flatten(model.fullTransformMatrix)
     );
 
-    if (model.name === 'cube-lighting') {
+    if (model.name === 'Suzanne') {
+      gl.bindTexture(gl.TEXTURE_2D, texture4);
+    } else if (model.name === 'Cube.001') {
+      gl.bindTexture(gl.TEXTURE_2D, texture3);
+    } else if (model.name === 'cube-lighting') {
       gl.bindTexture(gl.TEXTURE_2D, texture2);
     } else {
       gl.bindTexture(gl.TEXTURE_2D, texture1);

@@ -100,6 +100,10 @@ function populateUvCoordinates(
   { objectUvCoordinates, polygonIndices },
   startIndex, uvCoordinates) {
 
+  if (typeof objectUvCoordinates === 'undefined') {
+    return populateUvCoordinatesWithoutCoordinate(polygonIndices, startIndex, uvCoordinates)
+  }
+
   let coordIdx = 0
 
   objectUvCoordinates = objectUvCoordinates.map(el => [el[0], 1 - el[1]])
@@ -120,6 +124,64 @@ function populateUvCoordinates(
     }
 
     coordIdx += vertexCount
+  })
+
+  return {
+    uvCoordinates,
+    newStartIndex: startIndex
+  }
+}
+
+function repositionThenScaleTilePoints(points, posX, posY, scale) {
+  points.forEach(point => {
+    point[0] += posX
+    point[1] += posY
+    point[0] *= scale
+    point[1] *= scale
+  })
+  return points
+}
+
+function populateUvCoordinatesWithoutCoordinate(polygonIndices, startIndex, uvCoordinates) {
+  let triangleCount = polygonIndices.reduce((p, c) => p + c.length, 0) - 2 * polygonIndices.length
+  
+  let squareCount = Math.ceil(triangleCount / 2)
+  let texResolution = Math.ceil(Math.sqrt(squareCount))
+  let scale = 1 / texResolution
+
+  let tileIndex = 0
+  
+  let a = [0, 0]
+  let b = [1, 0]
+  let c = [1, 1]
+
+  polygonIndices.forEach(indices => {
+    let vertexCount = indices.length
+    for (let i = 1; i < vertexCount - 1; i++) {
+      a = [0, 0]
+      if (tileIndex % 2 == 0) {
+        b = [1, 0]
+        c = [1, 1]
+      } else {
+        b = [1, 1]
+        c = [0, 1]
+      }
+
+      let squareIndex = parseInt(tileIndex / 2)
+      let posX = squareIndex % texResolution
+      let posY = parseInt(squareIndex / texResolution)
+
+      let coordinates = [a, b, c]
+      coordinates.forEach(coordinate => coordinate[1] = 1 - coordinate[1]) // Flip Y axis
+
+      ;[a, b, c] = repositionThenScaleTilePoints(coordinates, posX, posY, scale)
+
+      uvCoordinates[startIndex++] = a
+      uvCoordinates[startIndex++] = b
+      uvCoordinates[startIndex++] = c
+      
+      tileIndex++
+    }
   })
 
   return {
