@@ -20,26 +20,30 @@ function deselect(modelName) {
 }
 
 function replaceSelection(newSelection) {
-  let currentSelection = sceneGraph.selectedNodeName
+  let currentSelection = app.selectedObjectName
+
   if (newSelection === currentSelection) {
     deselect(currentSelection)
-    sceneGraph.selectedNodeName = ''
+    app.selectedObjectName = ''
+
   } else {
+
     let newSelectedElement = document.querySelector(`li[data-model-name="${newSelection}"]`)
     if (newSelectedElement) {
       deselect(currentSelection)
       newSelectedElement.classList.add('selected')
-      sceneGraph.selectedNodeName = newSelection
+      app.selectedObjectName = newSelection
       updateSliderOnObjectSelected()
     }
+
   }
   updateSelectionView()
 }
 
 function updateSelectionView() {
-  let currentSelection = sceneGraph.selectedNodeName
-  let node = sceneGraph.nodes[currentSelection]
-  if (!node) {
+  let currentSelection = app.selectedObjectName
+  let object = app.objects[currentSelection]
+  if (!object) {
     document.querySelector('#selected-object-menu').classList.add('no-selection')
   } else {
     document.querySelector('#selected-object-menu').classList.remove('no-selection')
@@ -57,32 +61,43 @@ function displaySelectionHierarchyText() {
     child = hierarchyElem.lastElementChild
   }
 
-  let selectionModelName = sceneGraph.selectedNodeName
-  let selectionNode = sceneGraph.nodes[selectionModelName]
+  let selectedName = app.selectedObjectName
+  let selectedObject = app.objects[selectedName]
 
-  if (!selectionNode) {
+  if (!selectedObject) {
     return
   }
 
-  let parentNameList = selectionNode.parentNameList
+  let parentNameList = selectedObject.parentNameList
 
   // Reverse parent name list
   let count = parentNameList.length
   parentNameList = parentNameList.map((data, i) => parentNameList[count - i - 1])
-  let hierarchyList = [...parentNameList, selectionModelName]
+  let hierarchyList = [...parentNameList, selectedName]
 
-  hierarchyList.forEach(modelName => {
+  hierarchyList.forEach(objectName => {
     let childElem = document.createElement('span')
-    childElem.innerHTML = modelName
+    childElem.innerHTML = objectName
     hierarchyElem.appendChild(childElem)
   })
 }
 
 function displayTree() {
-  function createHTMLNode(node) {
+
+  // Delete all existing root children
+  // WARNING: THIS HAS NOT BEEN CHECKED FOR MEMORY LEAK
+
+  let rootListHTMLNode = document.querySelector('#tree > ul')
+  let childCount = rootListHTMLNode.childElementCount
+
+  for (let i = 0; i < childCount; i++) {
+    rootListHTMLNode.removeChild(rootListHTMLNode.children[0])
+  }
+
+  function createHTMLNodeFromObject(object) {
     let nodeElement = document.createElement('li')
-    let modelName = node.model.name
-    nodeElement.dataset['modelName'] = modelName
+    let name = object.name
+    nodeElement.dataset['modelName'] = name
 
     let collapsedCheckElement = document.createElement('input')
     collapsedCheckElement.type = 'checkbox'
@@ -91,17 +106,17 @@ function displayTree() {
 
     let displayElement = document.createElement('div')
     displayElement.classList.add('obj-name')
-    displayElement.innerText = node.key
+    displayElement.innerText = name
     nodeElement.appendChild(displayElement);
 
     [collapsedCheckElement, displayElement].forEach(element => {
       element.addEventListener('contextmenu', event => {
         event.preventDefault()
-        replaceSelection(modelName)
+        replaceSelection(name)
       })
     })
 
-    if (node.children && node.children.length > 0) {
+    if (object.children && object.children.length > 0) {
       let childListElement = document.createElement('ul')
       childListElement.classList.add('collapsed')
       nodeElement.appendChild(childListElement)
@@ -110,8 +125,8 @@ function displayTree() {
       collapseSignElement.classList.add('collapsed-sign')
       childListElement.appendChild(collapseSignElement)
 
-      node.children.forEach(children => {
-        let childrenNode = createHTMLNode(children)
+      object.children.forEach(children => {
+        let childrenNode = createHTMLNodeFromObject(children)
         childListElement.appendChild(childrenNode)
       })
 
@@ -119,9 +134,8 @@ function displayTree() {
     return nodeElement
   }
 
-  let rootListHTMLNode = document.querySelector('#tree > ul')
-  sceneGraph.rootNodes.forEach(node => {
-    let HTMLNode = createHTMLNode(node)
+  scene.children.forEach(child => {
+    let HTMLNode = createHTMLNodeFromObject(child)
     rootListHTMLNode.appendChild(HTMLNode)
   })
 }
@@ -131,23 +145,23 @@ let updateSelectedProperty = throttle(
     if (isMatchingSelectedPropertyToSlider) {
       return
     }
-    let node = sceneGraph.nodes[sceneGraph.selectedNodeName]
-    if (!node) {
+    
+    let selectedObject = app.selectedObject
+    if (!selectedObject) {
       return
     }
 
-    let model = node.model
-    model[propertyName][axisId] = value
-    node.updateTransformations()
-
-    if (model.name === 'cube-lighting') {
-      sceneGraph.updateLightSetup({position: model.location})
+    selectedObject[propertyName].setOnAxisId(axisId, value)
+    if (selectedObject.name === 'cube-lighting') {
+      // no need to explicitly updateLightSetup
+      // the light should be updated automatically ;)
+      // sceneGraph.updateLightSetup({position: model.location})
     }
   }, 50)
 
 function connectSelectedObjectSlider() {
   let axis = ['x', 'y', 'z']
-  let properties = ['location', 'rotation', 'scale']
+  let properties = ['position', 'rotation', 'scale']
 
   properties.forEach(propertyName => {
     axis.forEach((axisName, index) => {
@@ -159,7 +173,7 @@ function connectSelectedObjectSlider() {
 
       slider.addEventListener('input',
         () => {
-          if (sceneGraph.selectedNodeName) {
+          if (app.selectedObject) {
             let value = parseFloat(slider.value)
             updateSelectedProperty(propertyName, axisId, value)
             updateSliderDisplay(slider, value)
@@ -172,25 +186,26 @@ function connectSelectedObjectSlider() {
 }
 
 let updateSliderOnObjectSelected = throttle(function () {
-  let selectedNode = sceneGraph.nodes[sceneGraph.selectedNodeName]
+  let selectedObject = app.selectedObject
 
-  if (!selectedNode) {
+  if (!selectedObject) {
     return
   }
 
   isMatchingSelectedPropertyToSlider = true
 
   let axis = ['x', 'y', 'z']
-  let properties = ['location', 'rotation', 'scale']
-
-  let selectedModel = selectedNode.model
+  let properties = ['position', 'rotation', 'scale']
 
   properties.forEach(propertyName => {
+    let propertyData = selectedObject[propertyName].get()
+
     axis.forEach((axisName, index) => {
       let axisId = index
       let sliderName = `selected-object-${propertyName}-${axisName}`
-      let value = selectedModel[propertyName][axisId]
+      let value = propertyData[axisId]
       value = Math.round(value * 100) / 100
+      
       updateSliderValueAndDisplay(sliderName, value)
     })
   })

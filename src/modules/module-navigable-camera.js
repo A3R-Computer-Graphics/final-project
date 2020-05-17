@@ -89,7 +89,7 @@ function processCanvasArrowKeydown(event) {
 
   phi = new_phi;
   theta = new_theta;
-  updateViewMatrix();
+  updateCameraView();
 }
 
 /** Capture scroll movement and translate it into sphere radius coordinate
@@ -100,15 +100,16 @@ function processCanvasArrowKeydown(event) {
 function zoomCameraFromScrollDetector() {
   let deltaScroll = scrollDetector.scrollTop - scrollInitial;
   scrollDetector.scrollTop = scrollInitial;
-  let newRadius = Math.pow(Math.E, Math.log(camera.radius) + deltaScroll / 10);
+  let newRadius = Math.pow(Math.E, Math.log(cameraRadius) + deltaScroll / 10);
   if (newRadius < camera.near) {
     return
   }
   if (newRadius > camera.far) {
     return;
   }
-  camera.radius = newRadius;
-  updateViewMatrix();
+  cameraRadius = newRadius;
+
+  updateCameraView();
 }
 
 // Implement trackball using sphere coordinate.
@@ -201,7 +202,7 @@ function trackMouseForTrackball(event) {
     isCameraPositionTrackballed = true
   }
 
-  updateViewMatrix();
+  updateCameraView();
 
   // Clear selection
   // Taken from: https://stackoverflow.com/a/3169849/10159381
@@ -254,18 +255,22 @@ let cancelFocusAnimation = function () { }
 function processCanvasFocusKeydown(event) {
   let key = getPressedAlphabet(event)
   if (key === 'F') {
-    let node = sceneGraph.nodes[sceneGraph.selectedNodeName]
-    if (node) {
-      let model = node.model;
+    let selectedObject = app.selectedObject
+    
+    if (selectedObject) {
+      let objectMatrix = mat4(selectedObject.worldMatrix)
+      let objectWorldPosition = objectMatrix[3].slice(0, 3)
 
-      let oldAt = at;
-      let newAt = vec3(mat4(model.fullTransformMatrix)[3].slice(0, 3));
+      let oldPosition = at
+      let newPosition = vec3(objectWorldPosition)
 
-      let oldRadius = camera.radius;
+      let oldRadius = cameraRadius;
       let newRadius = 4;
 
       cancelFocusAnimation()
       let progress = 0;
+
+      // TODO: Rename to animationCancelled and cancelFocusAnimation to cancelCurrentlyRunningAnimation
       let cancelAnimation = false
 
       cancelFocusAnimation = function () {
@@ -280,9 +285,10 @@ function processCanvasFocusKeydown(event) {
         let x = progress / MAX_FOCUS_PROGRESS_FRAME_DURATION;
         let y = 1 - Math.pow(x - 1, 2)
 
-        at = mix(oldAt, newAt, y)
-        camera.radius = oldRadius * (1 - y) + newRadius * y
-        updateViewMatrix()
+        at = mix(oldPosition, newPosition, y)
+        cameraRadius = oldRadius * (1 - y) + newRadius * y
+        
+        updateCameraView()
 
         progress += 1
         window.requestAnimationFrame(animateFocus)

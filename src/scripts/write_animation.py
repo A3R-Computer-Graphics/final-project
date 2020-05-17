@@ -76,7 +76,9 @@ for obj in objs:
         
         # Convert "rotation_euler" into "rotation"
         if original_property == "rotation_euler":
-            original_property = "rotation"        
+            original_property = "rotation"
+        if original_property == "location":
+            original_property = "position"
         
         written_anim_name = obj_name + "." + original_property + "." + axis_name
 

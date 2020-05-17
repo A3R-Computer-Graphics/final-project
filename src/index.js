@@ -1,27 +1,19 @@
 "use strict";
 
-let sceneGraph
+let scene
+let camera
+let renderer
+
+let app
 let animationManager
 
-// Camera variables
-
-let camera = {
-  near: 0.05,
-  far: 20.0,
-  radius: 8,
-  fovy: 55.0,
-  aspect: 1.0,
-  viewMatrix: m4.identity(),
-  projectionMatrix: m4.identity()
-}
-
+let cameraRadius = 8
 let theta = 0
 let phi = 0
 let cameraPosIndex = 17
 let coordinateDirectionOrder = ['UP', 'LEFT', 'DOWN', 'RIGHT']
 
 let at = vec3(0.0, 0.0, 0.0)
-let up = vec3(0.0, 0.0, 1.0)
 
 // rendering engine variables variables
 
@@ -66,9 +58,9 @@ function updateSliderDisplay(slider, value) {
  */
 
 function updateSliderValueAndDisplay(slider, value, sliderValue) {
-  if (value) {
+  if (value !== undefined) {
     if (typeof slider === 'string') {
-      slider = document.querySelector(`input[name="${slider}"`)      
+      slider = document.querySelector(`input[name="${slider}"`)
     }
     if (typeof sliderValue === 'undefined') {
       sliderValue = value;
@@ -84,29 +76,13 @@ function updateSliderValueAndDisplay(slider, value, sliderValue) {
  * Function to update animation slider that has been throttled
  * so that it's not executed too often.
  */
-let throttledSliderHandler = function () {}
-
-function initCanvasAndGL() {
-  canvas = document.getElementById('gl-canvas');
-
-  gl = WebGLUtils.setupWebGL(canvas);
-  if (!gl) {
-    alert("WebGL isn't available");
-  }
-
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(0.2, 0.2, 0.2, 1.0);
-
-  gl.enable(gl.DEPTH_TEST);
-  program = initShaders(gl, 'vertex-shader', 'fragment-shader');
-  gl.useProgram(program);
-}
+let throttledSliderHandler = function () { }
 
 /**
  * Initialize camera position from chosen camera position index
  */
 
-function initializeCameraPosition() {
+function initCameraPosition() {
   let cameraPosCoords = cameraCoordinates[cameraPosIndex];
   // Match camera coordinate (Y+ axis pointing up) to Blender's.
   // (Z+ pointing up)
@@ -117,12 +93,6 @@ function initializeCameraPosition() {
   );
   phi = cameraSpherePos[1];
   theta = cameraSpherePos[2];
-}
-
-function initializeProjectionMatrix() {
-  camera.projectionMatrix = perspective(camera.fovy, camera.aspect, camera.near, camera.far)
-  let matrixGlLocation = sceneGraph.glLocations.projectionMatrix
-  gl.uniformMatrix4fv(matrixGlLocation, false, flatten(camera.projectionMatrix))
 }
 
 function toggleAnimation() {
@@ -157,14 +127,12 @@ function connectSlidersToModelData() {
     }
 
     const { modelName, propertyName, axisId } = propertyData;
-    let node = sceneGraph.nodes[modelName];
-    let modelProperties = node.model[propertyName];
+    let object = app.objects[modelName][propertyName];
 
     elem.addEventListener('input', () => {
       let value = parseFloat(elem.value);
       updateSliderValueAndDisplay(elem, value);
-      modelProperties[axisId] = value;
-      node.updateTransformations();
+      object.setOnAxisId(axisId, value);
     })
   })
 }
@@ -186,7 +154,7 @@ function connectSpeedSlider() {
   let currentSpeed = animationManager.speed;
   let displaySpeed = Math.round(currentSpeed * 100) + '%'
   let sliderInitValue = interpolateLogarithmatically(SPEED_MIN, SPEED_MAX, currentSpeed);
-  
+
   updateSliderValueAndDisplay(slider, displaySpeed, sliderInitValue);
 }
 
@@ -197,33 +165,29 @@ function connectLightPositionSliders() {
     const axisName = name.match(/light-position-(x|y|z)$/)[1];
     const axisId = ['x', 'y', 'z'].indexOf(axisName);
 
-    let value = lightingCubeModel.location[axisId];
+    let value = light.position.get()[axisId];
     updateSliderValueAndDisplay(slider, value)
 
     slider.addEventListener('input', () => {
       let value = parseFloat(slider.value);
 
-      lightingCubeModel.location[axisId] = value;
-      lightingCubeModel.updateMatrices();
-
-      sceneGraph.updateLightSetup({position: lightingCubeModel.location});
-      sceneGraph.updateGlLightPosition();
+      light.position.setOnAxisId(axisId, value);
 
       updateSliderDisplay(slider, value);
 
       // Update selected slider as well
 
-      if (sceneGraph.selectedNodeName === 'cube-lighting') {
-        updateSliderValueAndDisplay(`selected-object-location-${axisName}`, value)
+      if (app.selectedObjectName === 'cube-lighting') {
+        updateSliderValueAndDisplay(`selected-object-position-${axisName}`, value)
       }
     });
 
     // Hook selected object slider
-    
-    let selectedSlider = document.querySelector(`input[name="selected-object-location-${axisName}"]`)
+
+    let selectedSlider = document.querySelector(`input[name="selected-object-position-${axisName}"]`)
     if (selectedSlider) {
-      selectedSlider.addEventListener('input', function() {
-        if (sceneGraph.selectedNodeName === 'cube-lighting') {
+      selectedSlider.addEventListener('input', function () {
+        if (app.selectedObjectName === 'cube-lighting') {
           updateSliderValueAndDisplay(slider, parseFloat(selectedSlider.value))
         }
       })
@@ -236,11 +200,11 @@ function connectLightPositionSliders() {
  * variables `radius`, `theta`, and `phi`.
  */
 
-function updateViewMatrix() {
-  let r = camera.radius;
-  
+function updateCameraView() {
+  let r = cameraRadius;
+
   theta = (Math.sign(theta) || 1) * Math.max(Math.abs(theta), 0.1)
-  
+
   let sin_t = Math.sin(theta);
   let sin_p = Math.sin(phi);
   let cos_t = Math.cos(theta);
@@ -252,8 +216,8 @@ function updateViewMatrix() {
 
   let eye = add(at, vec3(x, y, z));
 
-  camera.viewMatrix = flatten(lookAt(eye, at, up));
-  gl.uniformMatrix4fv(sceneGraph.glLocations.viewMatrix, false, flatten(camera.viewMatrix));
+  camera.position.set(eye)
+  camera.lookAt(at)
 }
 
 let isSpaceKeyPressed = false
@@ -304,8 +268,8 @@ function adjustViewport() {
   canvas.height = height;
 
   camera.aspect = width / height;
-  initializeProjectionMatrix()
 
+  let gl = renderer.gl
   gl.viewport(0, 0, width, height);
 }
 
@@ -332,7 +296,7 @@ function toggleMenu() {
 /**
  * List all sliders in the document and for each slider,
  * see if the slider is in the animation dictionary and is actually
- * defined in the sceneGraph nodes.
+ * defined in the app objects.
  */
 
 function listCustomSliders() {
@@ -352,7 +316,8 @@ function listCustomSliders() {
         propertyName,
         axisId
       } = data
-      if (!sceneGraph.nodes.hasOwnProperty(modelName)) {
+
+      if (!app.objects.hasOwnProperty(modelName)) {
         return
       }
 
@@ -382,209 +347,174 @@ function matchSlidersToAnimation() {
     propertyName,
     axisId
   }) => {
-    let animationValue = sceneGraph.nodes[modelName].model[propertyName][axisId]
+    let animationValue = app.objects[modelName][propertyName].get()[axisId]
     animationValue = Math.round(animationValue * 100) / 100
     updateSliderValueAndDisplay(sliderName, animationValue)
   })
 }
 
-let lightingCubeModel
+let light
 
 function createCubeLight() {
-  let cube_objects = {
-    "vertices": [
-      [0.5, -0.5, 0.5], //0
-      [0.5, -0.5, -0.5],
-      [-0.5, -0.5, 0.5], //2
-      [-0.5, -0.5, -0.5],
-      [0.5, 0.5, 0.5], //4
-      [0.5, 0.5, -0.5],
-      [-0.5, 0.5, 0.5], //6
-      [-0.5, 0.5, -0.5]
-  ],
-  "indices": [
-      [0, 4, 6, 2],
-      [3, 2, 6, 7],
-      [7, 6, 4, 5],
-      [5, 1, 3, 7],
-      [1, 0, 2, 3],
-      [5, 4, 0, 1]
-  ],
-  "uv_coordinates": [
-      [1, 1],
-      [0, 1],
-      [0, 0],
-      [1, 0],
+  light = new Light()
+  light.name = app.getNextUniqueName('cube-lighting')
+  light.position.set(-1.4, -1.65, 1.45)
+  light.scale.set(0.2, 0.2, 0.2)
+  scene.add(light)
 
-      [1, 1],
-      [0, 1],
-      [0, 0],
-      [1, 0],
-      
-      [1, 1],
-      [0, 1],
-      [0, 0],
-      [1, 0],
-      
-      [1, 1],
-      [0, 1],
-      [0, 0],
-      [1, 0],
-      
-      [1, 1],
-      [0, 1],
-      [0, 0],
-      [1, 0],
-      
-      [1, 1],
-      [0, 1],
-      [0, 0],
-      [1, 0],
-  ],
-    "material_name": "white"
-  }
-
-  lightingCubeModel = new Model({
-    name: 'cube-lighting',
-    scale: [0.2, 0.2, 0.2],
-    location: [-1.4, -1.65, 1.45]
-  })
-
-  lightingCubeModel.vertices = cube_objects.vertices
-  lightingCubeModel.indices = cube_objects.indices
-  lightingCubeModel.uvCoordinates = cube_objects.uv_coordinates
-  lightingCubeModel.setMaterial('white', sceneGraph.materials)
-
-  sceneGraph.addModelToScene(lightingCubeModel)
+  // Add object to app's object list
+  app.addObject(light)
 }
 
-let texcoordLocation;
-let texcoordBuffer;
-let textureLocation;
+function initMaterialsFromBlender() {
 
-let texture1;
-let texture2;
-let texture3;
-let texture4;
+  // materials_definition is a variable that holds all materials data
 
-// NOTE: RENDERER.JS IS ALSO CHANGED.
-// CHECK IT OUT.
+  materials_definition.forEach(materialData => {
 
-function initTextures() {
-  texcoordLocation = gl.getAttribLocation(program, "a_texcoord");
-  textureLocation = gl.getUniformLocation(program, "u_texture");
+    let name = materialData.name
+    let isImage = !!materialData.image
 
-  texcoordBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
-  
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(sceneGraph.uvCoordinatesArray), gl.STATIC_DRAW);
-  gl.vertexAttribPointer(texcoordLocation, 2, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(texcoordLocation);
+    let phongData = {
+      ambient: materialData.ambient,
+      diffuse: materialData.diffuse,
+      specular: materialData.specular,
+      shininess: materialData.shininess
+    }
 
-  texture1 = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, texture1);
+    let material
 
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-    new Uint8Array([0, 0, 255, 255]));
+    // No need to load image explicitly
+    // It will be loaded once render is triggered ;)
 
-  var image = new Image();
-  image.src = "resources/objects/material_resources/Base.png";
-  image.addEventListener('load', function() {
-    // Now that the image has loaded make copy it to the texture.
-    gl.bindTexture(gl.TEXTURE_2D, texture1);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image);
-    gl.generateMipmap(gl.TEXTURE_2D);
-  });
+    if (isImage) {
+      material = new ImageTextureMaterial(name, phongData, materialData.image)
+    } else {
+      material = new PhongMaterial(name, phongData)
+    }
 
-  texture2 = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, texture2);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-    new Uint8Array([0, 255, 255, 255]));
+    app.addMaterial(material)
+  })
 
-  var secondImage = new Image();
-  secondImage.src = "resources/objects/material_resources/F-textures.png";
-  secondImage.addEventListener('load', function() {
-    // Now that the image has loaded make copy it to the texture.
-    gl.bindTexture(gl.TEXTURE_2D, texture2);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, secondImage);
-    gl.generateMipmap(gl.TEXTURE_2D);
-  });
+}
 
-  texture3 = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, texture3);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-    new Uint8Array([0, 255, 255, 255]));
+function initObjectsDataFromBlender() {
 
-  var thirdImage = new Image();
-  thirdImage.src = "resources/objects/material_resources/1-64.png";
-  thirdImage.addEventListener('load', function() {
-    // Now that the image has loaded make copy it to the texture.
-    gl.bindTexture(gl.TEXTURE_2D, texture3);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, thirdImage);
-    gl.generateMipmap(gl.TEXTURE_2D);
-  });
+  // objects_info holds object pos, rot, scale, material name, and parent object name
+  // objects_vertices holds vertices, indices, and uv texture coordinates info
 
-  texture4 = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, texture4);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-    new Uint8Array([0, 255, 255, 255]));
+  let objectNames = Object.keys(objects_info)
 
-  var fourthImage = new Image();
-  fourthImage.src = "resources/objects/material_resources/wood.png";
-  fourthImage.addEventListener('load', function() {
-    // Now that the image has loaded make copy it to the texture.
-    gl.bindTexture(gl.TEXTURE_2D, texture4);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, fourthImage);
-    gl.generateMipmap(gl.TEXTURE_2D);
-  });
+  // Set object transform data & material first
+
+  objectNames.forEach(objectName => {
+
+    let data = objects_info[objectName]
+
+    let object = new Object3D({
+      name: objectName,
+      origin: data.origin,
+      position: data.position,
+      rotation: data.rotation,
+      scale: data.scale
+    })
+
+    app.addObject(object)
+
+    let materialName = data.material_name
+    let material = app.materials[materialName]
+    object.setMaterial(material)
+
+  })
+
+  // Then, set object hierarchy.
+
+  let scene = app.scene
+
+  objectNames.forEach(objectName => {
+    let data = objects_info[objectName]
+    let object = app.objects[objectName]
+
+    let parentName = data.parent
+    let parentExists = !!parentName
+    let parentObject
+
+    if (parentExists) {
+      parentObject = app.objects[parentName]
+    } else {
+      parentObject = scene
+    }
+
+    parentObject.add(object)
+  })
+
+  // Finally, set the object geometry. Geometry name in the `objects_vertices`
+  // is the same as in `objects_info`
+
+  objectNames.forEach(objectName => {
+    let geometryName = objectName
+    let geometryDefinition = objects_vertices[geometryName]
+
+    let vertices = geometryDefinition.vertices
+    let indices = geometryDefinition.indices
+    let uvCoordinates = geometryDefinition.uv_coordinates
+    let normals = geometryDefinition.normals
+
+    // Ignore init complex geometry, just so you can debug
+    // the whole code using scene with simple and few objects
+    
+    // if (vertices.length > 100) {
+    //   return
+    // }
+
+    let geometry = new Geometry({
+      vertices, indices, uvCoordinates, normals
+    })
+
+    let object = app.objects[objectName]
+    object.setGeometry(geometry)
+  })
+
 }
 
 window.addEventListener('load', function init() {
-  // Initialize canvas and GL first
 
-  initCanvasAndGL()
+  // Set up scene, camera, and renderer
 
-  // Initialize scene graph and model data from:
-  // - coordinates of vertices specified in objects-vertices.js
-  // - object position, rotation, and scale info in objects-data.js
-  // - materials from objects-materials.js
+  canvas = document.getElementById('gl-canvas')
+  renderer = new Renderer(canvas)
 
-  sceneGraph = new SceneGraph({gl, camera})
-  sceneGraph.initWebGLVariables()
+  scene = new Scene()
+  app = new App({ scene, renderer })
 
-  sceneGraph.initMaterialsFromConfig(materials_definition)
-  sceneGraph.initModelsFromConfig({
-    modelsVerticesData: objects_vertices, // this is a variable inside objects-vertices.js
-    modelsInfoData: objects_info // this is a variable inside objects-data.js
+  camera = new PerspectiveCamera({
+    near: 0.05,
+    far: 200.0,
+    fovy: 55.0,
+    aspect: 1.0,
   })
+
+  // Update camera setup
+
+  initCameraPosition()
+  updateCameraView()
+
+  initMaterialsFromBlender()
+  initObjectsDataFromBlender()
 
   createCubeLight()
 
-  sceneGraph.movePointsToBufferData()
-  sceneGraph.updateModelsTransformations()
-
-  initTextures()
-
-  sceneGraph.updateLightSetup({
-    position: lightingCubeModel.location
-  })
-  sceneGraph.updateGlLightPosition()
-
   let USE_ANIMATION = false
-  
+
   if (USE_ANIMATION) {
     animationManager = new AnimationManager({
-      sceneGraph,
+      app,
       speed: 0.5,
       maxFrameNumber: 120
     })
     animationManager.initFromConfig(animations_definition)
 
   }
-
-  initializeCameraPosition()
-  initializeProjectionMatrix()
-  updateViewMatrix()
 
   // Attach event listener handles
 
@@ -620,7 +550,8 @@ window.addEventListener('load', function init() {
 })
 
 function render() {
+  let gl = renderer.gl
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-  Renderer.render(sceneGraph)
+  renderer.render(scene, camera, app)
   window.requestAnimationFrame(render)
 }

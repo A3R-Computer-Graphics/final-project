@@ -51,88 +51,7 @@ function easeInOut(x) {
   return b + a * Math.pow(2 * (b + a * x), 3) / 2
 }
 
-function populatePointsAndNormalsArrayFromObject(
-  { vertices, polygonIndices },
-  startIndex, points, normals) {
-
-  polygonIndices.forEach(indices => {
-    let initPoints = [];
-
-    for (let i = 0; i < indices.length; i++) {
-      let v = vertices[indices[i]]
-      initPoints.push([v[0], v[1], v[2], 1.0])
-    }
-
-    let a = initPoints[0]
-    let b = initPoints[1]
-    let c = initPoints[2]
-
-    // Compute normal from the direction of first 3 points.
-
-    let t1 = subtract(b, a);
-    let t2 = subtract(c, b);
-    let normal = cross(t1, t2);
-    normal = vec4(normal);
-
-    // Duplicate points using triangle fan style
-
-    for (let i = 1; i < initPoints.length - 1; i++) {
-      b = initPoints[i];
-      c = initPoints[i + 1];
-
-      points[startIndex] = a;
-      normals[startIndex++] = normal;
-      points[startIndex] = b;
-      normals[startIndex++] = normal;
-      points[startIndex] = c;
-      normals[startIndex++] = normal;
-    }
-  })
-
-  return {
-    points,
-    normals,
-    newStartIndex: startIndex
-  }
-}
-
-function populateUvCoordinates(
-  { objectUvCoordinates, polygonIndices },
-  startIndex, uvCoordinates) {
-
-  if (typeof objectUvCoordinates === 'undefined') {
-    return populateUvCoordinatesWithoutCoordinate(polygonIndices, startIndex, uvCoordinates)
-  }
-
-  let coordIdx = 0
-
-  objectUvCoordinates = objectUvCoordinates.map(el => [el[0], 1 - el[1]])
-
-  polygonIndices.forEach(indices => {
-    let vertexCount = indices.length
-    let a = objectUvCoordinates[coordIdx]
-
-    // Duplicate texture points using triangle fan style
-
-    for (let i = 1; i < vertexCount - 1; i++) {
-      let b = objectUvCoordinates[coordIdx + i];
-      let c = objectUvCoordinates[coordIdx + i + 1];
-
-      uvCoordinates[startIndex++] = a;
-      uvCoordinates[startIndex++] = b;
-      uvCoordinates[startIndex++] = c;
-    }
-
-    coordIdx += vertexCount
-  })
-
-  return {
-    uvCoordinates,
-    newStartIndex: startIndex
-  }
-}
-
-function repositionThenScaleTilePoints(points, posX, posY, scale) {
+function translateThenScaleTileCoordinates(points, posX, posY, scale) {
   points.forEach(point => {
     point[0] += posX
     point[1] += posY
@@ -142,57 +61,9 @@ function repositionThenScaleTilePoints(points, posX, posY, scale) {
   return points
 }
 
-function populateUvCoordinatesWithoutCoordinate(polygonIndices, startIndex, uvCoordinates) {
-  let triangleCount = polygonIndices.reduce((p, c) => p + c.length, 0) - 2 * polygonIndices.length
-  
-  let squareCount = Math.ceil(triangleCount / 2)
-  let texResolution = Math.ceil(Math.sqrt(squareCount))
-  let scale = 1 / texResolution
-
-  let tileIndex = 0
-  
-  let a = [0, 0]
-  let b = [1, 0]
-  let c = [1, 1]
-
-  polygonIndices.forEach(indices => {
-    let vertexCount = indices.length
-    for (let i = 1; i < vertexCount - 1; i++) {
-      a = [0, 0]
-      if (tileIndex % 2 == 0) {
-        b = [1, 0]
-        c = [1, 1]
-      } else {
-        b = [1, 1]
-        c = [0, 1]
-      }
-
-      let squareIndex = parseInt(tileIndex / 2)
-      let posX = squareIndex % texResolution
-      let posY = parseInt(squareIndex / texResolution)
-
-      let coordinates = [a, b, c]
-      coordinates.forEach(coordinate => coordinate[1] = 1 - coordinate[1]) // Flip Y axis
-
-      ;[a, b, c] = repositionThenScaleTilePoints(coordinates, posX, posY, scale)
-
-      uvCoordinates[startIndex++] = a
-      uvCoordinates[startIndex++] = b
-      uvCoordinates[startIndex++] = c
-      
-      tileIndex++
-    }
-  })
-
-  return {
-    uvCoordinates,
-    newStartIndex: startIndex
-  }
-}
-
 /**
  * Convert property name in format of string into
- * dictionary. Supported properties are location, rotation
+ * dictionary. Supported properties are position, rotation
  * and scale. If string does not match the format, this returns
  * undefined.
  * 
@@ -202,7 +73,7 @@ function populateUvCoordinatesWithoutCoordinate(polygonIndices, startIndex, uvCo
  * @param {String} stringPropertyName 
  */
 function parsePropertyString(stringPropertyName) {
-  const matches = stringPropertyName.match(/^([a-zA-Z_.]+)\.(location|rotation|scale)\.(x|y|z)$/);
+  const matches = stringPropertyName.match(/^([a-zA-Z_.]+)\.(position|rotation|scale)\.(x|y|z)$/);
   if (!matches) {
     return
   }
@@ -248,4 +119,31 @@ function throttle(func, limit) {
       }, limit - (Date.now() - lastRan))
     }
   }
+}
+
+function zfill(string, count) {
+  string = string.toString()
+  let fillCount = Math.max(count - string.length, 0)
+  if (fillCount > 0) {
+    return (new Array(fillCount + 1)).join('0') + string
+  }
+  return string
+}
+
+function getNameFromBasenameAndDuplicateCounter(baseName, counter) {
+  if (counter < 0) {
+    return baseName
+  } else {
+    return baseName + '.' + zfill(counter, 3)
+  }
+}
+
+function getNextUniqueNameFromDict(name, dict) {
+    let { baseName, counter } = getBasenameAndDuplicateCounterFromName(name)
+    let newName = getNameFromBasenameAndDuplicateCounter(baseName, counter)
+    while (dict.hasOwnProperty(newName)) {
+        counter++
+        newName = getNameFromBasenameAndDuplicateCounter(baseName, counter)
+    }
+    return newName
 }

@@ -12,8 +12,8 @@ C = bpy.context
 
 DIR = os.path.join(bpy.path.abspath("//"), "../kode/src/resources/objects/")
 DIR = os.path.normpath(DIR)
-OBJECTS_VERTEX_FPATH = os.path.join(DIR, 'objects-vertices.js')
-OBJECTS_INFO_PATH = os.path.join(DIR, 'objects-data.js')
+OBJECTS_VERTEX_FPATH = os.path.join(DIR, 'objects-vertices-simple.js')
+OBJECTS_INFO_PATH = os.path.join(DIR, 'objects-data-simple.js')
 
 def write_selected():
     # C = Convenience variables for bpy.context
@@ -54,7 +54,7 @@ def write_selected():
         loc = obj.location
         rot = obj.rotation_euler
         scale = obj.scale
-        obj_info["location"] = [loc[0], loc[1], loc[2]]
+        obj_info["position"] = [loc[0], loc[1], loc[2]]
 
         # convert angle to degrees
         rad_to_deg = 180 / math.pi
@@ -66,7 +66,7 @@ def write_selected():
         if len(obj_materials) > 0:
             obj_info["material_name"] =  obj_materials[0]
 
-        # If parent exists, make location relative to parent.
+        # If parent exists, make position relative to parent.
         # NOTE: This only works if all rotation and scale are 1.
         # Which makes the obj_info rotation and scale not usable.
         #
@@ -76,11 +76,11 @@ def write_selected():
         if obj.parent:
             parent = obj.parent
             for i in range(3):
-                obj_info["location"][i] -= parent.location[i]
+                obj_info["position"][i] -= parent.location[i]
             obj_info["parent"] = parent.name
         
-        for i in range(len(obj_info["location"])):
-            obj_info["location"][i] = round(obj_info["location"][i], 3)
+        for i in range(len(obj_info["position"])):
+            obj_info["position"][i] = round(obj_info["position"][i], 3)
         
         objs_info_data[obj.name] = obj_info
         objs_verts_data[obj.name] = {

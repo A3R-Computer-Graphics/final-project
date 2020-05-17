@@ -14,7 +14,7 @@ varying vec2 v_texcoord;
 
 uniform mat4 modelMatrix, viewMatrix, projectionMatrix, normalMatrix;
 
-uniform vec4 lightPosition;
+uniform vec3 lightPosition;
 
 varying vec3 normalInterp, vertPos, lightPos;
 
@@ -55,6 +55,11 @@ uniform float shininess;
 // Flag to indicate if object is selected or not
 uniform bool isSelected;
 
+// Small patch to mix value between texture and calculated phong
+// This is handy to make sure the material that doesn't have image texture
+// will not use any Texture2D
+uniform float textureMix;
+
 vec4 calculatePhong() {
     vec3 N = normalize(normalInterp);
 
@@ -82,7 +87,7 @@ void main()
 
     if (!isSelected) {
         fColor = calculatePhong();
-        fColor = texture2D(u_texture, v_texcoord) * fColor;
+        fColor = mix(fColor, texture2D(u_texture, v_texcoord) * fColor, textureMix);
     } else {
         fColor = selectedObjectColor;
     }
@@ -91,6 +96,44 @@ void main()
     gl_FragColor = fColor;
 }
 </script>
+
+
+
+
+<script  id="vertex-shader-3d" type="x-shader/x-vertex">
+  attribute vec4 vPosition;
+  attribute vec2 a_texcoord;
+  
+  uniform mat4 u_projection;
+  uniform mat4 u_view;
+  uniform mat4 u_world;
+  
+  varying vec2 v_texcoord;
+  
+  void main() {
+    gl_Position = u_projection * u_view * u_world * vPosition;
+  
+    // Pass the texture coord to the fragment shader.
+    v_texcoord = a_texcoord;
+  }
+</script>
+
+<script  id="fragment-shader-3d" type="x-shader/x-fragment">
+  precision mediump float;
+  
+  // Passed in from the vertex shader.
+  varying vec2 v_texcoord;
+  
+  uniform vec4 u_colorMult;
+  uniform sampler2D u_texture;
+  
+  void main() {
+    gl_FragColor = texture2D(u_texture, v_texcoord) * u_colorMult;
+  }
+</script>
+
+
+
 
 <script type="text/javascript" src="lib/js/jquery-3.4.1.min.js"></script>
 <script type="text/javascript" src="lib/js/popper-1.16.0.min.js"></script>
@@ -104,21 +147,20 @@ void main()
 <script type="text/javascript" src="modules/utils.js"></script>
 <script type="text/javascript" src="modules/event-dispatcher.js"></script>
 
-<script type="text/javascript" src="modules/scene-graph.js"></script>
-<script type="text/javascript" src="modules/object-node.js"></script>
-<script type="text/javascript" src="modules/model.js"></script>
+<script type="text/javascript" src="modules/brand-new-class.js"></script>
+<script type="text/javascript" src="modules/app.js"></script>
 <script type="text/javascript" src="modules/animation-manager.js"></script>
-<script type="text/javascript" src="modules/renderer.js"></script>
 
-<script type="text/javascript" src="resources/objects/objects-materials.js"></script>
 
-<!-- TODO: REVERT BACK TO NON-SIMPLE OBJECT -->
+<script type="text/javascript" src="resources/objects/objects-materials-simple.js"></script>
 <script type="text/javascript" src="resources/objects/objects-data-simple.js"></script>
 <script type="text/javascript" src="resources/objects/objects-vertices-simple.js"></script>
 
-<!--script type="text/javascript" src="resources/objects/objects-data.js"></script>
-<script type="text/javascript" src="resources/objects/objects-vertices.js"></script-->
-<!--script type="text/javascript" src="resources/objects/objects-animations.js"></script-->
+<!--script type="text/javascript" src="resources/objects/objects-materials.js"></script>
+<script type="text/javascript" src="resources/objects/objects-data.js"></script>
+<script type="text/javascript" src="resources/objects/objects-vertices.js"></script>
+<script type="text/javascript" src="resources/objects/objects-animations.js"></script-->
+
 <script type="text/javascript" src="modules/camera-coordinates.js"></script>
 
 <script type="text/javascript" src="modules/module-navigable-camera.js"></script>
@@ -152,13 +194,13 @@ void main()
         <h3 class="submenu-title">Bantuan</h3>
         <div id="help-content">
           Tekan kanvas terlebih dahulu untuk melakukan perintah berikut.
-            <ul>
-              <li>Tekan <strong>panah keyboard</strong> untuk memindahkan posisi kamera.</li>
-              <li>Tekan <strong>spasi</strong> untuk memulai/menghentikan animasi.</li>
-              <li>Tekan dan <strong>tahan kanvas</strong> untuk memutar kamera.</li>
-              <li>Tekan <strong>F</strong> untuk fokus pada model yang <strong>dipilih</strong>.</li>
-              <li><strong><i>Scroll</i></strong> untuk zoom in/out.</li>
-            </ul>
+          <ul>
+            <li>Tekan <strong>panah keyboard</strong> untuk memindahkan posisi kamera.</li>
+            <li>Tekan <strong>spasi</strong> untuk memulai/menghentikan animasi.</li>
+            <li>Tekan dan <strong>tahan kanvas</strong> untuk memutar kamera.</li>
+            <li>Tekan <strong>F</strong> untuk fokus pada model yang <strong>dipilih</strong>.</li>
+            <li><strong><i>Scroll</i></strong> untuk zoom in/out.</li>
+          </ul>
         </div>
       </div>
       <div class="submenu">
@@ -180,21 +222,21 @@ void main()
               <label>X<b>
                   <div class="slider-value">0</div>
                 </b></label>
-              <input type="range" step="0.05" name="selected-object-location-x" value="0" min="-10" max="10"
+              <input type="range" step="0.05" name="selected-object-position-x" value="0" min="-10" max="10"
                 class="custom-range range-animation">
             </div>
             <div class="slider-container">
               <label>Y<b>
                   <div class="slider-value">0</div>
                 </b></label>
-              <input type="range" step="0.05" name="selected-object-location-y" value="0" min="-10" max="10"
+              <input type="range" step="0.05" name="selected-object-position-y" value="0" min="-10" max="10"
                 class="custom-range range-animation">
             </div>
             <div class="slider-container">
               <label>Z<b>
                   <div class="slider-value">0</div>
                 </b></label>
-              <input type="range" step="0.05" name="selected-object-location-z" value="0" min="-10" max="10"
+              <input type="range" step="0.05" name="selected-object-position-z" value="0" min="-10" max="10"
                 class="custom-range range-animation">
             </div>
           </div>
@@ -291,7 +333,10 @@ void main()
           </div>
         </div>
       </div>
-      <!--div class="submenu-two-list-container">
+
+      <!--
+
+      <div class="submenu-two-list-container">
         <div class="submenu" id="link-submenu">
           <h3 class="submenu-title">Gerakan Ksatria ("Link")</h3>
           <div class="slider-container">
@@ -368,7 +413,7 @@ void main()
             <label>Loncatan<b>
                 <div class="slider-value">0</div>
               </b></label>
-            <input type="range" step="0.01" name="body.location.z" value="0" min="-1" max="1"
+            <input type="range" step="0.01" name="body.position.z" value="0" min="-1" max="1"
               class="custom-range range-animation">
           </div>
           <div class="slider-container">
@@ -448,11 +493,14 @@ void main()
             <label>Lompatan <b>
                 <div class="slider-value">0</div>
               </b></label>
-            <input type="range" step="0.1" name="chicken.body.location.z" value="0" min="-1" max="1"
+            <input type="range" step="0.1" name="chicken.body.position.z" value="0" min="-1" max="1"
               class="custom-range range-animation">
           </div>
         </div>
-      </div-->
+      </div>
+
+    -->
+
     </div>
   </div>
 </body>
