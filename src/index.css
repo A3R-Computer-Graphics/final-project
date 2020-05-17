@@ -282,6 +282,10 @@ div#speed-slider {
   width: 100%;
 }
 
+#btn-toggle-light {
+  width: 100%;
+}
+
 #screen-info {
   position: absolute;
   bottom: 0;

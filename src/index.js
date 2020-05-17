@@ -27,7 +27,8 @@ let resolution = 100 // TODO: Reset to 100. Now is set to 10 that my computers d
 let isMenuShown = true
 let sliderList = []
 
-
+// Light is On to show if light is on or off
+let lightIsOn = true
 
 // Utility to update slider value
 
@@ -366,6 +367,25 @@ function createCubeLight() {
   app.addObject(light)
 }
 
+function toggleLight() {
+  const lightBtn = document.getElementById('btn-toggle-light');
+  if (lightIsOn) {
+    lightIsOn = false;
+    light.diffuse = vec4(0.0, 0.0, 0.0, 0.0);
+    light.specular = vec4(0.0, 0.0, 0.0, 0.0);
+    lightBtn.innerText = 'Hidupkan Cahaya';
+    lightBtn.classList.remove('btn-danger');
+    lightBtn.classList.add('btn-primary');
+  } else {
+    lightIsOn = true;
+    light.diffuse = vec4(1.0, 1.0, 1.0, 1.0);
+    light.specular = vec4(1.0, 1.0, 1.0, 1.0);
+    lightBtn.innerText = 'Matikan Cahaya';
+    lightBtn.classList.remove('btn-primary');
+    lightBtn.classList.add('btn-danger');
+  }
+}
+
 function initMaterialsFromBlender() {
 
   // materials_definition is a variable that holds all materials data
@@ -525,6 +545,7 @@ window.addEventListener('load', function init() {
   document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
   document.querySelector('input[name="resolution"]').addEventListener('input', adjustResolution)
   document.querySelector('#btn-animate').addEventListener('click', toggleAnimation)
+  document.querySelector('#btn-toggle-light').addEventListener('click', toggleLight)
 
   connectSlidersToModelData()
   connectLightPositionSliders()
