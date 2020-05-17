@@ -20,7 +20,7 @@ let at = vec3(0.0, 0.0, 0.0)
 let canvas
 let gl
 let program
-let resolution = 40 // TODO: Reset to 100. Now is set to 10 that my computers doesn't get too hot.
+let resolution = 100 // TODO: Reset to 100. Now is set to 10 that my computers doesn't get too hot.
 
 // Interaction variables
 
@@ -452,7 +452,7 @@ function initObjectsDataFromBlender() {
   // is the same as in `objects_info`
 
   objectNames.forEach(objectName => {
-    let geometryName = objectName
+    let geometryName = objectName in objects_vertices ? objectName : objects_info[objectName].vertices
     let geometryDefinition = objects_vertices[geometryName]
 
     let vertices = geometryDefinition.vertices
