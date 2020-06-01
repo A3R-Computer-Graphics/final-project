@@ -593,8 +593,10 @@ window.addEventListener('load', async function init() {
     initObjectSelectionMechanism()
   }
 
-  if (typeof initNavigableCamera !== 'undefined') {
-    initNavigableCamera()
+  let navigableCamera = null
+
+  if (typeof NavigableCameraUtils !== 'undefined') {
+    navigableCamera = new NavigableCamera()
   }
 
   // Set focus to canvas from the start

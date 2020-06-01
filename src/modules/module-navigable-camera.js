@@ -1,301 +1,338 @@
-// Detecting scroll movement
+const NavigableCameraUtils = {
 
-let scrollDetector;
-let scrollInitial;
+  /**
+   * Convert keyboard into directions: "LEFT", "RIGHT", "UP", and "DOWN".
+   *
+   * @param {Event} event
+   */
 
-let MAX_FOCUS_PROGRESS_FRAME_DURATION = 15;
-
-function initNavigableCamera() {
-
-  scrollDetector = document.querySelector('#scroll-detector > *')
-  scrollDetector.scrollTop = scrollDetector.clientHeight / 2;
-  scrollInitial = scrollDetector.scrollTop;
-  scrollDetector.addEventListener('scroll', zoomCameraFromScrollDetector)
-
-  scrollDetector.parentElement.addEventListener('mousedown', startTrackball)
-  document.addEventListener('mousemove', trackMouseForTrackball)
-  document.addEventListener('mouseup', stopTrackball)
-
-  scrollDetector.parentElement.addEventListener('touchstart', startTrackballOnDevice)
-  document.addEventListener('touchmove', trackMouseForTrackballOnDevice)
-  document.addEventListener('touchend', stopTrackballOnDevice)
-
-  canvas.parentElement.addEventListener('keydown', processCanvasArrowKeydown)
-  canvas.parentElement.addEventListener('keydown', processCanvasFocusKeydown)
-}
-
-/**
- * Convert keyboard into directions: "LEFT", "RIGHT", "UP", and "DOWN".
- *
- * @param {Event} event
- */
-
-function convertKeyboardIntoDirection(event) {
-  let direction = '';
-  let whichToDirection = {
-    37: 'LEFT',
-    38: 'UP',
-    39: 'RIGHT',
-    40: 'DOWN',
-  };
-  if (event.code) {
-    // Remove 'Arrow' token in the string
-    direction = event.code.replace('Arrow', '');
-  } else if (event.key) {
-    direction = event.code.replace('Arrow', '');
-  } else {
-    direction = whichToDirection[event.which] || '';
-  }
-
-  if (direction.length > 0) {
-    direction = direction.toUpperCase();
-    if (coordinateDirectionOrder.indexOf(direction) >= 0) {
-      return direction;
+  directionFromKeyboardArrow: function (event) {
+    let direction = ''
+    let whichToDirection = {
+      37: 'LEFT',
+      38: 'UP',
+      39: 'RIGHT',
+      40: 'DOWN',
     }
-  }
-}
-
-/**
- * Process canvas keydown event. If arrow key is pressed,
- * it will later be transformed into next camera position
- * accoding to `cameraMovementCoordinates`.
- *
- * @param {Event} event
- */
-
-function processCanvasArrowKeydown(event) {
-  let direction = convertKeyboardIntoDirection(event);
-  if (!direction) {
-    return;
-  }
-
-  let directionIdx = coordinateDirectionOrder.indexOf(direction);
-  let newAllowedCoords = cameraMovementCoordinates[cameraPosIndex];
-  let newCameraPosIdx = newAllowedCoords[directionIdx];
-  if (newCameraPosIdx < 0) {
-    return;
-  }
-
-  cameraPosIndex = newCameraPosIdx;
-
-  let cameraPosCoords = cameraCoordinates[cameraPosIndex];
-  let cameraSpherePos = cartesianToSphere(
-    cameraPosCoords[0],
-    -cameraPosCoords[2],
-    cameraPosCoords[1]
-  );
-  let new_phi = cameraSpherePos[1];
-  let new_theta = cameraSpherePos[2];
-
-  phi = new_phi;
-  theta = new_theta;
-  updateCameraView();
-}
-
-/** Capture scroll movement and translate it into sphere radius coordinate
- * or distance from origin to camera. The radius is capped between near & far
- * values.
- */
-
-function zoomCameraFromScrollDetector() {
-  let deltaScroll = scrollDetector.scrollTop - scrollInitial;
-  scrollDetector.scrollTop = scrollInitial;
-  let newRadius = Math.pow(Math.E, Math.log(cameraRadius) + deltaScroll / 10);
-  if (newRadius < camera.near) {
-    return
-  }
-  if (newRadius > camera.far) {
-    return;
-  }
-  cameraRadius = newRadius;
-
-  updateCameraView();
-}
-
-// Implement trackball using sphere coordinate.
-// Source: https://computergraphics.stackexchange.com/questions/151/how-to-implement-a-trackball-in-opengl
-
-let isClickingForTrackball = false;
-
-let posXInit = 0;
-let posYInit = 0;
-let initPhi;
-let initTheta;
-let isCameraPositionTrackballed = false;
-
-function startTrackball(event) {
-  if (isClickingForTrackball) {
-    return
-  }
-
-  posXInit = event.screenX;
-  posYInit = event.screenY;
-
-  if (event.touches) {
-    posXInit = event.touches[0].screenX;
-    posYInit = event.touches[0].screenY;
-  }
-
-  initPhi = phi;
-  initTheta = theta;
-
-  isClickingForTrackball = true;
-}
-
-function trackMouseForTrackball(event) {
-  if (!isClickingForTrackball) {
-    return
-  }
-
-  let deltaX = event.screenX;
-  let deltaY = event.screenY;
-
-  if (event.touches) {
-    deltaX = event.touches[0].screenX;
-    deltaY = event.touches[0].screenY;
-  }
-
-  deltaX -= posXInit;
-  deltaY -= posYInit;
-
-  if (Math.abs(deltaX) < 1 && Math.abs(deltaY) < 1) {
-    return
-  }
-
-  deltaX = deltaX / window.innerWidth * 2;
-  deltaY = -deltaY / window.innerHeight * 2;
-
-  phi = initPhi + -deltaX * 3
-  let newTheta = initTheta + deltaY * 3;
-
-  // Avoid making theta == 0 and changes direction (going negative from positive and vice versa).
-
-  let signChangesSinceInitial = Math.sign(newTheta) !== Math.sign(initTheta);
-
-  let touchingNorthPole = Math.abs(newTheta) < 0.01;
-  let touchingSouthPole = Math.abs(newTheta) > Math.PI - 0.01;
-
-  let goingBeyondNorthPole = Math.sign(deltaY) < 0 && signChangesSinceInitial;
-  let goingBeyondSouthPole = Math.sign(deltaY) > 0 && signChangesSinceInitial;
-
-  if (touchingNorthPole || goingBeyondNorthPole) {
-    newTheta = (Math.sign(initTheta) || 1) * 0.01;
-    initTheta = newTheta;
-    if (event.touches) {
-      posYInit = event.touches[0].screenY;
+    if (event.code) {
+      // Remove 'Arrow' token in the string
+      direction = event.code.replace('Arrow', '')
+    } else if (event.key) {
+      direction = event.code.replace('Arrow', '')
     } else {
-      posYInit = event.screenY;
+      direction = whichToDirection[event.which] || ''
     }
-  } else if (touchingSouthPole || goingBeyondSouthPole) {
-    newTheta = (Math.sign(initTheta) || 1) * (Math.PI - 0.01);
-    initTheta = newTheta;
-    if (event.touches) {
-      posYInit = event.touches[0].screenY;
-    } else {
-      posYInit = event.screenY;
-    }
-  }
 
-  theta = newTheta;
-
-  if (!isCameraPositionTrackballed) {
-    isCameraPositionTrackballed = true
-  }
-
-  updateCameraView();
-
-  // Clear selection
-  // Taken from: https://stackoverflow.com/a/3169849/10159381
-
-  if (window.getSelection) {
-    if (window.getSelection().empty) {
-      window.getSelection().empty();
-    } else if (window.getSelection().removeAllRanges) {
-      window.getSelection().removeAllRanges();
-    }
-  } else if (document.selection) {
-    document.selection.empty();
-  }
-}
-
-function stopTrackball() {
-  if (!isClickingForTrackball) {
-    return
-  }
-  isClickingForTrackball = false;
-}
-
-function startTrackballOnDevice(event) {
-  event.preventDefault()
-  startTrackball(event)
-}
-
-function trackMouseForTrackballOnDevice(event) {
-  trackMouseForTrackball(event)
-}
-
-function stopTrackballOnDevice(event) {
-  stopTrackball(event)
-}
-
-function getPressedAlphabet(event) {
-  let key = undefined
-  if (event.code) {
-    key = (event.code.match(/Key([A-Z])/) || {})[1]
-  } else if (event.key) {
-    key = (event.key.match(/^([a-zA-Z])/) || {})[1]
-  }
-  if (key) {
-    return key.toUpperCase()
-  }
-}
-
-let cancelFocusAnimation = function () { }
-
-function processCanvasFocusKeydown(event) {
-  let key = getPressedAlphabet(event)
-  if (key === 'F') {
-    let selectedObject = app.selectedObject
-    
-    if (selectedObject) {
-      let objectMatrix = mat4(selectedObject.worldMatrix)
-      let objectWorldPosition = objectMatrix[3].slice(0, 3)
-
-      let oldPosition = at
-      let newPosition = vec3(objectWorldPosition)
-
-      let oldRadius = cameraRadius;
-      let newRadius = 4;
-
-      cancelFocusAnimation()
-      let progress = 0;
-
-      // TODO: Rename to animationCancelled and cancelFocusAnimation to cancelCurrentlyRunningAnimation
-      let cancelAnimation = false
-
-      cancelFocusAnimation = function () {
-        cancelAnimation = true
+    if (direction.length > 0) {
+      direction = direction.toUpperCase()
+      if (coordinateDirectionOrder.indexOf(direction) >= 0) {
+        return direction
       }
+    }
+  },
 
-      let animateFocus = function () {
-        if (progress > MAX_FOCUS_PROGRESS_FRAME_DURATION || cancelAnimation) {
-          return
+  alphabetFromEvent: function (event) {
+    let key = undefined
+    if (event.code) {
+      key = (event.code.match(/Key([A-Z])/) || {})[1]
+    } else if (event.key) {
+      key = (event.key.match(/^([a-zA-Z])/) || {})[1]
+    }
+    if (key) {
+      return key.toUpperCase()
+    }
+  }
+}
+
+
+
+class NavigableCamera {
+
+  static MAX_FOCUS_PROGRESS_FRAME_DURATION = 15
+
+  constructor() {
+    this.scrollDetector = document.querySelector('#scroll-detector > *')
+    this.scrollInitial = 0
+    this.numToIgnoreScrollCall = 0
+
+    this.isClickingForTrackball = false
+    this.isCameraPositionTrackballed = false
+
+    this.posXInit = 0
+    this.posYInit = 0
+    this.initPhi = 0
+    this.initTheta = 0
+
+    this.cancelFocusAnimation = function () { }
+
+    this.setup()
+  }
+
+  setup() {
+    this.setupZoomUsingScroll()
+    this.setupTrackball()
+    this.setupNavigateUsingKeyboard()
+  }
+
+  setupZoomUsingScroll() {
+    this.scrollDetector.scrollTop = this.scrollDetector.clientHeight / 2
+    this.scrollInitial = this.scrollDetector.scrollTop
+    this.scrollDetector.addEventListener('scroll', this._proxy(this.zoomCameraFromScrollDetector))
+  }
+
+  _proxy(func) {
+    let self = this
+    return function() {
+      func.apply(self, arguments)
+    }
+  }
+
+  setupTrackball() {
+    this.scrollDetector.parentElement.addEventListener('mousedown', this._proxy(this.startTrackball))
+    document.addEventListener('mousemove', this._proxy(this.trackMouseForTrackball))
+    document.addEventListener('mouseup', this._proxy(this.stopTrackball))
+
+    this.scrollDetector.parentElement.addEventListener('touchstart', this._proxy(this.startTrackballOnDevice))
+    document.addEventListener('touchmove', this._proxy(this.trackMouseForTrackballOnDevice))
+    document.addEventListener('touchend', this._proxy(this.stopTrackballOnDevice))
+  }
+
+  setupNavigateUsingKeyboard() {
+    canvas.parentElement.addEventListener('keydown', this._proxy(this.processCanvasArrowKeydown))
+    canvas.parentElement.addEventListener('keydown', this._proxy(this.processCanvasFocusKeydown))
+  }
+
+  /**
+   * Process canvas keydown event. If arrow key is pressed,
+   * it will later be transformed into next camera position
+   * accoding to `cameraMovementCoordinates`.
+   *
+   * @param {Event} event
+   */
+
+  processCanvasArrowKeydown(event) {
+    let direction = NavigableCameraUtils.directionFromKeyboardArrow(event)
+    if (!direction) {
+      return
+    }
+
+    let directionIdx = coordinateDirectionOrder.indexOf(direction)
+    let newAllowedCoords = cameraMovementCoordinates[cameraPosIndex]
+    let newCameraPosIdx = newAllowedCoords[directionIdx]
+    if (newCameraPosIdx < 0) {
+      return
+    }
+
+    cameraPosIndex = newCameraPosIdx
+
+    let cameraPosCoords = cameraCoordinates[cameraPosIndex]
+    let cameraSpherePos = cartesianToSphere(
+      cameraPosCoords[0],
+      -cameraPosCoords[2],
+      cameraPosCoords[1]
+    )
+    let new_phi = cameraSpherePos[1]
+    let new_theta = cameraSpherePos[2]
+
+    phi = new_phi
+    theta = new_theta
+    updateCameraView()
+  }
+
+  /** Capture scroll movement and translate it into sphere radius coordinate
+   * or distance from origin to camera. The radius is capped between near & far
+   * values.
+   */
+
+  zoomCameraFromScrollDetector() {
+    if (this.numToIgnoreScrollCall > 0) {
+      this.numToIgnoreScrollCall -= 1
+      return
+    } else {
+      this.numToIgnoreScrollCall = 0
+    }
+    let deltaScroll = this.scrollDetector.scrollTop - this.scrollInitial
+
+    this.numToIgnoreScrollCall += 1
+    this.scrollDetector.scrollTop = this.scrollInitial
+
+    let newRadius = Math.pow(Math.E, Math.log(cameraRadius) + deltaScroll / 10)
+    if (newRadius < camera.near) {
+      return
+    }
+    if (newRadius > camera.far) {
+      return
+    }
+
+    cameraRadius = newRadius
+    updateCameraView()
+  }
+
+  /** Implement trackball using sphere coordinate.
+   * Source: https://computergraphics.stackexchange.com/questions/151/how-to-implement-a-trackball-in-opengl
+   * */
+
+  startTrackball(event) {
+    if (this.isClickingForTrackball) {
+      return
+    }
+
+    this.posXInit = event.screenX
+    this.posYInit = event.screenY
+
+    if (event.touches) {
+      this.posXInit = event.touches[0].screenX
+      this.posYInit = event.touches[0].screenY
+    }
+
+    this.initPhi = phi
+    this.initTheta = theta
+
+    this.isClickingForTrackball = true
+  }
+
+
+  trackMouseForTrackball(event) {
+    if (!this.isClickingForTrackball) {
+      return
+    }
+
+    let deltaX = event.screenX
+    let deltaY = event.screenY
+
+    if (event.touches) {
+      deltaX = event.touches[0].screenX
+      deltaY = event.touches[0].screenY
+    }
+
+    deltaX -= this.posXInit
+    deltaY -= this.posYInit
+
+    if (Math.abs(deltaX) < 1 && Math.abs(deltaY) < 1) {
+      return
+    }
+
+    deltaX = deltaX / window.innerWidth * 2
+    deltaY = -deltaY / window.innerHeight * 2
+
+    phi = this.initPhi + -deltaX * 3
+    let newTheta = this.initTheta + deltaY * 3
+
+    // Avoid making theta == 0 and changes direction (going negative from positive and vice versa).
+
+    let signChangesSinceInitial = Math.sign(newTheta) !== Math.sign(this.initTheta)
+
+    let touchingNorthPole = Math.abs(newTheta) < 0.01
+    let touchingSouthPole = Math.abs(newTheta) > Math.PI - 0.01
+
+    let goingBeyondNorthPole = Math.sign(deltaY) < 0 && signChangesSinceInitial
+    let goingBeyondSouthPole = Math.sign(deltaY) > 0 && signChangesSinceInitial
+
+    if (touchingNorthPole || goingBeyondNorthPole) {
+      newTheta = (Math.sign(this.initTheta) || 1) * 0.01
+      this.initTheta = newTheta
+      if (event.touches) {
+        this.posYInit = event.touches[0].screenY
+      } else {
+        this.posYInit = event.screenY
+      }
+    } else if (touchingSouthPole || goingBeyondSouthPole) {
+      newTheta = (Math.sign(this.initTheta) || 1) * (Math.PI - 0.01)
+      this.initTheta = newTheta
+      if (event.touches) {
+        this.posYInit = event.touches[0].screenY
+      } else {
+        this.posYInit = event.screenY
+      }
+    }
+
+    theta = newTheta
+
+    if (!this.isCameraPositionTrackballed) {
+      this.isCameraPositionTrackballed = true
+    }
+
+    updateCameraView()
+
+    // Clear selection
+    // Taken from: https://stackoverflow.com/a/3169849/10159381
+
+    if (window.getSelection) {
+      if (window.getSelection().empty) {
+        window.getSelection().empty()
+      } else if (window.getSelection().removeAllRanges) {
+        window.getSelection().removeAllRanges()
+      }
+    } else if (document.selection) {
+      document.selection.empty()
+    }
+  }
+
+  stopTrackball() {
+    if (!this.isClickingForTrackball) {
+      return
+    }
+    this.isClickingForTrackball = false
+  }
+
+  startTrackballOnDevice(event) {
+    event.preventDefault()
+    this.startTrackball(event)
+  }
+
+  trackMouseForTrackballOnDevice(event) {
+    this.trackMouseForTrackball(event)
+  }
+
+  stopTrackballOnDevice(event) {
+    this.stopTrackball(event)
+  }
+
+  processCanvasFocusKeydown(event) {
+    let key = NavigableCameraUtils.alphabetFromEvent(event)
+    if (key === 'F') {
+      let selectedObject = app.selectedObject
+
+      if (selectedObject) {
+        let objectMatrix = mat4(selectedObject.worldMatrix)
+        let objectWorldPosition = objectMatrix[3].slice(0, 3)
+
+        let oldPosition = at
+        let newPosition = vec3(objectWorldPosition)
+
+        let oldRadius = cameraRadius
+        let newRadius = 4
+
+        this.cancelFocusAnimation()
+        let progress = 0
+
+        // TODO: Rename to animationCancelled and cancelFocusAnimation to cancelCurrentlyRunningAnimation
+        let cancelAnimation = false
+
+        this.cancelFocusAnimation = function () {
+          cancelAnimation = true
         }
 
-        let x = progress / MAX_FOCUS_PROGRESS_FRAME_DURATION;
-        let y = 1 - Math.pow(x - 1, 2)
+        let animateFocus = function () {
+          if (progress > this.MAX_FOCUS_PROGRESS_FRAME_DURATION || cancelAnimation) {
+            return
+          }
 
-        at = mix(oldPosition, newPosition, y)
-        cameraRadius = oldRadius * (1 - y) + newRadius * y
-        
-        updateCameraView()
+          let x = progress / this.MAX_FOCUS_PROGRESS_FRAME_DURATION
+          let y = 1 - Math.pow(x - 1, 2)
 
-        progress += 1
+          at = mix(oldPosition, newPosition, y)
+          cameraRadius = oldRadius * (1 - y) + newRadius * y
+
+          updateCameraView()
+
+          progress += 1
+          window.requestAnimationFrame(animateFocus)
+        }
+
         window.requestAnimationFrame(animateFocus)
+
       }
-
-      window.requestAnimationFrame(animateFocus)
-
     }
   }
 }
