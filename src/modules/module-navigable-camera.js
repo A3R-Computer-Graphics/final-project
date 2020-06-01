@@ -62,6 +62,12 @@ class NavigableCamera {
     this.initPhi = 0
     this.initTheta = 0
 
+    this.CLICK_FOR_TRACKBALL = 0
+    this.CLICK_FOR_FACE_MOVEMENT = 1
+    this.CLICK_FOR_GROUND_MOVEMENT = 2
+
+    this.clickMode = this.CLICK_FOR_TRACKBALL
+
     this.cancelCurrentFocusAnimation = function () { }
 
     this.setup()
@@ -87,12 +93,12 @@ class NavigableCamera {
   }
 
   setupTrackball() {
-    this.scrollDetector.parentElement.addEventListener('mousedown', this._proxy(this.startTrackball))
-    document.addEventListener('mousemove', this._proxy(this.trackMouseForTrackball))
-    document.addEventListener('mouseup', this._proxy(this.stopTrackball))
+    this.scrollDetector.parentElement.addEventListener('mousedown', this._proxy(this.onMouseDown))
+    document.addEventListener('mousemove', this._proxy(this.onMouseMove))
+    document.addEventListener('mouseup', this._proxy(this.onMouseUp))
 
     this.scrollDetector.parentElement.addEventListener('touchstart', this._proxy(this.startTrackballOnDevice))
-    document.addEventListener('touchmove', this._proxy(this.trackMouseForTrackballOnDevice))
+    document.addEventListener('touchmove', this._proxy(this.processTrackballOnDevice))
     document.addEventListener('touchend', this._proxy(this.stopTrackballOnDevice))
   }
 
@@ -191,7 +197,7 @@ class NavigableCamera {
   }
 
 
-  trackMouseForTrackball(event) {
+  processTrackball(event) {
     if (!this.isClickingForTrackball) {
       return
     }
@@ -275,8 +281,8 @@ class NavigableCamera {
     this.startTrackball(event)
   }
 
-  trackMouseForTrackballOnDevice(event) {
-    this.trackMouseForTrackball(event)
+  processTrackballOnDevice(event) {
+    this.processTrackball(event)
   }
 
   stopTrackballOnDevice(event) {
@@ -330,5 +336,44 @@ class NavigableCamera {
 
     window.requestAnimationFrame(animateFocusTransition)
 
+  }
+  
+
+  startCameraMovement(event) {
+
+  }
+
+  processCameraMovement(event) {
+
+  }
+
+  stopCameraMovement(event) {
+
+  }
+
+  onMouseDown(event) {
+    if (event.shiftKey || event.ctrlKey) {
+      this.clickMode = event.shiftKey ? this.CLICK_FOR_GROUND_MOVEMENT : this.CLICK_FOR_FACE_MOVEMENT
+      this.startCameraMovement(event)
+    } else {
+      this.clickMode = this.CLICK_FOR_TRACKBALL
+      this.startTrackball(event)
+    }
+  }
+
+  onMouseUp(event) {
+    if (this.clickMode === this.CLICK_FOR_TRACKBALL) {
+      this.stopTrackball(event)
+    } else {
+      this.stopCameraMovement(event)
+    }
+  }
+
+  onMouseMove(event) {
+    if (this.clickMode === this.CLICK_FOR_TRACKBALL) {
+      this.processTrackball(event)
+    } else {
+      this.processCameraMovement (event)
+    }
   }
 }
