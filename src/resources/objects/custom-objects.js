@@ -131,6 +131,7 @@ objects_info["left_wall"] = {
 
 objects_info["ceiling"] = {
   ...objects_info.floor,
+  rotation: [180.0, 0, 0.0],
   vertices: "floor",
   position: [
     objects_info.floor.position[0],
@@ -141,6 +142,7 @@ objects_info["ceiling"] = {
 
 objects_info["right_wall"] = {
   ...objects_info.left_wall,
+  rotation: [-90.0, 0, 90.0],
   position: [
     objects_info.left_wall.position[0] + objects_info.floor.scale[0] * 2,
     objects_info.left_wall.position[1],
@@ -150,6 +152,7 @@ objects_info["right_wall"] = {
 
 objects_info["front_wall"] = {
   ...objects_info.wall,
+  rotation: [-90.0, 0, 0.0],
   position: [
       objects_info.wall.position[0],
       objects_info.wall.position[1] - WIDTH * 2,

@@ -5,134 +5,6 @@
 <link rel="stylesheet" href="lib/css/bootstrap.min.css">
 <link rel="stylesheet" href="index.css">
 <link rel="stylesheet" href="index-mobile.css">
-<script id="vertex-shader" type="x-shader/x-vertex">
-attribute vec4 vPosition;
-attribute vec3 vNormal;
-
-attribute vec2 a_texcoord;
-varying vec2 v_texcoord;
-
-uniform mat4 modelMatrix, viewMatrix, projectionMatrix, normalMatrix;
-
-uniform vec3 lightPosition;
-
-varying vec3 normalInterp, vertPos, lightPos;
-
-void main()
-{
-    vec4 vertPos4 = viewMatrix * modelMatrix * vPosition;
-
-    vec3 worldPos = vertPos4.xyz;
-    lightPos = (viewMatrix * vec4(lightPosition.xyz, 1.0)).xyz;
-
-    vertPos = vertPos4.xyz;
-    normalInterp = vec3(normalMatrix * vec4(vNormal, 0.0));
-    
-    gl_Position = projectionMatrix * vertPos4;
-
-    // Pass the texcoord to the fragment shader.
-    v_texcoord = a_texcoord;
-}
-</script>
-
-<script id="fragment-shader" type="x-shader/x-fragment">
-precision mediump float;
-
-const vec4 selectedObjectColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
-
-// Texture setup
-
-varying vec2 v_texcoord;
-uniform sampler2D u_texture;
-
-varying vec3 normalInterp;  // Surface normal
-varying vec3 vertPos;       // Vertex position
-varying vec3 lightPos;      // Light position, interpolated
-
-uniform vec4 ambientProduct, diffuseProduct, specularProduct;
-uniform float shininess;
-
-// Flag to indicate if object is selected or not
-uniform bool isSelected;
-
-// Small patch to mix value between texture and calculated phong
-// This is handy to make sure the material that doesn't have image texture
-// will not use any Texture2D
-uniform float textureMix;
-
-vec4 calculatePhong() {
-    vec3 N = normalize(normalInterp);
-
-    vec3 L = normalize(lightPos - vertPos);
-    vec3 E = normalize(-vertPos);
-    vec3 H = normalize(L + E); // Half vector
-
-    // Compute diffuse reflection term using Lambert cosine law (see p. 286 Angel 7th ed)
-
-    float lambertian = max(dot(N, L), 0.0);
-    float specular = 0.0;
-
-    if (lambertian > 0.0) {
-        // Compute specular reflection term (see p. 287 Angel 7th ed)
-        float specAngle = max(dot(N, H), 0.0);
-        specular = pow(specAngle, shininess);
-    }
-    
-    return ambientProduct + lambertian * diffuseProduct + specular * specularProduct;
-}
-
-void main()
-{
-    vec4 fColor;
-
-    if (!isSelected) {
-        fColor = calculatePhong();
-        fColor = mix(fColor, texture2D(u_texture, v_texcoord) * fColor, textureMix);
-    } else {
-        fColor = selectedObjectColor;
-    }
-    fColor.a = 1.0;
-
-    gl_FragColor = fColor;
-}
-</script>
-
-
-
-
-<script  id="vertex-shader-3d" type="x-shader/x-vertex">
-  attribute vec4 vPosition;
-  attribute vec2 a_texcoord;
-  
-  uniform mat4 u_projection;
-  uniform mat4 u_view;
-  uniform mat4 u_world;
-  
-  varying vec2 v_texcoord;
-  
-  void main() {
-    gl_Position = u_projection * u_view * u_world * vPosition;
-  
-    // Pass the texture coord to the fragment shader.
-    v_texcoord = a_texcoord;
-  }
-</script>
-
-<script  id="fragment-shader-3d" type="x-shader/x-fragment">
-  precision mediump float;
-  
-  // Passed in from the vertex shader.
-  varying vec2 v_texcoord;
-  
-  uniform vec4 u_colorMult;
-  uniform sampler2D u_texture;
-  
-  void main() {
-    gl_FragColor = texture2D(u_texture, v_texcoord) * u_colorMult;
-  }
-</script>
-
-
 
 
 <script type="text/javascript" src="lib/js/jquery-3.4.1.min.js"></script>
@@ -147,21 +19,42 @@ void main()
 <script type="text/javascript" src="modules/utils.js"></script>
 <script type="text/javascript" src="modules/event-dispatcher.js"></script>
 
-<script type="text/javascript" src="modules/brand-new-class.js"></script>
+
+<!-- Main 3D modules definitions -->
+<script type="text/javascript" src="modules/3d/utils.js"></script>
+
+<script type="text/javascript" src="modules/3d/primitives.js"></script>
+
+<script type="text/javascript" src="modules/3d/geometry.js"></script>
+<script type="text/javascript" src="modules/3d/material.js"></script>
+
+<script type="text/javascript" src="modules/3d/primitive-geometry.js"></script>
+
+<script type="text/javascript" src="modules/3d/object-3d.js"></script>
+<script type="text/javascript" src="modules/3d/preset-object-3d.js"></script>
+
+<script type="text/javascript" src="modules/3d/light.js"></script>
+<script type="text/javascript" src="modules/3d/camera.js"></script>
+<script type="text/javascript" src="modules/3d/renderer.js"></script>
+
+<!-- End of 3D modules definitions -->
+
 <script type="text/javascript" src="modules/app.js"></script>
 <script type="text/javascript" src="modules/animation-manager.js"></script>
 
-
+<script type="comment">Simple scene objects data</script>
 <script type="text/javascript" src="resources/objects/objects-materials-simple.js"></script>
 <script type="text/javascript" src="resources/objects/objects-data-simple.js"></script>
 <script type="text/javascript" src="resources/objects/objects-vertices-simple.js"></script>
 <script type="text/javascript" src="resources/objects/custom-objects.js"></script>
 
-
-<!--script type="text/javascript" src="resources/objects/objects-materials.js"></script>
+<!--
+<script type="comment">Final scene objects data</script>
+<script type="text/javascript" src="resources/objects/objects-materials.js"></script>
 <script type="text/javascript" src="resources/objects/objects-data.js"></script>
 <script type="text/javascript" src="resources/objects/objects-vertices.js"></script>
-<script type="text/javascript" src="resources/objects/objects-animations.js"></script-->
+<script type="text/javascript" src="resources/objects/objects-animations.js"></script>
+-->
 
 <script type="text/javascript" src="modules/camera-coordinates.js"></script>
 

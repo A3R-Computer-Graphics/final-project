@@ -23,6 +23,6 @@ class App {
     }
 
     getNextUniqueName(name) {
-        return getNextUniqueNameFromDict(name, this.objects)
+        return ModuleUtil.getNextUniqueNameFromDict(name, this.objects)
     }
 }
