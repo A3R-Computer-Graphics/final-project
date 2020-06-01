@@ -20,7 +20,7 @@ let at = vec3(0.0, 0.0, 0.0)
 let canvas
 let gl
 let program
-let resolution = 100 // TODO: Reset to 100. Now is set to 10 that my computers doesn't get too hot.
+let resolution = 50
 
 // Interaction variables
 
@@ -29,6 +29,9 @@ let sliderList = []
 
 // Light is On to show if light is on or off
 let lightIsOn = true
+
+
+
 
 // Utility to update slider value
 
@@ -49,6 +52,8 @@ function updateSliderDisplay(slider, value) {
     slider.parentElement.querySelector('.slider-value').innerText = value;
   }
 }
+
+
 
 /**
  * Update slider value and its display
@@ -73,6 +78,8 @@ function updateSliderValueAndDisplay(slider, value, sliderValue) {
   }
 }
 
+
+
 /**
  * Function to update animation slider that has been throttled
  * so that it's not executed too often.
@@ -95,6 +102,8 @@ function initCameraPosition() {
   phi = cameraSpherePos[1];
   theta = cameraSpherePos[2];
 }
+
+
 
 function toggleAnimation() {
   const animateBtn = document.getElementById('btn-animate');
@@ -119,6 +128,8 @@ function toggleAnimation() {
   }
 }
 
+
+
 function connectSlidersToModelData() {
   document.querySelectorAll('input[type="range"]').forEach(elem => {
     const sliderName = elem.getAttribute('name')
@@ -137,6 +148,8 @@ function connectSlidersToModelData() {
     })
   })
 }
+
+
 
 function connectSpeedSlider() {
   let slider = document.querySelector('input[name="speed"]');
@@ -158,6 +171,8 @@ function connectSpeedSlider() {
 
   updateSliderValueAndDisplay(slider, displaySpeed, sliderInitValue);
 }
+
+
 
 function connectLightPositionSliders() {
   document.querySelectorAll('input[name^=light-position]').forEach(slider => {
@@ -195,6 +210,8 @@ function connectLightPositionSliders() {
     }
   });
 }
+
+
 
 /**
  * Update eye coordinate calculation from global
@@ -242,6 +259,8 @@ function handleSpaceKeyup(event) {
   }
 }
 
+
+
 let MAX_HEIGHT = 1080
 let MAX_WIDTH = 1440
 
@@ -274,12 +293,16 @@ function adjustViewport() {
   gl.viewport(0, 0, width, height);
 }
 
+
+
 function adjustResolution(event) {
   let slider = event.target
   resolution = Math.min(100, Math.max(1, slider.value))
   updateSliderDisplay(slider, resolution + '%')
   adjustViewport()
 }
+
+
 
 function toggleMenu() {
   let wrapperDOM = document.getElementById('menu-toggler-wrapper');
@@ -293,6 +316,8 @@ function toggleMenu() {
   }
   isMenuShown = !isMenuShown;
 }
+
+
 
 /**
  * List all sliders in the document and for each slider,
@@ -354,6 +379,8 @@ function matchSlidersToAnimation() {
   })
 }
 
+
+
 let light
 
 function createCubeLight() {
@@ -366,6 +393,8 @@ function createCubeLight() {
   // Add object to app's object list
   app.addObject(light)
 }
+
+
 
 function toggleLight() {
   const lightBtn = document.getElementById('btn-toggle-light');
@@ -415,8 +444,9 @@ function initMaterialsFromBlender() {
 
     app.addMaterial(material)
   })
-
 }
+
+
 
 function initObjectsDataFromBlender() {
 
@@ -482,7 +512,7 @@ function initObjectsDataFromBlender() {
 
     // Ignore init complex geometry, just so you can debug
     // the whole code using scene with simple and few objects
-    
+
     // if (vertices.length > 100) {
     //   return
     // }
