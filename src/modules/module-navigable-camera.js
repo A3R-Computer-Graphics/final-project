@@ -63,7 +63,7 @@ class NavigableCamera {
     this.initPhi = 0
     this.initTheta = 0
 
-    this.cancelFocusAnimation = function () { }
+    this.cancelCurrentFocusAnimation = function () { }
 
     this.setup()
   }
@@ -82,7 +82,7 @@ class NavigableCamera {
 
   _proxy(func) {
     let self = this
-    return function() {
+    return function () {
       func.apply(self, arguments)
     }
   }
@@ -197,13 +197,16 @@ class NavigableCamera {
       return
     }
 
-    let deltaX = event.screenX
-    let deltaY = event.screenY
+    let eventX = event.screenX
+    let eventY = event.screenY
 
-    if (event.touches) {
-      deltaX = event.touches[0].screenX
-      deltaY = event.touches[0].screenY
+    if (event.touches && event.touches.length === 1) {
+      eventX = event.touches[0].screenX
+      eventY = event.touches[0].screenY
     }
+
+    let deltaX = eventX
+    let deltaY = eventY
 
     deltaX -= this.posXInit
     deltaY -= this.posYInit
@@ -229,21 +232,13 @@ class NavigableCamera {
     let goingBeyondSouthPole = Math.sign(deltaY) > 0 && signChangesSinceInitial
 
     if (touchingNorthPole || goingBeyondNorthPole) {
-      newTheta = (Math.sign(this.initTheta) || 1) * 0.01
+      newTheta = 0.01
       this.initTheta = newTheta
-      if (event.touches) {
-        this.posYInit = event.touches[0].screenY
-      } else {
-        this.posYInit = event.screenY
-      }
+      this.posYInit = eventY
     } else if (touchingSouthPole || goingBeyondSouthPole) {
-      newTheta = (Math.sign(this.initTheta) || 1) * (Math.PI - 0.01)
+      newTheta = Math.PI - 0.01
       this.initTheta = newTheta
-      if (event.touches) {
-        this.posYInit = event.touches[0].screenY
-      } else {
-        this.posYInit = event.screenY
-      }
+      this.posYInit = eventY
     }
 
     theta = newTheta
@@ -254,8 +249,13 @@ class NavigableCamera {
 
     updateCameraView()
 
-    // Clear selection
-    // Taken from: https://stackoverflow.com/a/3169849/10159381
+    this.clearSelection()
+  }
+
+  // Clear selection
+  // Taken from: https://stackoverflow.com/a/3169849/10159381
+
+  clearSelection() {
 
     if (window.getSelection) {
       if (window.getSelection().empty) {
@@ -266,6 +266,7 @@ class NavigableCamera {
     } else if (document.selection) {
       document.selection.empty()
     }
+
   }
 
   stopTrackball() {
@@ -290,49 +291,50 @@ class NavigableCamera {
 
   processCanvasFocusKeydown(event) {
     let key = NavigableCameraUtils.alphabetFromEvent(event)
-    if (key === 'F') {
-      let selectedObject = app.selectedObject
+    let selectedObject = app.selectedObject
 
-      if (selectedObject) {
-        let objectMatrix = mat4(selectedObject.worldMatrix)
-        let objectWorldPosition = objectMatrix[3].slice(0, 3)
-
-        let oldPosition = at
-        let newPosition = vec3(objectWorldPosition)
-
-        let oldRadius = cameraRadius
-        let newRadius = 4
-
-        this.cancelFocusAnimation()
-        let progress = 0
-
-        // TODO: Rename to animationCancelled and cancelFocusAnimation to cancelCurrentlyRunningAnimation
-        let cancelAnimation = false
-
-        this.cancelFocusAnimation = function () {
-          cancelAnimation = true
-        }
-
-        let animateFocus = function () {
-          if (progress > this.MAX_FOCUS_PROGRESS_FRAME_DURATION || cancelAnimation) {
-            return
-          }
-
-          let x = progress / this.MAX_FOCUS_PROGRESS_FRAME_DURATION
-          let y = 1 - Math.pow(x - 1, 2)
-
-          at = mix(oldPosition, newPosition, y)
-          cameraRadius = oldRadius * (1 - y) + newRadius * y
-
-          updateCameraView()
-
-          progress += 1
-          window.requestAnimationFrame(animateFocus)
-        }
-
-        window.requestAnimationFrame(animateFocus)
-
-      }
+    if (key !== 'F' || !selectedObject) {
+      return
     }
+
+    let objectMatrix = mat4(selectedObject.worldMatrix)
+    let objectWorldPosition = objectMatrix[3].slice(0, 3)
+
+    let oldPosition = at
+    let newPosition = vec3(objectWorldPosition)
+
+    let oldRadius = cameraRadius
+    let newRadius = 4
+
+    this.cancelCurrentFocusAnimation()
+    let progress = 0
+
+    let animationCancelled = false
+
+    this.cancelCurrentFocusAnimation = function () {
+      animationCancelled = true
+    }
+
+    let animationDuration = NavigableCamera.MAX_FOCUS_PROGRESS_FRAME_DURATION
+
+    let animateFocusTransition = function () {
+      if (progress > animationDuration || animationCancelled) {
+        return
+      }
+
+      let x = progress / animationDuration
+      let y = 1 - Math.pow(x - 1, 2)
+
+      at = mix(oldPosition, newPosition, y)
+      cameraRadius = oldRadius * (1 - y) + newRadius * y
+
+      updateCameraView()
+
+      progress += 1
+      window.requestAnimationFrame(animateFocusTransition)
+    }
+
+    window.requestAnimationFrame(animateFocusTransition)
+
   }
 }
