@@ -56,7 +56,6 @@ class NavigableCamera {
     this.numToIgnoreScrollCall = 0
 
     this.isClickingForTrackball = false
-    this.isCameraPositionTrackballed = false
 
     this.posXInit = 0
     this.posYInit = 0
@@ -242,11 +241,6 @@ class NavigableCamera {
     }
 
     theta = newTheta
-
-    if (!this.isCameraPositionTrackballed) {
-      this.isCameraPositionTrackballed = true
-    }
-
     updateCameraView()
 
     this.clearSelection()
