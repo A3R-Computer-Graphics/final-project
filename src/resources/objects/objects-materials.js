@@ -132,7 +132,7 @@ var materials_definition = [{
   "shininess": 5
 }]
 
-materials_definition = material_definition.concat([
+materials_definition = materials_definition.concat([
   {
     "name": "Default",
     "ambient": [

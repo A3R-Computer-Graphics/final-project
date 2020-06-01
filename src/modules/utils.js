@@ -129,21 +129,3 @@ function zfill(string, count) {
   }
   return string
 }
-
-function getNameFromBasenameAndDuplicateCounter(baseName, counter) {
-  if (counter < 0) {
-    return baseName
-  } else {
-    return baseName + '.' + zfill(counter, 3)
-  }
-}
-
-function getNextUniqueNameFromDict(name, dict) {
-    let { baseName, counter } = getBasenameAndDuplicateCounterFromName(name)
-    let newName = getNameFromBasenameAndDuplicateCounter(baseName, counter)
-    while (dict.hasOwnProperty(newName)) {
-        counter++
-        newName = getNameFromBasenameAndDuplicateCounter(baseName, counter)
-    }
-    return newName
-}
