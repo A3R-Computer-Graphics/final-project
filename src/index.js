@@ -528,7 +528,7 @@ window.addEventListener('load', async function init() {
 
   createCubeLight()
 
-  let USE_ANIMATION = false
+  let USE_ANIMATION = typeof animations_definition !== 'undefined'
 
   if (USE_ANIMATION) {
     animationManager = new AnimationManager({
