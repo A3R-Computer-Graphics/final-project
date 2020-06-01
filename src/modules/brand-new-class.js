@@ -951,10 +951,12 @@ class Light extends Object3D {
 
 
 
-class Renderer {
+class Renderer extends EventDispatcher {
 
 
   constructor(canvas) {
+    super()
+    
     this.canvas = canvas
     this.gl = null
     this.program = null
@@ -983,18 +985,42 @@ class Renderer {
       "vNormal"
     ]
 
+    this.SHADER_DIR = '/resources/shaders/'
+    this.shaders = [
+      'Default.fs.glsl', 'Default.vs.glsl',
+      'ShadowGen.fs.glsl', 'ShadowGen.vs.glsl']
+    this.shadersCodes = {}
+
     this.verticesBuffer = null
     this.normalsBuffer = null
     this.texcoordsBuffer = null
 
-    this.initCanvasAndGL()
-    this.initUniforms()
-    this.initAttributes()
-    this.initBuffers()
+    this.init()
   }
 
 
-  initCanvasAndGL() {
+  async init() {
+    await this.initCanvasAndGL()
+    this.initUniforms()
+    this.initAttributes()
+    this.initBuffers()
+
+    this.dispatchEvent('initialized')
+  }
+
+  
+  fetchShadersCodes() {
+    const self = this
+    return Promise.all(this.shaders.map(shaderName => {
+      const shaderPath = self.SHADER_DIR + shaderName
+      return fetch(shaderPath).then(res => res.text()).then(data => {
+        self.shadersCodes[shaderName] = data
+      })
+    }))
+  }
+
+
+  async initCanvasAndGL() {
 
     let canvas = this.canvas
     let gl = WebGLUtils.setupWebGL(canvas)
@@ -1008,9 +1034,18 @@ class Renderer {
     gl.clearColor(0.2, 0.2, 0.2, 1.0)
 
     gl.enable(gl.DEPTH_TEST)
+    gl.enable(gl.CULL_FACE)
 
-    this.textureProgram = initShaders(gl, 'vertex-shader-3d', 'fragment-shader-3d')
-    this.program = initShaders(gl, 'vertex-shader', 'fragment-shader')
+    await this.fetchShadersCodes()
+    let shaders = this.shadersCodes
+
+    this.textureProgram = initShadersFromCode(gl,
+      shaders['ShadowGen.vs.glsl'],
+      shaders['ShadowGen.fs.glsl'])
+    this.program = initShadersFromCode(gl,
+      shaders['Default.vs.glsl'],
+      shaders['Default.fs.glsl'])
+    
     gl.useProgram(this.program)
   }
 

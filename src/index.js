@@ -497,12 +497,16 @@ function initObjectsDataFromBlender() {
 
 }
 
-window.addEventListener('load', function init() {
+window.addEventListener('load', async function init() {
 
   // Set up scene, camera, and renderer
 
   canvas = document.getElementById('gl-canvas')
   renderer = new Renderer(canvas)
+
+  await new Promise(res => {
+    renderer.addListener('initialized', res)
+  })
 
   scene = new Scene()
   app = new App({ scene, renderer })
