@@ -1,11 +1,15 @@
 precision mediump float;
 
-// Passed in from the vertex shader.
-varying vec2 v_texcoord;
+uniform vec3 lightPosition;
+uniform float shadowClipNear;
+uniform float shadowClipFar;
 
-uniform vec4 u_colorMult;
-uniform sampler2D u_texture;
+varying vec3 fPos;
 
 void main() {
-    gl_FragColor = texture2D(u_texture, v_texcoord) * u_colorMult;
+    vec3 fromLightToFragment = (fPos - lightPosition);
+    float lightFragDist = (length(fromLightToFragment) - shadowClipNear)
+    / (shadowClipFar - shadowClipNear);
+
+    gl_FragColor = vec4(lightFragDist, lightFragDist, lightFragDist, 1.0);
 }
