@@ -41,6 +41,58 @@ const NavigableCameraUtils = {
     if (key) {
       return key.toUpperCase()
     }
+  },
+
+  multiplyUsingReduce: function (a, b) {
+    let rowA = a.length
+    let colB = b[0].length
+
+    let m = new Array(rowA)
+    for (let r = 0; r < rowA; r++) {
+      m[r] = new Array(colB)
+      for (let c = 0; c < colB; c++) {
+        m[r][c] = a[r].reduce((sum, curr, i) => sum + curr * b[i][c])
+      }
+    }
+    return m;
+  },
+
+  multiply: function (a, b) {
+    var aNumRows = a.length, aNumCols = a[0].length,
+      bNumRows = b.length, bNumCols = b[0].length,
+      m = new Array(aNumRows);  // initialize array of rows
+
+    for (var r = 0; r < aNumRows; ++r) {
+      m[r] = new Array(bNumCols); // initialize the current row
+      for (var c = 0; c < bNumCols; ++c) {
+        m[r][c] = 0;             // initialize the current cell
+        for (var i = 0; i < aNumCols; ++i) {
+          m[r][c] += a[r][i] * b[i][c];
+        }
+      }
+    }
+    return m;
+  },
+
+  to2dMatrix: function (mat, rowNumber) {
+    let newMat = new Array(rowNumber)
+    let colNumber = Math.round(mat.length / rowNumber)
+
+    let i = 0
+    for (let r = 0; r < rowNumber; r++) {
+      let col = new Array(colNumber)
+      for (let c = 0; c < colNumber; c++) {
+        col[c] = mat[i]
+        i++
+      }
+      newMat[r] = col
+    }
+
+    return newMat
+  },
+
+  mat4As2D: function (mat) {
+    return this.to2dMatrix(mat, 4)
   }
 }
 
@@ -55,8 +107,6 @@ class NavigableCamera {
     this.scrollInitial = 0
     this.numToIgnoreScrollCall = 0
 
-    this.isClickingForTrackball = false
-
     this.posXInit = 0
     this.posYInit = 0
     this.initPhi = 0
@@ -65,8 +115,14 @@ class NavigableCamera {
     this.CLICK_FOR_TRACKBALL = 0
     this.CLICK_FOR_FACE_MOVEMENT = 1
     this.CLICK_FOR_GROUND_MOVEMENT = 2
-
     this.clickMode = this.CLICK_FOR_TRACKBALL
+    this.isClicking = false
+
+    this.axisCoordinates = [[0, 0, 0, 1], [0, 1, 0, 1], [1, 0, 0, 1], [0, 0, 1, 1]]
+    this.AXIS_BASE_ID = 0
+    this.AXIS_UP_ID = 1
+    this.AXIS_RIGHT_ID = 2
+    this.AXIS_BACK_ID = 3
 
     this.cancelCurrentFocusAnimation = function () { }
 
@@ -178,7 +234,7 @@ class NavigableCamera {
    * */
 
   startTrackball(event) {
-    if (this.isClickingForTrackball) {
+    if (this.isClicking) {
       return
     }
 
@@ -192,13 +248,12 @@ class NavigableCamera {
 
     this.initPhi = phi
     this.initTheta = theta
-
-    this.isClickingForTrackball = true
+    this.isClicking = true
   }
 
 
   processTrackball(event) {
-    if (!this.isClickingForTrackball) {
+    if (!this.isClicking) {
       return
     }
 
@@ -270,10 +325,10 @@ class NavigableCamera {
   }
 
   stopTrackball() {
-    if (!this.isClickingForTrackball) {
+    if (!this.isClicking) {
       return
     }
-    this.isClickingForTrackball = false
+    this.isClicking = false
   }
 
   startTrackballOnDevice(event) {
@@ -337,22 +392,87 @@ class NavigableCamera {
     window.requestAnimationFrame(animateFocusTransition)
 
   }
-  
+
 
   startCameraMovement(event) {
+    if (this.isClicking) {
+      return
+    }
 
+    const util = NavigableCameraUtils
+
+    let viewMatrix = camera.viewMatrix
+    viewMatrix = m4.inverse(viewMatrix)
+    viewMatrix = util.mat4As2D(viewMatrix)
+
+    let axis = util.multiplyUsingReduce(this.axisCoordinates, viewMatrix)
+
+    let base = axis[this.AXIS_BASE_ID]
+    let up = axis[this.AXIS_UP_ID]
+    let back = axis[this.AXIS_BACK_ID]
+    
+    up = subtract(up, base).splice(0, 3)
+    up = normalize(up)
+    this.movementUp = up
+    
+    back = subtract(back, base).splice(0, 3)
+    back = normalize(back)
+    this.movementBack = back
+
+    let right = cross(up, back)
+    right = normalize(right)
+    this.movementRight = right
+
+    this.startEye = [...camera.position.get()]
+    this.startAt = [...at]
+
+    this.posXInit = event.screenX
+    this.posYInit = event.screenY
+
+    this.isClicking = true
   }
 
   processCameraMovement(event) {
+    if (!this.isClicking) {
+      return
+    }
 
+    let eventX = event.screenX
+    let eventY = event.screenY
+
+    let deltaX = this.posXInit - eventX
+    let deltaY = this.posYInit - eventY
+
+    deltaX /= canvas.width / 3
+    deltaY /= canvas.height / 3
+    deltaY *= -1
+
+    let deltaMovement = scale(deltaX, this.movementRight)
+    if (this.clickMode === this.CLICK_FOR_FACE_MOVEMENT) {
+      let deltaUp = scale(deltaY, this.movementUp)
+      deltaMovement = add(deltaMovement, deltaUp)
+    } else if (this.clickMode === this.CLICK_FOR_GROUND_MOVEMENT) {
+      let deltaBack = scale(deltaY, this.movementBack)
+      deltaMovement = add(deltaMovement, deltaBack)
+    }
+
+    let newEye = add(this.startEye, deltaMovement)
+    let newAt = add(this.startAt, deltaMovement)
+
+    at = newAt
+    camera.position.set(newEye)
+    updateCameraView()
   }
 
   stopCameraMovement(event) {
-
+    if (!this.isClicking) {
+      return
+    }
+    this.isClicking = false
   }
 
   onMouseDown(event) {
-    if (event.shiftKey || event.ctrlKey) {
+    if (event.shiftKey || event.altKey) {
       this.clickMode = event.shiftKey ? this.CLICK_FOR_GROUND_MOVEMENT : this.CLICK_FOR_FACE_MOVEMENT
       this.startCameraMovement(event)
     } else {
@@ -370,10 +490,16 @@ class NavigableCamera {
   }
 
   onMouseMove(event) {
+    if (!this.isClicking) {
+      return
+    }
+
     if (this.clickMode === this.CLICK_FOR_TRACKBALL) {
       this.processTrackball(event)
     } else {
-      this.processCameraMovement (event)
+      this.processCameraMovement(event)
     }
+
+    this.clearSelection()
   }
 }
