@@ -10,8 +10,7 @@ class Renderer extends EventDispatcher {
     this.program = null
     this.textureProgram = null
 
-    this.uniforms = {}
-    this.uniformList = [
+    this.programUniformList = [
       "ambientProduct",
       "diffuseProduct",
       "specularProduct",
@@ -26,8 +25,7 @@ class Renderer extends EventDispatcher {
       "textureMix"
     ]
 
-    this.attribs = {}
-    this.attributeList = [
+    this.programAttribList = [
       "a_texcoord",
       "vPosition",
       "vNormal"
@@ -108,22 +106,22 @@ class Renderer extends EventDispatcher {
 
 
   initUniforms() {
-    let uniforms = this.uniforms
     let gl = this.gl
     let program = this.program
+    let uniforms = program.uniforms = {}
 
-    this.uniformList.forEach(uniformName => {
+    this.programUniformList.forEach(uniformName => {
       uniforms[uniformName] = gl.getUniformLocation(program, uniformName)
     })
   }
 
 
   initAttributes() {
-    let attribs = this.attribs
     let gl = this.gl
     let program = this.program
+    let attribs = program.attribs = {}
 
-    this.attributeList.forEach(attribName => {
+    this.programAttribList.forEach(attribName => {
       attribs[attribName] = gl.getAttribLocation(program, attribName)
     })
   }
@@ -178,7 +176,6 @@ class Renderer extends EventDispatcher {
    */
 
   renderObject(object, camera, app) {
-    let gl = this.gl
 
     // Update object matrix
 
@@ -196,20 +193,24 @@ class Renderer extends EventDispatcher {
       return
     }
 
+    let gl = this.gl
+    let program = this.program
+    let uniforms = program.uniforms
+
     // Set up vertex position and inverse world matrix for normal calculation
 
     let worldViewMatrix = m4.multiply(camera.viewMatrix, object.worldMatrix)
     let normalMatrix = m4.transpose(m4.inverse(worldViewMatrix))
 
-    gl.uniformMatrix4fv(this.uniforms.modelMatrix, false, flatten(object.worldMatrix))
-    gl.uniformMatrix4fv(this.uniforms.normalMatrix, false, normalMatrix)
+    gl.uniformMatrix4fv(uniforms.modelMatrix, false, flatten(object.worldMatrix))
+    gl.uniformMatrix4fv(uniforms.normalMatrix, false, normalMatrix)
 
     // Set up shader
 
     let selected = app.selectedObjectName === object.name
     let material = object.material
 
-    gl.uniform1f(this.uniforms.isSelected, selected)
+    gl.uniform1f(uniforms.isSelected, selected)
 
     let textureMix = 0
 
@@ -227,10 +228,10 @@ class Renderer extends EventDispatcher {
           specular = flatten(mult(light.specular, specular))
         }
 
-        gl.uniform4fv(this.uniforms.ambientProduct, ambient)
-        gl.uniform4fv(this.uniforms.diffuseProduct, diffuse)
-        gl.uniform4fv(this.uniforms.specularProduct, specular)
-        gl.uniform1f(this.uniforms.shininess, shininess)
+        gl.uniform4fv(uniforms.ambientProduct, ambient)
+        gl.uniform4fv(uniforms.diffuseProduct, diffuse)
+        gl.uniform4fv(uniforms.specularProduct, specular)
+        gl.uniform1f(uniforms.shininess, shininess)
       }
 
       if (material instanceof ImageTextureMaterial) {
@@ -257,7 +258,7 @@ class Renderer extends EventDispatcher {
       }
     }
 
-    gl.uniform1f(this.uniforms.textureMix, textureMix)
+    gl.uniform1f(uniforms.textureMix, textureMix)
 
     let geometry = object.geometry
     let start = geometry.bufferStartIndex

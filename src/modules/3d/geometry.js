@@ -29,7 +29,7 @@ class Geometry {
     console.log('update buffers')
 
     let gl = renderer.gl
-    let attributes = renderer.attribs
+    let attributes = renderer.program.attribs
 
     // Update position buffer
 
