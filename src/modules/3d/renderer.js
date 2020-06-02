@@ -2,8 +2,50 @@
 
 class Renderer extends EventDispatcher {
 
+  static constants = {
+    SHADOWMAP_CAMERA_SETUPS: [
+      {
+        name: '+X',
+        target: 'TEXTURE_CUBE_MAP_POSITIVE_X',
+        atVector: vec3(1, 0, 0),
+        upVector: vec3(0, -1, 0),
+      },
+      {
+        name: '-X',
+        target: 'TEXTURE_CUBE_MAP_NEGATIVE_X',
+        atVector: vec3(-1, 0, 0),
+        upVector: vec3(0, -1, 0),
+      },
+      {
+        name: '+Y',
+        target: 'TEXTURE_CUBE_MAP_POSITIVE_Y',
+        atVector: vec3(0, 1, 0),
+        upVector: vec3(0, 0, 1),
+      },
+      {
+        name: '-Y',
+        target: 'TEXTURE_CUBE_MAP_NEGATIVE_Y',
+        atVector: vec3(0, -1, 0),
+        upVector: vec3(0, 0, -1),
+      },
+      {
+        name: '+Z',
+        target: 'TEXTURE_CUBE_MAP_POSITIVE_Z',
+        atVector: vec3(0, 0, 1),
+        upVector: vec3(0, -1, 0),
+      },
+      {
+        name: '-Z',
+        target: 'TEXTURE_CUBE_MAP_NEGATIVE_Z',
+        atVector: vec3(0, 0, -1),
+        upVector: vec3(0, -1, 0),
+      }
+    ]
+  }
+
   constructor(canvas) {
     super()
+    Object.assign(this, Renderer.constants)
 
     this.canvas = canvas
     this.gl = null
@@ -57,9 +99,17 @@ class Renderer extends EventDispatcher {
     this.texcoordsBuffer = null
 
     this.shadowMapCube = null
+    this.shadowMapFramebuffer = null
+    this.shadowMapRenderbuffer = null
     this.shadowMapTextureSize = 512
 
+    this.shadowClipNear = 0.05
+    this.shadowClipFar = 15.0
+
+    this.shadowMapCameras = new Array(6)
+
     this.init()
+
   }
 
 
@@ -68,7 +118,9 @@ class Renderer extends EventDispatcher {
     this.initUniforms()
     this.initAttributes()
     this.initBuffers()
+
     this.initShadowMapFramebuffers()
+    this.initShadowMapCameras()
 
     this.dispatchEvent('initialized')
   }
@@ -208,6 +260,21 @@ class Renderer extends EventDispatcher {
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, null)
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.bindRenderbuffer(gl.RENDERBUFFER, null)
+  }
+
+
+  initShadowMapCameras() {
+    let cameras = this.shadowMapCameras
+    let near = this.shadowClipNear
+    let far = this.shadowClipFar
+    let fovy = degToRad(90)
+    let aspect = 1.0
+
+    this.SHADOWMAP_CAMERA_SETUPS.forEach((setupData, index) => {
+      let name = 'camera-sm-' + setupData.name
+      let camera = new PerspectiveCamera({near, far, fovy, aspect}, name)
+      cameras[index] = camera
+    })
   }
 
 
