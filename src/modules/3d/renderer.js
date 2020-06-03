@@ -72,7 +72,12 @@ class Renderer extends EventDispatcher {
       "pointLightShadowMap",
 
       'shadowClipNear',
-      'shadowClipFar'
+      'shadowClipFar',
+
+      /* These are not necessary, just to make leaf and trees wave */
+      'time',
+      'isTreeLeaf',
+      'isGrass',
     ]
 
     this.programAttribList = [
@@ -88,7 +93,12 @@ class Renderer extends EventDispatcher {
       'modelMatrix',
       'lightPosition',
       'shadowClipNear',
-      'shadowClipFar'
+      'shadowClipFar',
+
+      /* These are not necessary, just to make leaf and trees wave */
+      'time',
+      'isTreeLeaf',
+      'isGrass',
     ]
     this.shadowGenProgramAttribList = [
       'vPosition',
@@ -115,6 +125,7 @@ class Renderer extends EventDispatcher {
     this.shadowMapCameras = new Array(6)
 
     this.init()
+    this.time = 0
 
   }
 
@@ -127,6 +138,9 @@ class Renderer extends EventDispatcher {
 
     // Init texture coords
     let gl = this.gl
+
+    gl.enable(gl.BLEND)
+
     gl.uniform1i(this.program.uniforms.u_texture, 0)
     gl.uniform1i(this.program.uniforms.pointLightShadowMap, 1)
 
@@ -288,14 +302,17 @@ class Renderer extends EventDispatcher {
    */
 
   render(scene, camera, app = {}) {
+    let gl = this.gl
 
     ImageTextureMaterial.initMaterialsToRenderer(this)
     Light.updateLightsToRenderer(this)
     Geometry.updateBuffersToRenderer(this)
 
+    gl.useProgram(this.shadowGenProgram)
+    gl.uniform1f(this.shadowGenProgram.uniforms.time, this.time)
+
     this.generateShadowMap(app)
 
-    let gl = this.gl
     gl.useProgram(this.program)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     gl.clearColor(0.2, 0.2, 0.2, 1.0)
@@ -307,9 +324,12 @@ class Renderer extends EventDispatcher {
 
     gl.uniform1f(this.program.uniforms.shadowClipNear, this.shadowClipNear)
     gl.uniform1f(this.program.uniforms.shadowClipFar, this.shadowClipFar)
+    gl.uniform1f(this.program.uniforms.time, this.time)
 
     camera.updateCameraToRenderer(this, this.program)
     this.renderObjectTree(scene, camera, app)
+
+    this.time += 0.04
   }
 
 
@@ -462,6 +482,8 @@ class Renderer extends EventDispatcher {
     let material = object.material
 
     gl.uniform1f(uniforms.isSelected, selected)
+    gl.uniform1f(uniforms.isTreeLeaf, object.name === 'Daun')
+    gl.uniform1f(uniforms.isGrass, object.name === 'rumput')
 
     let textureMix = 0
 
@@ -531,7 +553,9 @@ class Renderer extends EventDispatcher {
     let gl = this.gl
     let program = this.shadowGenProgram
     let uniforms = program.uniforms
-
+    
+    gl.uniform1f(uniforms.isTreeLeaf, object.name === 'Daun')
+    gl.uniform1f(uniforms.isGrass, object.name === 'rumput')
     gl.uniformMatrix4fv(uniforms.modelMatrix, false, flatten(object.worldMatrix))
 
     let geometry = object.geometry
