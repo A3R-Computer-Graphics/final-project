@@ -29,7 +29,12 @@ class Geometry {
     console.log('update buffers')
 
     let gl = renderer.gl
-    let attributes = renderer.program.attribs
+    let program, attributes
+
+    program = renderer.program
+    attributes = program.attribs
+
+    gl.useProgram(program)
 
     // Update position buffer
 
@@ -54,6 +59,18 @@ class Geometry {
 
     gl.vertexAttribPointer(attributes.vNormal, 4, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(attributes.vNormal)
+
+
+    program = renderer.shadowGenProgram
+    attributes = program.attribs
+    
+    // Update position buffer in shadowmap
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.verticesBuffer)
+    gl.vertexAttribPointer(attributes.vPosition, 4, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(attributes.vPosition)
+    
+    gl.useProgram(renderer.program)
 
     Geometry.bufferDataNeedsUpdate = false
   }

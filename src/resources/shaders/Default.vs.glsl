@@ -1,3 +1,6 @@
+
+precision mediump float;
+
 attribute vec4 vPosition;
 attribute vec3 vNormal;
 
@@ -8,14 +11,15 @@ uniform mat4 modelMatrix, viewMatrix, projectionMatrix, normalMatrix;
 
 uniform vec3 lightPosition;
 
-varying vec3 normalInterp, vertPos, lightPos;
+varying vec3 normalInterp, vertPos, lightPos, fPos;
 
 void main()
 {
-    vec4 vertPos4 = viewMatrix * modelMatrix * vPosition;
+    fPos = (modelMatrix * vec4(vPosition.xyz, 1.0)).xyz;
+    vec4 vertPos4 = viewMatrix * vec4(fPos, 1.0);
 
     vec3 worldPos = vertPos4.xyz;
-    lightPos = (viewMatrix * vec4(lightPosition.xyz, 1.0)).xyz;
+    lightPos = (viewMatrix * vec4(lightPosition, 1.0)).xyz;
 
     vertPos = vertPos4.xyz;
     normalInterp = vec3(normalMatrix * vec4(vNormal, 0.0));

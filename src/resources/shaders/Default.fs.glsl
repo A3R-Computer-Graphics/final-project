@@ -8,9 +8,12 @@ const vec4 selectedObjectColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
 varying vec2 v_texcoord;
 uniform sampler2D u_texture;
 
+uniform vec3 lightPosition;
+
 varying vec3 normalInterp;  // Surface normal
 varying vec3 vertPos;       // Vertex position
 varying vec3 lightPos;      // Light position, interpolated
+varying vec3 fPos;
 
 uniform vec4 ambientProduct, diffuseProduct, specularProduct;
 uniform float shininess;
@@ -22,6 +25,10 @@ uniform bool isSelected;
 // This is handy to make sure the material that doesn't have image texture
 // will not use any Texture2D
 uniform float textureMix;
+
+uniform samplerCube lightShadowMap;
+uniform float shadowClipNear;
+uniform float shadowClipFar;
 
 vec4 calculatePhong() {
     vec3 N = normalize(normalInterp);
@@ -40,8 +47,22 @@ vec4 calculatePhong() {
         float specAngle = max(dot(N, H), 0.0);
         specular = pow(specAngle, shininess);
     }
+
+    vec3 fromLightToFragment = (fPos - lightPosition);
+    float lightFragDist = (length(fromLightToFragment) - shadowClipNear)
+    / (shadowClipFar - shadowClipNear);
+
+    vec3 toLightNormal = normalize(-fromLightToFragment);
+    float shadowMapValue = textureCube(lightShadowMap, -toLightNormal).r;
+    bool isLit = (shadowMapValue + 0.003) >= lightFragDist;
+
+    vec4 color = ambientProduct;
+    if (isLit) {
+        color += lambertian * diffuseProduct + specular * specularProduct;
+    }
+    return color;
     
-    return ambientProduct + lambertian * diffuseProduct + specular * specularProduct;
+    // return color;
 }
 
 void main()
@@ -54,6 +75,9 @@ void main()
     } else {
         fColor = selectedObjectColor;
     }
+    
+    // float shadowMapValue = textureCube(lightShadowMap, -toLightNormal).r;
+
     fColor.a = 1.0;
 
     gl_FragColor = fColor;
