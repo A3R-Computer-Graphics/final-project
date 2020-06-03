@@ -154,21 +154,35 @@ class Object3D {
     mat = m4.translate(mat, origin[0], origin[1], origin[2])
 
     this.localMatrix = mat
-
     this.localMatrixNeedsUpdate = false
   }
 
-  updateWorldMatrix() {
+  updateShallowWorldMatrix() {
     if (this.parent) {
-      let parentMatrix = this.parent.worldMatrix
-      this.worldMatrix = m4.multiply(parentMatrix, this.localMatrix)
+      this.worldMatrix = m4.multiply(this.parent.worldMatrix, this.localMatrix)
     } else {
       this.worldMatrix = this.localMatrix
     }
   }
 
+  updateWorldMatrix() {
+    this.updateLocalMatrix()
+
+    let parent = this.parent
+    if (parent) {
+      parent.updateWorldMatrix()
+      this.worldMatrix = m4.multiply(this.parent.worldMatrix, this.localMatrix)
+    } else {
+      this.worldMatrix = this.localMatrix
+    }
+    this.localMatrixNeedsUpdate = false
+
+    // Trigger children to also update its matrices
+    this.children.forEach(child => child.localMatrixNeedsUpdate = true)
+  }
+
   updateTreeMatrices() {
-    this.updateWorldMatrix()
+    this.updateShallowWorldMatrix()
     this.children.forEach(children => {
       children.updateTreeMatrices()
     })
@@ -182,5 +196,10 @@ class Object3D {
       parents.push(object.name)
     }
     return parents
+  }
+
+  get worldPosition() {
+    let mat = this.worldMatrix
+    return [mat[12], mat[13], mat[14]]
   }
 }

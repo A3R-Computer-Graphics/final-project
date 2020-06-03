@@ -287,14 +287,18 @@ class Renderer extends EventDispatcher {
     gl.useProgram(this.shadowGenProgram)
     gl.uniform1f(this.shadowGenProgram.uniforms.time, this.time)
 
+    let light = app.objects['cube-lighting']
+    light.updateWorldMatrix()
+    this.usedLightPosition = light.worldPosition
+
     this.generateShadowMap(app)
 
     gl.useProgram(this.program)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     gl.clearColor(0.2, 0.2, 0.2, 1.0)
 
-    let light = app.objects['cube-lighting']
     light.updateLightToRenderer(this)
+    gl.uniform3fv(this.program.uniforms.lightPosition, this.usedLightPosition)
 
     gl.activeTexture(gl.TEXTURE1)
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, light.shadowMapTexture)
@@ -373,7 +377,7 @@ class Renderer extends EventDispatcher {
 
     light.bindGlToThisTexture(gl)
 
-    let lightPosition = light.position.get()
+    let lightPosition = this.usedLightPosition
     gl.uniform1f(shadowGenProgram.uniforms.shadowClipNear, this.shadowClipNear)
     gl.uniform1f(shadowGenProgram.uniforms.shadowClipFar, this.shadowClipFar)
     gl.uniform3fv(shadowGenProgram.uniforms.lightPosition, lightPosition)
@@ -517,7 +521,7 @@ class Renderer extends EventDispatcher {
 
     if (object.localMatrixNeedsUpdate) {
       object.updateLocalMatrix()
-      object.updateWorldMatrix()
+      object.updateShallowWorldMatrix()
 
       // Trigger children to also update its matrices
       object.children.forEach(child => child.localMatrixNeedsUpdate = true)

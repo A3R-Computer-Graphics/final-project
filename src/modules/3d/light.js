@@ -43,7 +43,7 @@ class Light extends Object3D {
     // matrix transformation should be taken into account
 
     // this.updateWorldMatrix()
-    gl.uniform3fv(lightPositionLoc, flatten(light.position.get()))
+    gl.uniform3fv(lightPositionLoc, this.worldPosition)
   }
 }
 
