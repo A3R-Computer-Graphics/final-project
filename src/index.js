@@ -384,7 +384,7 @@ function matchSlidersToAnimation() {
 let light
 
 function createCubeLight() {
-  light = new Light()
+  light = new PointLight()
   light.name = app.getNextUniqueName('cube-lighting')
   light.position.set(-1.4, -1.65, 1.45)
   light.scale.set(0.2, 0.2, 0.2)

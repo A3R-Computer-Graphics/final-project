@@ -114,7 +114,6 @@ class Renderer extends EventDispatcher {
     this.normalsBuffer = null
     this.texcoordsBuffer = null
 
-    this.shadowMapCube = null
     this.shadowMapFramebuffer = null
     this.shadowMapRenderbuffer = null
     this.shadowMapTextureSize = 512
@@ -234,30 +233,8 @@ class Renderer extends EventDispatcher {
   initShadowMapFramebuffers() {
     let gl = this.gl
 
-    this.shadowMapCube = gl.createTexture()
-
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.shadowMapCube)
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT)
-    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT)
-
-    /** Sorry if this seems too verbose, I am just making sure
-     * the parameter of these WebGL functions is obvious. */
-
-    let CUBE_SIDE = 6
     let width = this.shadowMapTextureSize
     let height = width
-    let format = gl.RGBA
-    let dataType = gl.UNSIGNED_BYTE
-    let level = 0
-    let border = 0
-    let pixelSourceBuffer = null
-
-    for (let i = 0; i < CUBE_SIDE; i++) {
-      let target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + i
-      gl.texImage2D(target, level, format, width, height, border, format, dataType, pixelSourceBuffer)
-    }
 
     this.shadowMapFramebuffer = gl.createFramebuffer()
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowMapFramebuffer)
@@ -305,7 +282,6 @@ class Renderer extends EventDispatcher {
     let gl = this.gl
 
     ImageTextureMaterial.initMaterialsToRenderer(this)
-    Light.updateLightsToRenderer(this)
     Geometry.updateBuffersToRenderer(this)
 
     gl.useProgram(this.shadowGenProgram)
@@ -317,8 +293,11 @@ class Renderer extends EventDispatcher {
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     gl.clearColor(0.2, 0.2, 0.2, 1.0)
 
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.shadowMapCube);
+    let light = app.objects['cube-lighting']
+    light.updateLightToRenderer(this)
+
+    gl.activeTexture(gl.TEXTURE1)
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, light.shadowMapTexture)
 
     // Set near & far
 
@@ -368,7 +347,7 @@ class Renderer extends EventDispatcher {
 
     // Use current program & its attributes
 
-    gl.useProgram(shadowGenProgram)
+    // gl.useProgram(shadowGenProgram)
 
     let attributes = shadowGenProgram.attribs
     gl.bindBuffer(gl.ARRAY_BUFFER, this.verticesBuffer)
@@ -376,8 +355,7 @@ class Renderer extends EventDispatcher {
     gl.enableVertexAttribArray(attributes.vPosition)
 
     // Prepare rendering to framebuffer, renderbuffer and shadow cubemap texture
-
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.shadowMapCube)
+    
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowMapFramebuffer)
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.shadowMapRenderbuffer)
 
@@ -388,7 +366,14 @@ class Renderer extends EventDispatcher {
     // Set per-frame uniforms
     // TODO: Renderer depends heavily on 'cube-lighting', refactor later!
 
-    let lightPosition = app.objects['cube-lighting'].position.get()
+    let light = app.objects['cube-lighting']
+    if (!light.shadowMapTextureInitialized) {
+      light.initTexture(gl)
+    }
+
+    light.bindGlToThisTexture(gl)
+
+    let lightPosition = light.position.get()
     gl.uniform1f(shadowGenProgram.uniforms.shadowClipNear, this.shadowClipNear)
     gl.uniform1f(shadowGenProgram.uniforms.shadowClipFar, this.shadowClipFar)
     gl.uniform3fv(shadowGenProgram.uniforms.lightPosition, lightPosition)
@@ -416,7 +401,7 @@ class Renderer extends EventDispatcher {
       // Set framebuffer & renderbuffer destination
 
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-        textureTarget, this.shadowMapCube, 0)
+        textureTarget, light.shadowMapTexture, 0)
 
       gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
         gl.RENDERBUFFER, this.shadowMapRenderbuffer)
