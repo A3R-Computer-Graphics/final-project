@@ -606,9 +606,13 @@ window.addEventListener('load', async function init() {
   render()
 })
 
-function render() {
+async function render() {
   let gl = renderer.gl
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-  renderer.render(scene, camera, app)
+  await renderer.render(scene, camera, app)
+  
+  // Switch between render every 1 seconds (for debugging purposes)
+  // and continuously
+  // setTimeout(() => window.requestAnimationFrame(render), 1000)
   window.requestAnimationFrame(render)
 }

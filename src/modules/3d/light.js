@@ -27,7 +27,7 @@ class Light extends Object3D {
 
   static updateLightsToRenderer(renderer) {
     let gl = renderer.gl
-    let lightPositionLoc = renderer.uniforms.lightPosition
+    let lightPositionLoc = renderer.program.uniforms.lightPosition
 
     // TODO: Make renderer able to use multiple light setup.
     // Right now it can only use the LAST light in the list

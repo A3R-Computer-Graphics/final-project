@@ -56,13 +56,15 @@ class ImageTextureMaterial extends PhongMaterial {
 
   static initMaterialsToRenderer(renderer) {
     let gl = renderer.gl
+    let mainProgram = renderer.program
+
     let list = ImageTextureMaterial.textureMaterialList
     let startInit = this.lastInitializedIndex + 1
 
     for (let i = startInit; i < list.length; i++) {
       let material = list[i]
       if (material !== null) {
-        material.initTexture(gl)
+        material.initTexture(gl, mainProgram)
       }
 
       this.lastInitializedIndex = i
@@ -74,7 +76,7 @@ class ImageTextureMaterial extends PhongMaterial {
    * @param {*} gl 
    */
 
-  initTexture(gl) {
+  initTexture(gl, mainProgram) {
     if (!this.textureNeedsInitialization) {
       return
     }
@@ -98,6 +100,8 @@ class ImageTextureMaterial extends PhongMaterial {
     const self = this
     textureImage.addEventListener('load', function () {
       self.imageLoaded = true
+      
+      gl.activeTexture(gl.TEXTURE0);      
       gl.bindTexture(gl.TEXTURE_2D, texture)
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureImage)
       gl.generateMipmap(gl.TEXTURE_2D)

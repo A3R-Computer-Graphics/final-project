@@ -21,7 +21,7 @@ class CameraPrototype extends Object3D {
     this.projectionMatrix = m4.identity()
   }
 
-  updateCameraToRenderer(renderer) {
+  updateCameraToRenderer(renderer, program) {
     if (!this.cameraMatrixNeedsUpdate) {
       return
     }
@@ -30,10 +30,12 @@ class CameraPrototype extends Object3D {
 
     let gl = renderer.gl
 
-    let projectionLoc = renderer.uniforms.projectionMatrix
+    // NOTE: Assumed using renderer.programs
+
+    let projectionLoc = program.uniforms.projectionMatrix
     gl.uniformMatrix4fv(projectionLoc, false, flatten(this.projectionMatrix))
 
-    let viewLoc = renderer.uniforms.viewMatrix
+    let viewLoc = program.uniforms.viewMatrix
     gl.uniformMatrix4fv(viewLoc, false, flatten(this.viewMatrix))
 
     this.cameraMatrixNeedsUpdate = false
