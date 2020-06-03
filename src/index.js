@@ -7,13 +7,13 @@ let renderer
 let app
 let animationManager
 
-cameraRadius = 8
+let cameraRadius = 8
 let theta = 0
 let phi = 0
 let cameraPosIndex = 17
 let coordinateDirectionOrder = ['UP', 'LEFT', 'DOWN', 'RIGHT']
 
-at = vec3(0.0, 0.0, 0.0)
+let at = vec3(0.0, 0.0, 0.0)
 
 // rendering engine variables variables
 

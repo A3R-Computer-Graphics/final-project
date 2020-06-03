@@ -57,15 +57,19 @@ class Renderer extends EventDispatcher {
       "diffuseProduct",
       "specularProduct",
       "shininess",
-      "lightPosition",
+
       "modelMatrix",
       "viewMatrix",
       "projectionMatrix",
       "normalMatrix",
+
       "isSelected",
+
       "u_texture",
       "textureMix",
-      "lightShadowMap",
+
+      "lightPosition",
+      "pointLightShadowMap",
 
       'shadowClipNear',
       'shadowClipFar'
@@ -124,7 +128,7 @@ class Renderer extends EventDispatcher {
     // Init texture coords
     let gl = this.gl
     gl.uniform1i(this.program.uniforms.u_texture, 0)
-    gl.uniform1i(this.program.uniforms.lightShadowMap, 1)
+    gl.uniform1i(this.program.uniforms.pointLightShadowMap, 1)
 
     this.initShadowMapFramebuffers()
     this.initShadowMapCameras()
@@ -181,44 +185,34 @@ class Renderer extends EventDispatcher {
 
   initUniforms() {
     let gl = this.gl
-    let program, uniformList, uniforms
 
-    program = this.program
-    uniformList = this.programUniformList
-    uniforms = program.uniforms = {}
+    let programs = [this.program, this.shadowGenProgram]
+    let uniformLists = [this.programUniformList, this.shadowGenProgramUniformList]
 
-    uniformList.forEach(uniformName => {
-      uniforms[uniformName] = gl.getUniformLocation(program, uniformName)
-    })
+    programs.forEach((program, index) => {
+      let uniforms = program.uniforms = {}
+      let uniformList = uniformLists[index]
 
-    program = this.shadowGenProgram
-    uniformList = this.shadowGenProgramUniformList
-    uniforms = program.uniforms = {}
-
-    uniformList.forEach(uniformName => {
-      uniforms[uniformName] = gl.getUniformLocation(program, uniformName)
+      uniformList.forEach(uniformName => {
+        uniforms[uniformName] = gl.getUniformLocation(program, uniformName)
+      })
     })
   }
 
 
   initAttributes() {
     let gl = this.gl
-    let program, attribList, attribs
 
-    program = this.program
-    attribList = this.programAttribList
-    attribs = program.attribs = {}
+    let programs = [this.program, this.shadowGenProgram]
+    let attribLists = [this.programAttribList, this.shadowGenProgramAttribList]
 
-    attribList.forEach(attribName => {
-      attribs[attribName] = gl.getAttribLocation(program, attribName)
-    })
+    programs.forEach((program, index) => {
+      let attribs = program.attribs = {}
+      let attribList = attribLists[index]
 
-    program = this.shadowGenProgram
-    attribList = this.shadowGenProgramAttribList
-    attribs = program.attribs = {}
-
-    attribList.forEach(attribName => {
-      attribs[attribName] = gl.getAttribLocation(program, attribName)
+      attribList.forEach(attribName => {
+        attribs[attribName] = gl.getAttribLocation(program, attribName)
+      })
     })
   }
 
@@ -310,11 +304,11 @@ class Renderer extends EventDispatcher {
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.shadowMapCube);
 
     // Set near & far
-    
+
     gl.uniform1f(this.program.uniforms.shadowClipNear, this.shadowClipNear)
     gl.uniform1f(this.program.uniforms.shadowClipFar, this.shadowClipFar)
 
-    camera.updateCameraToRenderer(this)
+    camera.updateCameraToRenderer(this, this.program)
     this.renderObjectTree(scene, camera, app)
   }
 
@@ -350,13 +344,24 @@ class Renderer extends EventDispatcher {
 
   generateShadowMap(app) {
     let gl = this.gl
-    const self = this
     let shadowGenProgram = this.shadowGenProgram
 
+    // Use current program & its attributes
+
     gl.useProgram(shadowGenProgram)
+
+    let attributes = shadowGenProgram.attribs
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.verticesBuffer)
+    gl.vertexAttribPointer(attributes.vPosition, 4, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(attributes.vPosition)
+
+    // Prepare rendering to framebuffer, renderbuffer and shadow cubemap texture
+
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.shadowMapCube)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowMapFramebuffer)
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.shadowMapRenderbuffer)
+
+    // Resize viewport
 
     gl.viewport(0, 0, this.shadowMapTextureSize, this.shadowMapTextureSize)
 
@@ -368,27 +373,19 @@ class Renderer extends EventDispatcher {
     gl.uniform1f(shadowGenProgram.uniforms.shadowClipFar, this.shadowClipFar)
     gl.uniform3fv(shadowGenProgram.uniforms.lightPosition, lightPosition)
 
+    // The projection matrix will be the same for all the 6 cameras.
+    // Use only the first one and set it at the beginning.
+
     let projMatLoc = shadowGenProgram.uniforms.projectionMatrix
     let viewMatLoc = shadowGenProgram.uniforms.viewMatrix
     let projectionMatrix = this.shadowMapCameras[0].projectionMatrix
     gl.uniformMatrix4fv(projMatLoc, false, flatten(projectionMatrix))
 
-    // Update position buffer in shadowmap
-
-    let attributes = shadowGenProgram.attribs
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.verticesBuffer)
-    gl.vertexAttribPointer(attributes.vPosition, 4, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.vPosition)
-
-
-    // hack
-    this.cameraCnt = this.cameraCnt === undefined ? 0 : this.cameraCnt
     for (let i = 0; i < this.shadowMapCameras.length; i++) {
 
       let camera = this.shadowMapCameras[i]
-      let index = i
+      let setup = this.SHADOWMAP_CAMERA_SETUPS[i]
 
-      let setup = self.SHADOWMAP_CAMERA_SETUPS[index]
       let targetPosition = add(lightPosition, setup.atVector)
       camera.position.set(lightPosition)
       camera.lookAt(targetPosition)
@@ -396,20 +393,25 @@ class Renderer extends EventDispatcher {
 
       let textureTarget = gl[setup.target]
 
-      // Set framebuffer destination
+      // Set framebuffer & renderbuffer destination
 
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-        textureTarget, self.shadowMapCube, 0)
+        textureTarget, this.shadowMapCube, 0)
 
       gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT,
-        gl.RENDERBUFFER, self.shadowMapRenderbuffer)
+        gl.RENDERBUFFER, this.shadowMapRenderbuffer)
+
+      // Render the scene
 
       gl.clearColor(0, 0, 0, 1)
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-      self.renderShadowObjectTree(scene, camera, app)
+
+      this.renderShadowObjectTree(scene, camera, app)
     }
 
-    // Unsetup textures
+    // Unsetup framebuffer & renderbuffer destination,
+    // as well as the cubemap textures
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.bindRenderbuffer(gl.RENDERBUFFER, null)
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, null)
@@ -422,15 +424,19 @@ class Renderer extends EventDispatcher {
 
   renderObject(object, camera, app) {
 
-    // Update object matrix
+    // Originally, there should be an object update at this code.
+    // But since it has already been called in another renderObject function
+    // (the shadowmap one), we don't need to call this twice.
 
-    if (object.localMatrixNeedsUpdate) {
-      object.updateLocalMatrix()
-      object.updateWorldMatrix()
+    // // Update object matrix
 
-      // Trigger children to also update its matrices
-      object.children.forEach(child => child.localMatrixNeedsUpdate = true)
-    }
+    // if (object.localMatrixNeedsUpdate) {
+    //   object.updateLocalMatrix()
+    //   object.updateWorldMatrix()
+
+    //   // Trigger children to also update its matrices
+    //   object.children.forEach(child => child.localMatrixNeedsUpdate = true)
+    // }
 
     // Ignore if geometry is none
 
@@ -498,7 +504,7 @@ class Renderer extends EventDispatcher {
 
   /** Render shadow 3D Object */
 
-  renderShadowObject(object, camera, app) {
+  renderShadowObject(object) {
 
     // Update object matrix
 
@@ -517,6 +523,7 @@ class Renderer extends EventDispatcher {
     }
 
     // Do not render the Light's geometry
+
     if (object instanceof Light) {
       return
     }
