@@ -287,16 +287,24 @@ class Renderer extends EventDispatcher {
     gl.useProgram(this.shadowGenProgram)
     gl.uniform1f(this.shadowGenProgram.uniforms.time, this.time)
 
-    let light = app.objects['cube-lighting']
-    light.updateWorldMatrix()
-    this.usedLightPosition = light.worldPosition
+    let lights = Light.lightList
 
-    this.generateShadowMap(app)
+    for (const light of lights) {
+
+      if (!light.shadowMapTextureInitialized) {
+        light.initTexture(gl)
+      }
+  
+      this.generateShadowMap(light, app)
+    }
 
     gl.useProgram(this.program)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     gl.clearColor(0.2, 0.2, 0.2, 1.0)
 
+    // TODO: Create arrays of lights in GLSL
+
+    let light = app.objects['cube-lighting']
     light.updateLightToRenderer(this)
     gl.uniform3fv(this.program.uniforms.lightPosition, this.usedLightPosition)
 
@@ -345,13 +353,9 @@ class Renderer extends EventDispatcher {
   }
 
 
-  generateShadowMap(app) {
+  generateShadowMap(light, app) {
     let gl = this.gl
     let shadowGenProgram = this.shadowGenProgram
-
-    // Use current program & its attributes
-
-    // gl.useProgram(shadowGenProgram)
 
     let attributes = shadowGenProgram.attribs
     gl.bindBuffer(gl.ARRAY_BUFFER, this.verticesBuffer)
@@ -364,17 +368,10 @@ class Renderer extends EventDispatcher {
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.shadowMapRenderbuffer)
 
     // Resize viewport
-
-    gl.viewport(0, 0, this.shadowMapTextureSize, this.shadowMapTextureSize)
-
-    // Set per-frame uniforms
-    // TODO: Renderer depends heavily on 'cube-lighting', refactor later!
-
-    let light = app.objects['cube-lighting']
-    if (!light.shadowMapTextureInitialized) {
-      light.initTexture(gl)
-    }
-
+    gl.viewport(0, 0, light.shadowMapTextureSize, light.shadowMapTextureSize)
+    
+    light.updateWorldMatrix()
+    this.usedLightPosition = light.worldPosition
     light.bindGlToThisTexture(gl)
 
     let lightPosition = this.usedLightPosition
