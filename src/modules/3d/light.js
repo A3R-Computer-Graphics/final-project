@@ -318,10 +318,10 @@ class DirectionalLight extends Light {
       let multiplier = this.multiplier || 10
 
       let up = [0, 0, 1]
-      let pointDirection = subtract(targetPos, srcPos)
+      let pointDirection = subtract(srcPos, targetPos)
       let angleBetween = radToDeg(Math.acos(dot(up, pointDirection) / length(pointDirection) / length(up)))
       
-      if (angleBetween > 179 || angleBetween < 179 || angleBetween < 1 && angleBetween > -1) {
+      if (angleBetween > 179 || angleBetween < -179 || angleBetween < 1 && angleBetween > -1) {
         up = [0, 1, 0]
       }
 
