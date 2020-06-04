@@ -17,9 +17,15 @@ uniform float time;
 
 varying vec3 normalInterp, vertPos, lightPos, fPos;
 
+// non-pointlight setup
+uniform bool isPointLight;
+uniform mat4 u_textureMatrix;
+varying vec4 v_projectedTexcoord;
+
 void main()
 {
-    fPos = (modelMatrix * vec4(vPosition.xyz, 1.0)).xyz;
+    vec4 worldPos = modelMatrix * vec4(vPosition.xyz, 1.0);
+    fPos = (worldPos).xyz;
 
     if (isTreeLeaf) {
         vec3 smallInc = fPos * 10.0 + vec3(1.0, 3.0, 4.0) + vec3(time);
@@ -37,9 +43,8 @@ void main()
         fPos = fPos + vec3(disp * factor, ground + height * 2.0);
     }
 
-    vec4 vertPos4 = viewMatrix * vec4(fPos, 1.0);
+    vec4 vertPos4 = viewMatrix * worldPos;
 
-    vec3 worldPos = vertPos4.xyz;
     lightPos = (viewMatrix * vec4(lightPosition, 1.0)).xyz;
 
     vertPos = vertPos4.xyz;
@@ -49,4 +54,5 @@ void main()
 
     // Pass the texcoord to the fragment shader.
     v_texcoord = a_texcoord;
+    v_projectedTexcoord = u_textureMatrix * worldPos;
 }

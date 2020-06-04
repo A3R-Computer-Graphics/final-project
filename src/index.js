@@ -384,13 +384,16 @@ function matchSlidersToAnimation() {
 let light
 
 function createCubeLight() {
-  light = new PointLight()
-  light.name = app.getNextUniqueName('cube-lighting')
+  light = new DirectionalLight()
+  light.name = app.getNextUniqueName('sun')
   light.position.set(-1.4, -1.65, 1.45)
   light.scale.set(0.2, 0.2, 0.2)
 
   // Parent this light to Suzanne object
   app.objects['Suzanne'].add(light)
+  app.objects['Suzanne'].rotation.setX(24.8)
+
+  // scene.add(light)
 
   // Add object to app's object list
   app.addObject(light)

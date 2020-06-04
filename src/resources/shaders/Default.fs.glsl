@@ -26,9 +26,18 @@ uniform bool isSelected;
 // will not use any Texture2D
 uniform float textureMix;
 
+
+// Light setup
+uniform bool isPointLight;
+
+// Point light shadow map setup
 uniform samplerCube pointLightShadowMap;
 uniform float shadowClipNear;
 uniform float shadowClipFar;
+
+// non-point light shadow map setup
+varying vec4 v_projectedTexcoord;
+uniform sampler2D u_projectedTexture;
 
 vec4 calculatePhong() {
     vec3 N = normalize(normalInterp);
@@ -61,6 +70,47 @@ vec4 calculatePhong() {
     if (isLit) {
         color += lambertian * diffuseProduct + specular * specularProduct;
     }
+
+    // Add texture
+    color *= texture2D(u_texture, v_texcoord);
+
+    // if (!isPointLight) {
+    //     vec3 projectedTexcoord = v_projectedTexcoord.xyz / v_projectedTexcoord.w;
+    //     bool inRange =
+    //         projectedTexcoord.x >= 0.0 &&
+    //         projectedTexcoord.x <= 1.0 &&
+    //         projectedTexcoord.y >= 0.0 &&
+    //         projectedTexcoord.y <= 1.0;
+
+    //     // the 'r' channel has the depth values
+    //     vec4 projectedTexColor = vec4(texture2D(u_projectedTexture, projectedTexcoord.xy).rrr, 1);
+    //     float projectedAmount = inRange ? 1.0 : 0.0;
+    //     color = mix(color, projectedTexColor, projectedAmount);
+    // }
+
+    color *= 5.0;
+
+    
+
+    if (!isPointLight) {
+        vec3 projectedTexcoord = v_projectedTexcoord.xyz / v_projectedTexcoord.w;
+        float bias = -0.003; // shadow bias
+        float currentDepth = projectedTexcoord.z + bias;
+
+        bool inRange =
+            projectedTexcoord.x >= 0.0 &&
+            projectedTexcoord.x <= 1.0 &&
+            projectedTexcoord.y >= 0.0 &&
+            projectedTexcoord.y <= 1.0;
+
+        float projectedDepth = texture2D(u_projectedTexture, projectedTexcoord.xy).r;
+        float projectedAmount = inRange ? 1.0 : 0.0;
+        float shadowLight = (inRange && projectedDepth <= currentDepth) ? 0.0 : 1.0; 
+
+        color = vec4(color.rgb * shadowLight, color.a);
+    }
+
+
     return color;
 }
 
@@ -70,7 +120,7 @@ void main()
 
     if (!isSelected) {
         fColor = calculatePhong();
-        fColor = mix(fColor, texture2D(u_texture, v_texcoord) * fColor, textureMix);
+        // fColor = mix(fColor, texture2D(u_texture, v_texcoord) * fColor, textureMix);
     } else {
         fColor = selectedObjectColor;
     }
