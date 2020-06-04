@@ -1,8 +1,6 @@
 
 precision mediump float;
 
-const vec4 selectedObjectColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
-
 // Texture setup
 
 varying vec2 v_texcoord;
@@ -40,46 +38,30 @@ uniform float shadowClipFar;
 varying vec4 v_projectedTexcoord;
 uniform sampler2D u_projectedTexture;
 
-vec4 calculatePhong() {
-    vec3 N = normalize(v_camNorm);
+// Constants
 
-    vec3 L = normalize(v_camLightPos - v_camPos);
-    vec3 E = normalize(-v_camPos);
-    vec3 H = normalize(L + E); // Half vector
+const float pointLightShadowBias = 0.003;
+const float directionalLightShadowBias = -0.003;
+const vec4 selectedObjectColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
 
-    // Compute diffuse reflection term using Lambert cosine law (see p. 286 Angel 7th ed)
-    float lambertian = max(dot(N, L), 0.0);
 
-    float specular = 0.0;
-    if (lambertian > 0.0) {
-        // Compute specular reflection term (see p. 287 Angel 7th ed)
-        float specAngle = max(dot(N, H), 0.0);
-        specular = pow(specAngle, shininess);
-    }
 
+float pointLightShadowValue() {
     vec3 fromLightToFragment = (v_pos - lightPosition);
     float lightFragDist = (length(fromLightToFragment) - shadowClipNear)
     / (shadowClipFar - shadowClipNear);
 
     vec3 toLightNormal = normalize(-fromLightToFragment);
     float shadowMapValue = textureCube(pointLightShadowMap, -toLightNormal).r;
-    bool isLit = (shadowMapValue + 0.003) >= lightFragDist;
+    bool isShadowed = (shadowMapValue + pointLightShadowBias) >= lightFragDist;
 
-    vec4 texColor = mix(vec4(1.0), texture2D(u_texture, v_texcoord), textureMix);
+    return float(isShadowed);
+}
 
-    vec4 color = ambientProduct *  texColor;
 
-    if (isLit) {
-        // Make it look less like plastic
-        float plastic = 0.1;
-        float intensity = 0.4;
-        vec4 pointLightColor = mix(texColor, vec4(1.0), plastic) * vec4(lambertian * diffuseProduct + specular * specularProduct);
-        color += pointLightColor * intensity;
-    }
-    
+float directionalLightShadowValue() {    
     vec3 projectedTexcoord = v_projectedTexcoord.xyz / v_projectedTexcoord.w;
-    float bias = -0.003; // shadow bias
-    float currentDepth = projectedTexcoord.z + bias;
+    float currentDepth = projectedTexcoord.z + directionalLightShadowBias;
 
     bool inRange =
         projectedTexcoord.x >= 0.0 &&
@@ -89,11 +71,55 @@ vec4 calculatePhong() {
 
     float projectedDepth = texture2D(u_projectedTexture, projectedTexcoord.xy).r;
     float projectedAmount = inRange ? 1.0 : 0.0;
-    float shadowLight = (inRange && projectedDepth <= currentDepth) ? 0.0 : 1.0; 
 
-    color += vec4(color.rgb * shadowLight * 0.5, 0.0);
+    return 1.0 - float(inRange && projectedDepth <= currentDepth);
+}
 
 
+vec4 defaultShader() {
+    // constants
+    float plastic = 0.1;
+    float intensity = 0.4;
+
+    vec4 baseColor = mix(vec4(1.0), texture2D(u_texture, v_texcoord), textureMix);
+
+
+
+    // Calculate point light
+    
+    vec3 N = normalize(v_camNorm);
+    vec3 L = normalize(v_camLightPos - v_camPos);
+    vec3 E = normalize(-v_camPos);
+    vec3 H = normalize(L + E); // Half vector
+
+    // Compute diffuse reflection
+    float lambertian = max(dot(N, L), 0.0);
+
+    float specular = 0.0;
+    if (lambertian > 0.0) {
+        // Compute specular reflection term
+        float specAngle = max(dot(N, H), 0.0);
+        specular = pow(specAngle, shininess);
+    }
+
+    vec4 color = ambientProduct *  baseColor;
+
+    // Apply point light shadow
+
+    float shadowMix; // The larger the value, the darker it is
+
+    shadowMix = pointLightShadowValue();
+    vec4 pointLightColor = vec4(lambertian * diffuseProduct + specular * specularProduct);
+    pointLightColor = mix(baseColor, vec4(1.0), plastic) * pointLightColor * intensity;
+    color += pointLightColor * shadowMix;
+    
+
+    // Apply directional light shadow
+
+    shadowMix = directionalLightShadowValue();
+    color += vec4(color.rgb * shadowMix * 0.5, 0.0);
+    
+    
     return color;
 }
 
@@ -104,11 +130,9 @@ void main()
     if (isRenderingWireframe) {
         fColor = vec4(selectedObjectColor.rgb * 0.1, 0.3);
     } else if (!isSelected) {
-        fColor = calculatePhong();
-        fColor.a = 1.0;
+        fColor = defaultShader();
     } else {
         fColor = selectedObjectColor;
-        fColor.a = 1.0;
     }
 
     gl_FragColor = fColor;
