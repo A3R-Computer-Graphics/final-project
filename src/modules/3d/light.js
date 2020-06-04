@@ -293,9 +293,15 @@ class DirectionalLight extends Light {
       this.lastTarget = targetPos
       changed = true
     } else {
-      // srcPos = normalize(subtract(srcPos, targetPos))
-      // targetPos = scale(0, srcPos)
-      // srcPos = scale(-0.5, srcPos)
+
+      // uncomment this if you care only about  the direction
+      let focusToDirectionOnly = true
+
+      if (focusToDirectionOnly) {
+        srcPos = normalize(subtract(srcPos, targetPos))
+        targetPos = scale(-1, srcPos)
+        srcPos = scale(1, srcPos)
+      }
 
       if (length(subtract(this.lastCoord, srcPos)) > 0.001) {
         this.lastCoord = srcPos
@@ -328,7 +334,20 @@ class DirectionalLight extends Light {
       let width = this._projWidth / 2
       let height = this._projHeight / 2
       let [left, right, bottom, top] = [-width, width, -height, height]
+
+      // uncomment this if you want the near and far to be scaled symettrically
+      let scaleSymettrically = true
+      
       let [near, far] = [this._near, this._far]
+
+      if (scaleSymettrically) {
+        let dist = Math.abs(far - near) / 2
+        near = -dist
+        far = dist
+      }
+
+
+      console.log(near - far, near, far)
 
       let isPerspective = false
 
