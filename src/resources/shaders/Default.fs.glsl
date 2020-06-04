@@ -25,6 +25,7 @@ uniform bool isSelected;
 // This is handy to make sure the material that doesn't have image texture
 // will not use any Texture2D
 uniform float textureMix;
+uniform bool isRenderingWireframe;
 
 
 // Light setup
@@ -64,51 +65,33 @@ vec4 calculatePhong() {
     float shadowMapValue = textureCube(pointLightShadowMap, -toLightNormal).r;
     bool isLit = (shadowMapValue + 0.003) >= lightFragDist;
 
-    vec4 color = ambientProduct;
+    vec4 texColor = mix(vec4(1.0), texture2D(u_texture, v_texcoord), textureMix);
 
-    // If the object is shadowed, there should be an ambient lighting only.
+    vec4 color = ambientProduct *  texColor;
+
     if (isLit) {
-        color += lambertian * diffuseProduct + specular * specularProduct;
+        // Make it look less like plastic
+        float plastic = 0.1;
+        float intensity = 0.4;
+        vec4 pointLightColor = mix(texColor, vec4(1.0), plastic) * vec4(lambertian * diffuseProduct + specular * specularProduct);
+        color += pointLightColor * intensity;
     }
-
-    // Add texture
-    color *= texture2D(u_texture, v_texcoord);
-
-    // if (!isPointLight) {
-    //     vec3 projectedTexcoord = v_projectedTexcoord.xyz / v_projectedTexcoord.w;
-    //     bool inRange =
-    //         projectedTexcoord.x >= 0.0 &&
-    //         projectedTexcoord.x <= 1.0 &&
-    //         projectedTexcoord.y >= 0.0 &&
-    //         projectedTexcoord.y <= 1.0;
-
-    //     // the 'r' channel has the depth values
-    //     vec4 projectedTexColor = vec4(texture2D(u_projectedTexture, projectedTexcoord.xy).rrr, 1);
-    //     float projectedAmount = inRange ? 1.0 : 0.0;
-    //     color = mix(color, projectedTexColor, projectedAmount);
-    // }
-
-    color *= 5.0;
-
     
+    vec3 projectedTexcoord = v_projectedTexcoord.xyz / v_projectedTexcoord.w;
+    float bias = -0.003; // shadow bias
+    float currentDepth = projectedTexcoord.z + bias;
 
-    if (!isPointLight) {
-        vec3 projectedTexcoord = v_projectedTexcoord.xyz / v_projectedTexcoord.w;
-        float bias = -0.003; // shadow bias
-        float currentDepth = projectedTexcoord.z + bias;
+    bool inRange =
+        projectedTexcoord.x >= 0.0 &&
+        projectedTexcoord.x <= 1.0 &&
+        projectedTexcoord.y >= 0.0 &&
+        projectedTexcoord.y <= 1.0;
 
-        bool inRange =
-            projectedTexcoord.x >= 0.0 &&
-            projectedTexcoord.x <= 1.0 &&
-            projectedTexcoord.y >= 0.0 &&
-            projectedTexcoord.y <= 1.0;
+    float projectedDepth = texture2D(u_projectedTexture, projectedTexcoord.xy).r;
+    float projectedAmount = inRange ? 1.0 : 0.0;
+    float shadowLight = (inRange && projectedDepth <= currentDepth) ? 0.0 : 1.0; 
 
-        float projectedDepth = texture2D(u_projectedTexture, projectedTexcoord.xy).r;
-        float projectedAmount = inRange ? 1.0 : 0.0;
-        float shadowLight = (inRange && projectedDepth <= currentDepth) ? 0.0 : 1.0; 
-
-        color = vec4(color.rgb * shadowLight, color.a);
-    }
+    color += vec4(color.rgb * shadowLight * 0.5, 0.0);
 
 
     return color;
@@ -118,13 +101,15 @@ void main()
 {
     vec4 fColor;
 
-    if (!isSelected) {
+    if (isRenderingWireframe) {
+        fColor = vec4(selectedObjectColor.rgb * 0.1, 0.3);
+    } else if (!isSelected) {
         fColor = calculatePhong();
-        // fColor = mix(fColor, texture2D(u_texture, v_texcoord) * fColor, textureMix);
+        fColor.a = 1.0;
     } else {
         fColor = selectedObjectColor;
+        fColor.a = 1.0;
     }
 
-    fColor.a = 1.0;
     gl_FragColor = fColor;
 }

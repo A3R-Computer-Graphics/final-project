@@ -130,12 +130,12 @@ class DirectionalLight extends Light {
     this.lightProjectionMatrix = m4.identity()
 
     this.changed = false
-    this._projHeight = 10.0
-    this._projWidth = 10.0
+    this._projHeight = 30.0
+    this._projWidth = 30.0
 
     this._fov = 90.0
     this._near = 0.5
-    this._far = 20.0
+    this._far = 40.0
   }
 
 
@@ -282,10 +282,6 @@ class DirectionalLight extends Light {
     let srcPos = [c[0], c[1], c[2]]
     let targetPos = [c[8], c[9], c[10]]
 
-    // JUST a LITTLE HACK to compare whether the position changes so much.
-    // if it changes then we log it. for debugging purposes
-    // TODO: Remove this after debug
-
     let changed = false || this.changed
 
     if (!this.lastCoord) {
@@ -298,9 +294,9 @@ class DirectionalLight extends Light {
       let focusToDirectionOnly = true
 
       if (focusToDirectionOnly) {
-        srcPos = normalize(subtract(srcPos, targetPos))
-        targetPos = scale(-1, srcPos)
-        srcPos = scale(1, srcPos)
+        let diff = normalize(subtract(srcPos, targetPos))
+        targetPos = scale(-1, diff)
+        srcPos = scale(1, diff)
       }
 
       if (length(subtract(this.lastCoord, srcPos)) > 0.001) {
@@ -313,7 +309,7 @@ class DirectionalLight extends Light {
       }
 
       if (changed) {
-        console.log(srcPos, targetPos)
+        // console.log(srcPos, targetPos)
       }
     }
 
@@ -345,9 +341,6 @@ class DirectionalLight extends Light {
         near = -dist
         far = dist
       }
-
-
-      console.log(near - far, near, far)
 
       let isPerspective = false
 

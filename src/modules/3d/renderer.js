@@ -78,6 +78,7 @@ class Renderer extends EventDispatcher {
       'time',
       'isTreeLeaf',
       'isGrass',
+      'isRenderingWireframe',
       
       'isPointLight',
       'u_textureMatrix',
@@ -101,8 +102,6 @@ class Renderer extends EventDispatcher {
       'shadowClipFar',
       
       'isPointLight',
-      'u_textureMatrix',
-      'v_projectedTexcoord',
 
       /* These are not necessary, just to make leaf and trees wave */
       'time',
@@ -116,8 +115,7 @@ class Renderer extends EventDispatcher {
     this.SHADER_DIR = '/resources/shaders/'
     this.shaders = [
       'Default.fs.glsl', 'Default.vs.glsl',
-      'ShadowGen.fs.glsl', 'ShadowGen.vs.glsl',
-      'MatrixShadowGen.fs.glsl', 'MatrixShadowGen.vs.glsl']
+      'ShadowGen.fs.glsl', 'ShadowGen.vs.glsl']
     this.shadersCodes = {}
 
     this.verticesBuffer = null
@@ -189,8 +187,8 @@ class Renderer extends EventDispatcher {
     let shaders = this.shadersCodes
 
     this.shadowGenProgram = initShadersFromCode(gl,
-      shaders['MatrixShadowGen.vs.glsl'],
-      shaders['MatrixShadowGen.fs.glsl'])
+      shaders['ShadowGen.vs.glsl'],
+      shaders['ShadowGen.fs.glsl'])
     this.program = initShadersFromCode(gl,
       shaders['Default.vs.glsl'],
       shaders['Default.fs.glsl'])
@@ -298,31 +296,29 @@ class Renderer extends EventDispatcher {
     gl.useProgram(this.program)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     gl.clearColor(0.2, 0.2, 0.2, 1.0)
-
-    // TODO: Create arrays of lights in GLSL
-
-    let light = app.objects['sun']
-    if (light instanceof PointLight) {
-      light.updateLightToRenderer(this)
-      gl.uniform3fv(this.program.uniforms.lightPosition, this.usedLightPosition)
+    
+    for (const light of lights) {  
+      if (light instanceof PointLight) {
+        light.updateLightToRenderer(this)
+        gl.uniform3fv(this.program.uniforms.lightPosition, this.usedLightPosition)
+    
+        gl.activeTexture(gl.TEXTURE1)
+        gl.uniform1i(this.program.uniforms.pointLightShadowMap, 1)
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, light.shadowMapTexture)
+        
+      } else {
+        
+        let textureMatrix = m4.translation(0.5, 0.5, 0.5)
+        textureMatrix = m4.scale(textureMatrix, 0.5, 0.5, 0.5)
+        textureMatrix = m4.multiply(textureMatrix, light.lightProjectionMatrix)
+        textureMatrix = m4.multiply(textureMatrix, light.lightWorldMatrix)
+        
+        gl.uniformMatrix4fv(this.program.uniforms.u_textureMatrix, false, textureMatrix)
   
-      gl.activeTexture(gl.TEXTURE1)
-      gl.uniform1i(this.program.uniforms.pointLightShadowMap, 1)
-      gl.bindTexture(gl.TEXTURE_CUBE_MAP, light.shadowMapTexture)
-      
-    } else {
-      
-      let textureMatrix = m4.translation(0.5, 0.5, 0.5)
-      textureMatrix = m4.scale(textureMatrix, 0.5, 0.5, 0.5)
-      textureMatrix = m4.multiply(textureMatrix, light.lightProjectionMatrix)
-      textureMatrix = m4.multiply(textureMatrix, light.lightWorldMatrix)
-      
-      gl.uniformMatrix4fv(this.program.uniforms.u_textureMatrix, false, textureMatrix)
-
-      gl.activeTexture(gl.TEXTURE2);
-      gl.uniform1i(this.program.uniforms.u_projectedTexture, 2)
-      gl.bindTexture(gl.TEXTURE_2D, light.shadowMapTexture)
-      
+        gl.activeTexture(gl.TEXTURE2);
+        gl.uniform1i(this.program.uniforms.u_projectedTexture, 2)
+        gl.bindTexture(gl.TEXTURE_2D, light.shadowMapTexture)        
+      }
     }
     
     gl.uniform1f(this.program.uniforms.isPointLight, light instanceof PointLight)
@@ -538,12 +534,17 @@ class Renderer extends EventDispatcher {
       }
     }
 
+    if (object instanceof Light) {
+      textureMix = 0.0;
+    }
+
     gl.uniform1f(uniforms.textureMix, textureMix)
 
     let geometry = object.geometry
     let start = geometry.bufferStartIndex
     let count = geometry.triangleVerticesCount
     gl.drawArrays(gl.TRIANGLES, start, count)
+
 
     // draw helpers, right now using isSelected shader as quick material pick
     if (object instanceof DirectionalLight) {
