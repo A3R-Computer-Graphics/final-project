@@ -41,8 +41,8 @@ class Geometry {
     gl.bindBuffer(gl.ARRAY_BUFFER, renderer.verticesBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.verticesBufferData), gl.STATIC_DRAW)
 
-    gl.vertexAttribPointer(attributes.vPosition, 4, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.vPosition)
+    gl.vertexAttribPointer(attributes.a_pos, 4, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(attributes.a_pos)
 
     // Update UV coordinate buffer
 
@@ -57,8 +57,8 @@ class Geometry {
     gl.bindBuffer(gl.ARRAY_BUFFER, renderer.normalsBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normalsBufferData), gl.STATIC_DRAW)
 
-    gl.vertexAttribPointer(attributes.vNormal, 4, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.vNormal)
+    gl.vertexAttribPointer(attributes.a_norm, 4, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(attributes.a_norm)
 
     Geometry.bufferDataNeedsUpdate = false
   }

@@ -32,10 +32,10 @@ class CameraPrototype extends Object3D {
 
     // NOTE: Assumed using renderer.programs
 
-    let projectionLoc = program.uniforms.projectionMatrix
+    let projectionLoc = program.uniforms.u_proj
     gl.uniformMatrix4fv(projectionLoc, false, flatten(this.projectionMatrix))
 
-    let viewLoc = program.uniforms.viewMatrix
+    let viewLoc = program.uniforms.u_cam
     gl.uniformMatrix4fv(viewLoc, false, flatten(this.viewMatrix))
 
     this.cameraMatrixNeedsUpdate = false

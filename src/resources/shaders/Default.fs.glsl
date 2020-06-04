@@ -10,10 +10,10 @@ uniform sampler2D u_texture;
 
 uniform vec3 lightPosition;
 
-varying vec3 normalInterp;  // Surface normal
-varying vec3 vertPos;       // Vertex position
-varying vec3 lightPos;      // Light position, interpolated
-varying vec3 fPos;
+varying vec3 v_camNorm;  // Surface normal
+varying vec3 v_camPos;       // Vertex position
+varying vec3 v_camLightPos;  // Light position, interpolated
+varying vec3 v_pos;
 
 uniform vec4 ambientProduct, diffuseProduct, specularProduct;
 uniform float shininess;
@@ -41,10 +41,10 @@ varying vec4 v_projectedTexcoord;
 uniform sampler2D u_projectedTexture;
 
 vec4 calculatePhong() {
-    vec3 N = normalize(normalInterp);
+    vec3 N = normalize(v_camNorm);
 
-    vec3 L = normalize(lightPos - vertPos);
-    vec3 E = normalize(-vertPos);
+    vec3 L = normalize(v_camLightPos - v_camPos);
+    vec3 E = normalize(-v_camPos);
     vec3 H = normalize(L + E); // Half vector
 
     // Compute diffuse reflection term using Lambert cosine law (see p. 286 Angel 7th ed)
@@ -57,7 +57,7 @@ vec4 calculatePhong() {
         specular = pow(specAngle, shininess);
     }
 
-    vec3 fromLightToFragment = (fPos - lightPosition);
+    vec3 fromLightToFragment = (v_pos - lightPosition);
     float lightFragDist = (length(fromLightToFragment) - shadowClipNear)
     / (shadowClipFar - shadowClipNear);
 

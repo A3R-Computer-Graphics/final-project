@@ -58,10 +58,10 @@ class Renderer extends EventDispatcher {
       "specularProduct",
       "shininess",
 
-      "modelMatrix",
-      "viewMatrix",
-      "projectionMatrix",
-      "normalMatrix",
+      "u_world",
+      "u_cam",
+      "u_proj",
+      "u_normMat",
 
       "isSelected",
 
@@ -88,15 +88,15 @@ class Renderer extends EventDispatcher {
 
     this.programAttribList = [
       "a_texcoord",
-      "vPosition",
-      "vNormal"
+      "a_pos",
+      "a_norm"
     ]
 
     this.shadowGenProgram = null
     this.shadowGenProgramUniformList = [
-      'projectionMatrix',
-      'viewMatrix',
-      'modelMatrix',
+      'u_proj',
+      'u_cam',
+      'u_world',
       'lightPosition',
       'shadowClipNear',
       'shadowClipFar',
@@ -109,7 +109,7 @@ class Renderer extends EventDispatcher {
       'isGrass',
     ]
     this.shadowGenProgramAttribList = [
-      'vPosition',
+      'a_pos',
     ]
 
     this.SHADER_DIR = '/resources/shaders/'
@@ -376,13 +376,13 @@ class Renderer extends EventDispatcher {
 
     let attributes = shadowGenProgram.attribs
     gl.bindBuffer(gl.ARRAY_BUFFER, this.verticesBuffer)
-    gl.vertexAttribPointer(attributes.vPosition, 4, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.vPosition)
+    gl.vertexAttribPointer(attributes.a_pos, 4, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(attributes.a_pos)
 
     light.recomputeMapMatrix()
     
-    gl.uniformMatrix4fv(shadowGenProgram.uniforms.projectionMatrix, false, light.lightProjectionMatrix)
-    gl.uniformMatrix4fv(shadowGenProgram.uniforms.viewMatrix, false, light.lightWorldMatrix)
+    gl.uniformMatrix4fv(shadowGenProgram.uniforms.u_proj, false, light.lightProjectionMatrix)
+    gl.uniformMatrix4fv(shadowGenProgram.uniforms.u_cam, false, light.lightWorldMatrix)
 
     this.renderShadowObjectTree(scene, app)
     
@@ -397,8 +397,8 @@ class Renderer extends EventDispatcher {
 
     let attributes = shadowGenProgram.attribs
     gl.bindBuffer(gl.ARRAY_BUFFER, this.verticesBuffer)
-    gl.vertexAttribPointer(attributes.vPosition, 4, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.vPosition)
+    gl.vertexAttribPointer(attributes.a_pos, 4, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(attributes.a_pos)
 
     // Prepare rendering to framebuffer, renderbuffer and shadow cubemap texture
     
@@ -420,8 +420,8 @@ class Renderer extends EventDispatcher {
     // The projection matrix will be the same for all the 6 cameras.
     // Use only the first one and set it at the beginning.
 
-    let projMatLoc = shadowGenProgram.uniforms.projectionMatrix
-    let viewMatLoc = shadowGenProgram.uniforms.viewMatrix
+    let projMatLoc = shadowGenProgram.uniforms.u_proj
+    let viewMatLoc = shadowGenProgram.uniforms.u_cam
     let projectionMatrix = this.shadowMapCameras[0].projectionMatrix
     gl.uniformMatrix4fv(projMatLoc, false, flatten(projectionMatrix))
 
@@ -491,8 +491,8 @@ class Renderer extends EventDispatcher {
     let worldViewMatrix = m4.multiply(camera.viewMatrix, object.worldMatrix)
     let normalMatrix = m4.transpose(m4.inverse(worldViewMatrix))
 
-    gl.uniformMatrix4fv(uniforms.modelMatrix, false, flatten(object.worldMatrix))
-    gl.uniformMatrix4fv(uniforms.normalMatrix, false, normalMatrix)
+    gl.uniformMatrix4fv(uniforms.u_world, false, flatten(object.worldMatrix))
+    gl.uniformMatrix4fv(uniforms.u_normMat, false, normalMatrix)
 
     // Set up shader
 
@@ -559,7 +559,7 @@ class Renderer extends EventDispatcher {
       // let localHelperMatrix = m4.identity()
       let mat = m4.multiply(m4.inverse(light.lightWorldMatrix), m4.inverse(light.lightProjectionMatrix))
       mat = m4.scale(mat, 2, 2, 2)
-      gl.uniformMatrix4fv(uniforms.modelMatrix, false, mat)
+      gl.uniformMatrix4fv(uniforms.u_world, false, mat)
 
       geometry = light.areaHelper
       start = geometry.bufferStartIndex
@@ -603,7 +603,7 @@ class Renderer extends EventDispatcher {
     
     gl.uniform1f(uniforms.isTreeLeaf, object.name === 'Daun')
     gl.uniform1f(uniforms.isGrass, object.name === 'rumput')
-    gl.uniformMatrix4fv(uniforms.modelMatrix, false, flatten(object.worldMatrix))
+    gl.uniformMatrix4fv(uniforms.u_world, false, flatten(object.worldMatrix))
 
     let geometry = object.geometry
     let start = geometry.bufferStartIndex
