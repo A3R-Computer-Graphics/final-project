@@ -7,7 +7,7 @@ attribute vec2 a_texcoord;
 
 varying vec2 v_texcoord;
 
-uniform mat4 u_world, u_cam, u_proj, u_normMat;
+uniform mat4 u_world, u_cam, u_proj, u_normCam;
 
 uniform vec3 lightPosition;
 
@@ -15,7 +15,7 @@ uniform bool isTreeLeaf;
 uniform bool isGrass;
 uniform float time;
 
-varying vec3 v_camNorm, v_camPos, v_camLightPos, v_pos;
+varying vec3 v_camNorm, v_worldNorm, v_camPos, v_camLightPos, v_pos;
 
 uniform mat4 u_textureMatrix;
 varying vec4 v_projectedTexcoord;
@@ -54,7 +54,8 @@ void main()
     vec4 v_camPos4 = u_cam * worldPos;
 
     v_camPos = v_camPos4.xyz;
-    v_camNorm = vec3(u_normMat * vec4(a_norm, 0.0));
+    v_worldNorm = vec3(u_world * vec4(a_norm, 0.0));
+    v_camNorm = vec3(u_normCam * vec4(a_norm, 0.0));
     v_camLightPos = (u_cam * vec4(lightPosition, 1.0)).xyz;
 
     v_texcoord = a_texcoord;

@@ -136,6 +136,8 @@ class DirectionalLight extends Light {
     this._fov = 90.0
     this._near = 0.5
     this._far = 40.0
+
+    this.lightDirection = vec3(0.0)
   }
 
 
@@ -297,6 +299,8 @@ class DirectionalLight extends Light {
         let diff = normalize(subtract(srcPos, targetPos))
         targetPos = scale(-1, diff)
         srcPos = scale(1, diff)
+
+        this.lightDirection = diff
       }
 
       if (length(subtract(this.lastCoord, srcPos)) > 0.001) {

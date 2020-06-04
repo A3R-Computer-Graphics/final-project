@@ -12,6 +12,7 @@ varying vec3 v_camNorm;  // Surface normal
 varying vec3 v_camPos;       // Vertex position
 varying vec3 v_camLightPos;  // Light position, interpolated
 varying vec3 v_pos;
+varying vec3 v_worldNorm;
 
 uniform vec4 ambientProduct, diffuseProduct, specularProduct;
 uniform float shininess;
@@ -26,8 +27,9 @@ uniform float textureMix;
 uniform bool isRenderingWireframe;
 
 
-// Light setup
-uniform bool isPointLight;
+
+// Directional light setup
+uniform vec3 u_reverseLightDirection;
 
 // Point light shadow map setup
 uniform samplerCube pointLightShadowMap;
@@ -82,6 +84,7 @@ vec4 defaultShader() {
     float intensity = 0.4;
 
     vec4 baseColor = mix(vec4(1.0), texture2D(u_texture, v_texcoord), textureMix);
+    vec4 color = ambientProduct *  baseColor;
 
 
 
@@ -102,7 +105,6 @@ vec4 defaultShader() {
         specular = pow(specAngle, shininess);
     }
 
-    vec4 color = ambientProduct *  baseColor;
 
     // Apply point light shadow
 
@@ -112,12 +114,16 @@ vec4 defaultShader() {
     vec4 pointLightColor = vec4(lambertian * diffuseProduct + specular * specularProduct);
     pointLightColor = mix(baseColor, vec4(1.0), plastic) * pointLightColor * intensity;
     color += pointLightColor * shadowMix;
-    
+
+
+    // Compute directional light
+    float light = max(dot(normalize(v_worldNorm), u_reverseLightDirection), 0.0);
+    vec3 lightColor = vec3(1.0, 1.0, 0.0); // red + green = yellow;
 
     // Apply directional light shadow
 
     shadowMix = directionalLightShadowValue();
-    color += vec4(color.rgb * shadowMix * 0.5, 0.0);
+    color += vec4(baseColor.rgb * lightColor * shadowMix * light, 0.0);
     
     
     return color;

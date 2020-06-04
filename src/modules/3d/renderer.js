@@ -61,7 +61,7 @@ class Renderer extends EventDispatcher {
       "u_world",
       "u_cam",
       "u_proj",
-      "u_normMat",
+      "u_normCam",
 
       "isSelected",
 
@@ -73,6 +73,9 @@ class Renderer extends EventDispatcher {
 
       'shadowClipNear',
       'shadowClipFar',
+
+      // For directional ligt
+      'u_reverseLightDirection',
 
       /* These are not necessary, just to make leaf and trees wave */
       'time',
@@ -306,7 +309,7 @@ class Renderer extends EventDispatcher {
         gl.uniform1i(this.program.uniforms.pointLightShadowMap, 1)
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, light.shadowMapTexture)
         
-      } else {
+      } else if (light instanceof DirectionalLight) {
         
         let textureMatrix = m4.translation(0.5, 0.5, 0.5)
         textureMatrix = m4.scale(textureMatrix, 0.5, 0.5, 0.5)
@@ -314,6 +317,7 @@ class Renderer extends EventDispatcher {
         textureMatrix = m4.multiply(textureMatrix, light.lightWorldMatrix)
         
         gl.uniformMatrix4fv(this.program.uniforms.u_textureMatrix, false, textureMatrix)
+        gl.uniform3fv(this.program.uniforms.u_reverseLightDirection, light.lightDirection)
   
         gl.activeTexture(gl.TEXTURE2);
         gl.uniform1i(this.program.uniforms.u_projectedTexture, 2)
@@ -491,8 +495,8 @@ class Renderer extends EventDispatcher {
     let worldViewMatrix = m4.multiply(camera.viewMatrix, object.worldMatrix)
     let normalMatrix = m4.transpose(m4.inverse(worldViewMatrix))
 
-    gl.uniformMatrix4fv(uniforms.u_world, false, flatten(object.worldMatrix))
-    gl.uniformMatrix4fv(uniforms.u_normMat, false, normalMatrix)
+    gl.uniformMatrix4fv(uniforms.u_world, false, object.worldMatrix)
+    gl.uniformMatrix4fv(uniforms.u_normCam, false, normalMatrix)
 
     // Set up shader
 

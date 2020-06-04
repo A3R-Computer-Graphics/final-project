@@ -390,7 +390,7 @@ function createCubeLight() {
 
   // Parent this light to Suzanne object
   app.objects['Suzanne'].add(sun)
-  app.objects['Suzanne'].rotation.setX(24.8)
+  app.objects['Suzanne'].rotation.setX(60)
 
   
   window.lamp = new PointLight()
@@ -620,10 +620,10 @@ window.addEventListener('load', async function init() {
   render()
 })
 
-async function render() {
+function render() {
   let gl = renderer.gl
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-  await renderer.render(scene, camera, app)
+  renderer.render(scene, camera, app)
   
   // Switch between render every 1 seconds (for debugging purposes)
   // and continuously
