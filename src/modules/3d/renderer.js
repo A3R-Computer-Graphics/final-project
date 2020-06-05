@@ -538,25 +538,16 @@ class Renderer extends EventDispatcher {
 
     let gl = this.gl
     let programInfo = this.programInfos.main
-    let program = programInfo.program
-    let uniforms = program.uniforms
 
     // Set up vertex position and inverse world matrix for normal calculation
 
     let worldViewMatrix = m4.multiply(camera.viewMatrix, object.worldMatrix)
     let normalMatrix = m4.transpose(m4.inverse(worldViewMatrix))
 
-    gl.uniformMatrix4fv(uniforms.u_world, false, object.worldMatrix)
-    gl.uniformMatrix4fv(uniforms.u_normCam, false, normalMatrix)
-
     // Set up shader
 
     let selected = app.selectedObjectName === object.name
     let material = object.material
-
-    gl.uniform1f(uniforms.isSelected, selected)
-    gl.uniform1f(uniforms.isTreeLeaf, object.name === 'Daun')
-    gl.uniform1f(uniforms.isGrass, object.name === 'rumput')
 
     let textureMix = 0
 
@@ -564,8 +555,7 @@ class Renderer extends EventDispatcher {
       if (material instanceof PhongMaterial) {
         let { ambient, diffuse, specular, shininess } = material
 
-        // TODO: Right now it only uses FIRST LIGHT
-        // Make sure it is able to use multiple light
+        // TODO: Delete this multiplication. It's not needed.
 
         let light = Light.lightList[0]
         if (light) {
@@ -574,13 +564,13 @@ class Renderer extends EventDispatcher {
           specular = flatten(mult(light.specular, specular))
         }
 
-        gl.uniform4fv(uniforms.ambientProduct, ambient)
-        gl.uniform4fv(uniforms.diffuseProduct, diffuse)
-        gl.uniform4fv(uniforms.specularProduct, specular)
-        gl.uniform1f(uniforms.shininess, shininess)
+        twgl.setUniforms(programInfo, {
+          ambientProduct: ambient,
+          diffuseProduct: diffuse,
+          specularProduct: specular,
+          shininess: shininess
+        })
       }
-
-      gl.uniform1i(this.program.u_projectedTexture, 2);  // texture unit 0
 
       if (material instanceof ImageTextureMaterial) {
         textureMix = 1
@@ -593,13 +583,21 @@ class Renderer extends EventDispatcher {
       textureMix = 0.0;
     }
 
-    gl.uniform1f(uniforms.textureMix, textureMix)
-    gl.uniform1f(uniforms.isTreeLeaf, object.name === 'Daun')
-    gl.uniform1f(uniforms.isGrass, object.name === 'rumput')
-
     let geometry = object.geometry
     geometry.bindBufferRendererToThis(gl, this, programInfo)
-    gl.uniform1f(uniforms.isRenderingWireframe, geometry.wireframeMode)
+
+    twgl.setUniforms(programInfo, {
+
+      u_world: object.worldMatrix,
+      u_normCam: normalMatrix,
+
+      isSelected: selected,
+      isRenderingWireframe: geometry.wireframeMode,
+      textureMix: textureMix,
+
+      isTreeLeaf: object.name === 'Daun',
+      isGrass: object.name === 'rumput'
+    })
 
     if (geometry.wireframeMode) {
       gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
@@ -609,16 +607,21 @@ class Renderer extends EventDispatcher {
 
     if (object instanceof MatrixBasedLight) {
       let light = object
-
       let geometry = light.directionHelper
-      gl.uniform1f(uniforms.isRenderingWireframe, geometry.wireframeMode)
+
+      twgl.setUniforms(programInfo, {
+        isRenderingWireframe: geometry.wireframeMode
+      })
+      
       geometry.bindBufferRendererToThis(gl, this, programInfo)
       gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
 
       if (selected) {
         let mat = m4.multiply(m4.inverse(light.lightWorldMatrix), m4.inverse(light.lightProjectionMatrix))
         mat = m4.scale(mat, 2, 2, 2)
-        gl.uniformMatrix4fv(uniforms.u_world, false, mat)
+        twgl.setUniforms(programInfo, {
+          u_world: mat
+        })
   
         geometry = light.areaHelper
         geometry.bindBufferRendererToThis(gl, this, programInfo)
@@ -658,12 +661,12 @@ class Renderer extends EventDispatcher {
 
     let gl = this.gl
     let programInfo = this.programInfos.shadowGen
-    let program = programInfo.program
-    let uniforms = program.uniforms
 
-    gl.uniform1f(uniforms.isTreeLeaf, object.name === 'Daun')
-    gl.uniform1f(uniforms.isGrass, object.name === 'rumput')
-    gl.uniformMatrix4fv(uniforms.u_world, false, flatten(object.worldMatrix))
+    twgl.setUniforms(programInfo, {
+      isTreeLeaf: object.name === 'Daun',
+      isGrass: object.name === 'rumput',
+      u_world: flatten(object.worldMatrix)
+    })
 
     let geometry = object.geometry
     geometry.bindShadowBufferRendererToThis(gl, this, programInfo)
