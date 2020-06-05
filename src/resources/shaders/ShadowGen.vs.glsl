@@ -1,6 +1,6 @@
 // precision mediump float;
 
-attribute vec4 a_pos;
+attribute vec3 a_pos;
 uniform mat4 u_world, u_cam, u_proj;
 
 varying vec3 v_pos;

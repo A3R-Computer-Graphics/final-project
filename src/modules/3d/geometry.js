@@ -41,7 +41,7 @@ class Geometry {
     gl.bindBuffer(gl.ARRAY_BUFFER, renderer.verticesBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.verticesBufferData), gl.STATIC_DRAW)
 
-    gl.vertexAttribPointer(attributes.a_pos, 4, gl.FLOAT, false, 0, 0)
+    gl.vertexAttribPointer(attributes.a_pos, 3, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(attributes.a_pos)
 
     // Update UV coordinate buffer
@@ -57,7 +57,7 @@ class Geometry {
     gl.bindBuffer(gl.ARRAY_BUFFER, renderer.normalsBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normalsBufferData), gl.STATIC_DRAW)
 
-    gl.vertexAttribPointer(attributes.a_norm, 4, gl.FLOAT, false, 0, 0)
+    gl.vertexAttribPointer(attributes.a_norm, 3, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(attributes.a_norm)
 
     Geometry.bufferDataNeedsUpdate = false
@@ -178,21 +178,19 @@ class Geometry {
 
       let vertexCount = indice.length
 
-      // Add fourth component
+      // Convert indices into real vertex coordinate
 
-      let initVertices = new Array(vertexCount)
-
+      let mappedVertices = new Array(vertexCount)
       indice.forEach((vertexIndex, i) => {
-        let vertex = vertices[vertexIndex]
-        initVertices[i] = [vertex[0], vertex[1], vertex[2], 1.0]
+        mappedVertices[i] = vertices[vertexIndex]
       })
 
       // Populate vertices location data in triangle fan style
 
       for (let i = 1; i < vertexCount - 1; i++) {
-        geomVerts[startIndex++] = initVertices[0]
-        geomVerts[startIndex++] = initVertices[i]
-        geomVerts[startIndex++] = initVertices[i + 1]
+        geomVerts[startIndex++] = mappedVertices[0]
+        geomVerts[startIndex++] = mappedVertices[i]
+        geomVerts[startIndex++] = mappedVertices[i + 1]
       }
     })
   }
@@ -241,7 +239,7 @@ class Geometry {
 
       let t1 = subtract(b, a)
       let t2 = subtract(c, b)
-      let faceNormal = vec4(cross(t1, t2))
+      let faceNormal = vec3(cross(t1, t2))
 
       let vertexCount = indice.length
       for (let i = 1; i < vertexCount - 1; i++) {

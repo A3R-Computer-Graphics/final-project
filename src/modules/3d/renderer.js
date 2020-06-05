@@ -417,7 +417,7 @@ class Renderer extends EventDispatcher {
 
     let attributes = shadowGenProgram.attribs
     gl.bindBuffer(gl.ARRAY_BUFFER, this.verticesBuffer)
-    gl.vertexAttribPointer(attributes.a_pos, 4, gl.FLOAT, false, 0, 0)
+    gl.vertexAttribPointer(attributes.a_pos, 3, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(attributes.a_pos)
 
     light.recomputeMapMatrix()
@@ -438,7 +438,7 @@ class Renderer extends EventDispatcher {
 
     let attributes = shadowGenProgram.attribs
     gl.bindBuffer(gl.ARRAY_BUFFER, this.verticesBuffer)
-    gl.vertexAttribPointer(attributes.a_pos, 4, gl.FLOAT, false, 0, 0)
+    gl.vertexAttribPointer(attributes.a_pos, 3, gl.FLOAT, false, 0, 0)
     gl.enableVertexAttribArray(attributes.a_pos)
 
     // Prepare rendering to framebuffer, renderbuffer and shadow cubemap texture

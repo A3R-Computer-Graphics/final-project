@@ -1,31 +1,36 @@
 
 precision mediump float;
 
-attribute vec4 a_pos;
+attribute vec3 a_pos;
 attribute vec3 a_norm;
 attribute vec2 a_texcoord;
-
-varying vec2 v_texcoord;
 
 uniform mat4 u_world, u_cam, u_proj, u_normCam;
 
 uniform vec3 lightPosition;
 uniform vec3 u_viewWorldPosition;
 
+// Needed to make grass & tree leaf waves
 uniform bool isTreeLeaf;
 uniform bool isGrass;
 uniform float time;
 
+// Main texture coordinate
+varying vec2 v_texcoord;
+
 varying vec3 v_camNorm, v_worldNorm, v_camPos, v_camLightPos, v_pos;
 
+// Needed for directional light
 uniform mat4 u_textureMatrix_dir;
 varying vec4 v_projectedTexcoord_dir;
 
-// For spotlight;
-varying vec3 v_surfaceToLight, v_surfaceToView;
+// Needed for spotlight
 uniform mat4 u_textureMatrix_spot;
 uniform vec3 lightPosition_spot;
 varying vec4 v_projectedTexcoord_spot;
+
+// For spotlight
+varying vec3 v_surfaceToLight, v_surfaceToView;
 
 
 
@@ -54,15 +59,15 @@ void displaceIfLeafOrGrass(inout vec3 pos) {
 
 void main()
 {
-    vec4 worldPos = u_world * vec4(a_pos.xyz, 1.0);
+    vec4 worldPos = u_world * vec4(a_pos, 1.0);
     displaceIfLeafOrGrass(worldPos.xyz);
     v_pos = (worldPos).xyz;
 
     vec4 v_camPos4 = u_cam * worldPos;
 
     v_camPos = v_camPos4.xyz;
-    v_worldNorm = vec3(u_world * vec4(a_norm, 0.0));
-    v_camNorm = vec3(u_normCam * vec4(a_norm, 0.0));
+    v_worldNorm = mat3(u_world) * a_norm;
+    v_camNorm = mat3(u_normCam) * a_norm;
     v_camLightPos = (u_cam * vec4(lightPosition, 1.0)).xyz;
 
     v_texcoord = a_texcoord;
