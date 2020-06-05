@@ -21,7 +21,7 @@ class CameraPrototype extends Object3D {
     this.projectionMatrix = m4.identity()
   }
 
-  updateCameraToRenderer(renderer, programInfo) {
+  updateCameraToRenderer(programInfo) {
     if (!this.cameraMatrixNeedsUpdate) {
       return
     }

@@ -36,36 +36,21 @@ class Geometry {
     console.log('update buffers')
 
     let gl = renderer.gl
-    let program, attributes
+    let mainProgram = renderer.programInfos.main
+    
+    let arrays = {
+      a_pos: { data: flatten(this.verticesBufferData) },
+      a_texcoord: { data: flatten(this.uvBufferData) },
+      a_norm:   { data: flatten(this.normalsBufferData) },
+    }
+    
+    renderer.bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays, renderer.bufferInfo)
 
-    program = renderer.program
-    attributes = program.attribs
+    renderer.verticesBuffer = renderer.bufferInfo.attribs.a_pos.buffer
+    renderer.normalsBuffer = renderer.bufferInfo.attribs.a_norm.buffer
+    renderer.texcoordsBuffer = renderer.bufferInfo.attribs.a_texcoord.buffer
 
-    gl.useProgram(program)
-
-    // Update position buffer
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, renderer.verticesBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.verticesBufferData), gl.STATIC_DRAW)
-
-    gl.vertexAttribPointer(attributes.a_pos, 3, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.a_pos)
-
-    // Update UV coordinate buffer
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, renderer.texcoordsBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.uvBufferData), gl.STATIC_DRAW)
-
-    gl.vertexAttribPointer(attributes.a_texcoord, 2, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.a_texcoord)
-
-    // Update normals buffer
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, renderer.normalsBuffer)
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normalsBufferData), gl.STATIC_DRAW)
-
-    gl.vertexAttribPointer(attributes.a_norm, 3, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.a_norm)
+    twgl.setBuffersAndAttributes(gl, mainProgram, renderer.bufferInfo)
 
     Geometry.bufferDataNeedsUpdate = false
   }
@@ -392,48 +377,53 @@ class Geometry {
   }
 
 
-  bindBufferRendererToThis(gl, renderer, program) {
-
+  initGeometryBufferInfo(gl, renderer) {
     const ATTRIB_VERTEX_SIZE = 3
     const ATTRIB_TEXCOORD_SIZE = 2
     const ATTRIB_NORMAL_SIZE = 3
-
     const FLOAT_BYTE_LENGTH = 4
 
     let startVertex = this.vertexStartIndex * FLOAT_BYTE_LENGTH * ATTRIB_VERTEX_SIZE
     let startNormal = this.normalStartIndex * FLOAT_BYTE_LENGTH * ATTRIB_NORMAL_SIZE
     let startUv = this.uvStartIndex * FLOAT_BYTE_LENGTH * ATTRIB_TEXCOORD_SIZE
 
-    let attribs = program.attribs
+    this.geometryBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+      a_pos: {
+        buffer: renderer.bufferInfo.attribs.a_pos.buffer,
+        numComponents: 3,
+        offset: startVertex
+      },
+      a_texcoord: {
+        buffer: renderer.bufferInfo.attribs.a_texcoord.buffer,
+        numComponents: 2,
+        offset: startUv
+      },
+      a_norm: {
+        buffer: renderer.bufferInfo.attribs.a_norm.buffer,
+        numComponents: 3,
+        offset: startNormal
+      }
+    }, renderer.bufferInfo)
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, renderer.verticesBuffer)
-    gl.vertexAttribPointer(attribs.a_pos, ATTRIB_VERTEX_SIZE, gl.FLOAT, false, 0, startVertex)
-    gl.enableVertexAttribArray(attribs.a_pos)
-
-    // Update UV coordinate buffer
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, renderer.texcoordsBuffer)
-    gl.vertexAttribPointer(attribs.a_texcoord, ATTRIB_TEXCOORD_SIZE, gl.FLOAT, false, 0, startUv)
-    gl.enableVertexAttribArray(attribs.a_texcoord)
-
-    // Update normals buffer
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, renderer.normalsBuffer)
-    gl.vertexAttribPointer(attribs.a_norm, ATTRIB_NORMAL_SIZE, gl.FLOAT, false, 0, startNormal)
-    gl.enableVertexAttribArray(attribs.a_norm)
-
+    this.geometryBufferInfo.numElements = this.triangleVerticesCount
   }
 
-  bindShadowBufferRendererToThis(gl, renderer, program) {
-    const ATTRIB_VERTEX_SIZE = 3
-    const FLOAT_BYTE_LENGTH = 4
 
-    let startVertex = this.vertexStartIndex * FLOAT_BYTE_LENGTH * ATTRIB_VERTEX_SIZE
-    let attribs = program.attribs
+  bindBufferRendererToThis(gl, renderer, programInfo) {
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, renderer.verticesBuffer)
-    gl.vertexAttribPointer(attribs.a_pos, ATTRIB_VERTEX_SIZE, gl.FLOAT, false, 0, startVertex)
-    gl.enableVertexAttribArray(attribs.a_pos)
+    if (!this.geometryBufferInfo) {
+      this.initGeometryBufferInfo(gl, renderer)
+    }
+
+    twgl.setBuffersAndAttributes(gl, programInfo, this.geometryBufferInfo)
+  }
+
+  bindShadowBufferRendererToThis(gl, renderer, programInfo) {
+    if (!this.geometryBufferInfo) {
+      this.initGeometryBufferInfo(gl, renderer)
+    }
+
+    twgl.setBuffersAndAttributes(gl, programInfo, this.geometryBufferInfo)
 
   }
 }

@@ -144,10 +144,6 @@ class Renderer extends EventDispatcher {
       'ShadowGen.fs.glsl', 'ShadowGen.vs.glsl']
     this.shadersCodes = {}
 
-    this.verticesBuffer = null
-    this.normalsBuffer = null
-    this.texcoordsBuffer = null
-
     this.shadowMapTextureSize = 512
 
     this.shadowClipNear = 0.05
@@ -236,12 +232,6 @@ class Renderer extends EventDispatcher {
     }
 
     this.bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays)
-
-    // NOTE: All of these buffers will be deprecated
-
-    this.verticesBuffer = this.bufferInfo.attribs.a_pos.buffer
-    this.normalsBuffer = this.bufferInfo.attribs.a_norm.buffer
-    this.texcoordsBuffer = this.bufferInfo.attribs.a_texcoord.buffer
   }
 
 
@@ -395,7 +385,7 @@ class Renderer extends EventDispatcher {
     gl.uniform1f(this.program.uniforms.shadowClipFar, this.shadowClipFar)
     gl.uniform1f(this.program.uniforms.time, this.time)
 
-    camera.updateCameraToRenderer(this, this.programInfos.main)
+    camera.updateCameraToRenderer(this.programInfos.main)
     this.renderObjectTree(scene, camera, app)
 
     this.time += 0.04
@@ -434,24 +424,23 @@ class Renderer extends EventDispatcher {
 
     let gl = this.gl
     let texSize = light.shadowMapTextureSize
-    let shadowGenProgram = this.shadowGenProgram
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, light.framebuffer)
     gl.viewport(0, 0, texSize, texSize)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    let attributes = shadowGenProgram.attribs
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.verticesBuffer)
-    gl.vertexAttribPointer(attributes.a_pos, 3, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.a_pos)
+    // TODO NOW: Move this into the outerfunction (this.renderShadowMap)
+    let programInfo = this.programInfos.shadowGen
+    twgl.setBuffersAndAttributes(gl, programInfo, this.bufferInfo)
 
     light.recomputeMapMatrix()
 
-    gl.uniformMatrix4fv(shadowGenProgram.uniforms.u_proj, false, light.lightProjectionMatrix)
-    gl.uniformMatrix4fv(shadowGenProgram.uniforms.u_cam, false, light.lightWorldMatrix)
+    twgl.setUniforms(programInfo, {
+      u_proj: light.lightProjectionMatrix,
+      u_cam: light.lightWorldMatrix
+    })
 
     this.renderShadowObjectTree(scene, app)
-
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   }
 
@@ -459,12 +448,8 @@ class Renderer extends EventDispatcher {
   generatePointLightShadowMap(light, app) {
 
     let gl = this.gl
-    let shadowGenProgram = this.shadowGenProgram
-
-    let attributes = shadowGenProgram.attribs
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.verticesBuffer)
-    gl.vertexAttribPointer(attributes.a_pos, 3, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.a_pos)
+    let programInfo = this.programInfos.shadowGen
+    twgl.setBuffersAndAttributes(gl, programInfo, this.bufferInfo)
 
     // Prepare rendering to framebuffer, renderbuffer and shadow cubemap texture
 
@@ -479,17 +464,20 @@ class Renderer extends EventDispatcher {
     light.bindGlToThisTexture(gl)
 
     let lightPosition = this.usedLightPosition
-    gl.uniform1f(shadowGenProgram.uniforms.shadowClipNear, this.shadowClipNear)
-    gl.uniform1f(shadowGenProgram.uniforms.shadowClipFar, this.shadowClipFar)
-    gl.uniform3fv(shadowGenProgram.uniforms.lightPosition, lightPosition)
 
     // The projection matrix will be the same for all the 6 cameras.
     // Use only the first one and set it at the beginning.
 
-    let projMatLoc = shadowGenProgram.uniforms.u_proj
-    let viewMatLoc = shadowGenProgram.uniforms.u_cam
     let projectionMatrix = this.shadowMapCameras[0].projectionMatrix
-    gl.uniformMatrix4fv(projMatLoc, false, flatten(projectionMatrix))
+
+    twgl.setUniforms(programInfo, {
+      shadowClipNear: this.shadowClipNear,
+      shadowClipFar: this.shadowClipFar,
+      lightPosition: lightPosition,
+      u_proj: flatten(projectionMatrix)
+    })
+
+    let setCameraMatrix = programInfo.uniformSetters.u_cam
 
     for (let i = 0; i < this.shadowMapCameras.length; i++) {
 
@@ -499,7 +487,7 @@ class Renderer extends EventDispatcher {
       let targetPosition = add(lightPosition, setup.atVector)
       camera.position.set(lightPosition)
       camera.lookAt(targetPosition)
-      gl.uniformMatrix4fv(viewMatLoc, false, flatten(camera.viewMatrix))
+      setCameraMatrix(flatten(camera.viewMatrix))
 
       let textureTarget = gl[setup.target]
 
@@ -549,7 +537,8 @@ class Renderer extends EventDispatcher {
     }
 
     let gl = this.gl
-    let program = this.program
+    let programInfo = this.programInfos.main
+    let program = programInfo.program
     let uniforms = program.uniforms
 
     // Set up vertex position and inverse world matrix for normal calculation
@@ -609,7 +598,7 @@ class Renderer extends EventDispatcher {
     gl.uniform1f(uniforms.isGrass, object.name === 'rumput')
 
     let geometry = object.geometry
-    geometry.bindBufferRendererToThis(gl, this, program)
+    geometry.bindBufferRendererToThis(gl, this, programInfo)
     gl.uniform1f(uniforms.isRenderingWireframe, geometry.wireframeMode)
 
     if (geometry.wireframeMode) {
@@ -623,7 +612,7 @@ class Renderer extends EventDispatcher {
 
       let geometry = light.directionHelper
       gl.uniform1f(uniforms.isRenderingWireframe, geometry.wireframeMode)
-      geometry.bindBufferRendererToThis(gl, this, program)
+      geometry.bindBufferRendererToThis(gl, this, programInfo)
       gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
 
       if (selected) {
@@ -632,7 +621,7 @@ class Renderer extends EventDispatcher {
         gl.uniformMatrix4fv(uniforms.u_world, false, mat)
   
         geometry = light.areaHelper
-        geometry.bindBufferRendererToThis(gl, this, program)
+        geometry.bindBufferRendererToThis(gl, this, programInfo)
         gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
       }
 
@@ -668,7 +657,8 @@ class Renderer extends EventDispatcher {
     }
 
     let gl = this.gl
-    let program = this.shadowGenProgram
+    let programInfo = this.programInfos.shadowGen
+    let program = programInfo.program
     let uniforms = program.uniforms
 
     gl.uniform1f(uniforms.isTreeLeaf, object.name === 'Daun')
@@ -676,7 +666,7 @@ class Renderer extends EventDispatcher {
     gl.uniformMatrix4fv(uniforms.u_world, false, flatten(object.worldMatrix))
 
     let geometry = object.geometry
-    geometry.bindShadowBufferRendererToThis(gl, this, program)
+    geometry.bindShadowBufferRendererToThis(gl, this, programInfo)
     gl.drawArrays(gl.TRIANGLES, 0, geometry.triangleVerticesCount)
   }
 }
