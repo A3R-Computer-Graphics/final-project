@@ -228,7 +228,7 @@ class Renderer extends EventDispatcher {
     let arrays = {
       a_pos: { numComponents: 3 },
       a_texcoord: { numComponents: 2 },
-      a_norm:   { numComponents: 3 },
+      a_norm: { numComponents: 3 },
     }
 
     this.bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays)
@@ -256,7 +256,7 @@ class Renderer extends EventDispatcher {
 
   // NOTE: Will be deprecated in favor of TWGL's
   initAttributes() {
-    
+
 
     let gl = this.gl
 
@@ -307,8 +307,12 @@ class Renderer extends EventDispatcher {
     ImageTextureMaterial.initMaterialsToRenderer(this)
     Geometry.updateBuffersToRenderer(this)
 
-    gl.useProgram(this.shadowGenProgram)
-    gl.uniform1f(this.shadowGenProgram.uniforms.time, this.time)
+    let programInfo = this.programInfos.shadowGen
+    let program = programInfo.program
+    gl.useProgram(program)
+
+    let setUniform = programInfo.uniformSetters
+    setUniform.time(this.time)
 
     let lights = Light.lightList
 
@@ -318,7 +322,7 @@ class Renderer extends EventDispatcher {
         light.initTexture(gl)
       }
 
-      gl.uniform1f(this.shadowGenProgram.uniforms.isPointLight, light instanceof PointLight)
+      setUniform.isPointLight(light instanceof PointLight)
 
       if (light instanceof PointLight) {
         this.generatePointLightShadowMap(light, app)
@@ -327,7 +331,10 @@ class Renderer extends EventDispatcher {
       }
     }
 
-    gl.useProgram(this.program)
+    programInfo = this.programInfos.main
+    program = programInfo.program
+
+    gl.useProgram(program)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     gl.clearColor(0.2, 0.2, 0.2, 1.0)
 
@@ -335,11 +342,12 @@ class Renderer extends EventDispatcher {
 
       if (light instanceof PointLight) {
 
-        gl.uniform3fv(this.program.uniforms.lightPosition, this.usedLightPosition)
-        gl.uniform1f(this.program.uniforms.pointLightIntensity, light.intensity || 0.0)
+        twgl.setUniforms(programInfo, {
+          lightPosition: this.usedLightPosition,
+          pointLightIntensity: light.intensity || 0.0
+        })
 
         gl.activeTexture(gl.TEXTURE1)
-        gl.uniform1i(this.program.uniforms.pointLightShadowMap, 1)
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, light.shadowMapTexture)
 
       } else if (light instanceof MatrixBasedLight) {
@@ -351,39 +359,44 @@ class Renderer extends EventDispatcher {
 
         if (light instanceof DirectionalLight) {
 
-          gl.uniform3fv(this.program.uniforms.u_reverseLightDirection, light.lightDirection)
-          gl.uniformMatrix4fv(this.program.uniforms.u_textureMatrix_dir, false, textureMatrix)
-
-          gl.activeTexture(gl.TEXTURE2);
-          gl.uniform1i(this.program.uniforms.u_projectedTexture_dir, 2)
+          gl.activeTexture(gl.TEXTURE2)
           gl.bindTexture(gl.TEXTURE_2D, light.shadowMapTexture)
 
-          gl.uniform1f(this.program.uniforms.directionalLightIntensity, light.intensity || 0.0)
+          twgl.setUniforms(programInfo, {
+            u_reverseLightDirection: light.lightDirection,
+            u_textureMatrix_dir: textureMatrix,
+            directionalLightIntensity: light.intensity || 0.0
+          })
 
         } else {
-          gl.uniformMatrix4fv(this.program.uniforms.u_textureMatrix_spot, false, textureMatrix)
-          gl.uniform3fv(this.program.uniforms.lightPosition_spot, light.worldPosition)
 
-          gl.uniform1f(this.program.uniforms.u_innerLimit, Math.cos(degToRad(light._fov / 2 - 10)))
-          gl.uniform1f(this.program.uniforms.u_outerLimit, Math.cos(degToRad(light._fov / 2)))
-          gl.uniform3fv(this.program.uniforms.u_lightDirection, scale(-1, light.lightDirection))
-
-          gl.activeTexture(gl.TEXTURE3);
-          gl.uniform1i(this.program.uniforms.u_projectedTexture_spot, 3)
+          gl.activeTexture(gl.TEXTURE3)
           gl.bindTexture(gl.TEXTURE_2D, light.shadowMapTexture)
 
-          gl.uniform1f(this.program.uniforms.spotlightIntensity, light.intensity || 0.0)
+          twgl.setUniforms(programInfo, {
+            u_textureMatrix_spot: textureMatrix,
+            lightPosition_spot: light.worldPosition,
+
+            u_innerLimit: Math.cos(degToRad(light._fov / 2 - 10)),
+            u_outerLimit: Math.cos(degToRad(light._fov / 2)),
+            u_lightDirection: scale(-1, light.lightDirection),
+
+            spotlightIntensity: light.intensity || 0.0
+          })
+
         }
       }
     }
 
-    gl.uniform1f(this.program.uniforms.isPointLight, light instanceof PointLight)
+    twgl.setUniforms(programInfo, {
+      // Set near & far
+      
+      shadowClipNear: this.shadowClipNear,
+      shadowClipFar: this.shadowClipFar,
 
-    // Set near & far
+      time: this.time
+    })
 
-    gl.uniform1f(this.program.uniforms.shadowClipNear, this.shadowClipNear)
-    gl.uniform1f(this.program.uniforms.shadowClipFar, this.shadowClipFar)
-    gl.uniform1f(this.program.uniforms.time, this.time)
 
     camera.updateCameraToRenderer(this.programInfos.main)
     this.renderObjectTree(scene, camera, app)
@@ -612,7 +625,7 @@ class Renderer extends EventDispatcher {
       twgl.setUniforms(programInfo, {
         isRenderingWireframe: geometry.wireframeMode
       })
-      
+
       geometry.bindBufferRendererToThis(gl, this, programInfo)
       gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
 
@@ -622,7 +635,7 @@ class Renderer extends EventDispatcher {
         twgl.setUniforms(programInfo, {
           u_world: mat
         })
-  
+
         geometry = light.areaHelper
         geometry.bindBufferRendererToThis(gl, this, programInfo)
         gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
