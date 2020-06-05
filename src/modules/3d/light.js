@@ -29,6 +29,8 @@ class Light extends Object3D {
     this.framebuffer = null
     this.renderbuffer = null
 
+    this.intensity = 1.0
+
     Light.lightList.push(this)
   }
 
@@ -36,18 +38,6 @@ class Light extends Object3D {
     return this.shadowMapTexture !== null
   }
 
-
-  updateLightToRenderer(renderer) {
-    let gl = renderer.gl
-    let lightPositionLoc = renderer.program.uniforms.lightPosition
-
-    // TODO: Right now it uses original light position
-    // but the light can be parented to any object so
-    // matrix transformation should be taken into account
-
-    // this.updateWorldMatrix()
-    gl.uniform3fv(lightPositionLoc, this.worldPosition)
-  }
 }
 
 
@@ -113,7 +103,7 @@ class PointLight extends Light {
 }
 
 
-class DirectionalLight extends Light {
+class MatrixBasedLight extends Light {
   constructor(textureSize) {
     super(textureSize)
 
@@ -133,7 +123,6 @@ class DirectionalLight extends Light {
     this._projHeight = 30.0
     this._projWidth = 30.0
 
-    this._fov = 90.0
     this._near = 0.5
     this._far = 40.0
 
@@ -149,25 +138,12 @@ class DirectionalLight extends Light {
     return this._far
   }
 
-  get fov() {
-    return this._fov
-  }
-
   get projWidth() {
     return this._projWidth
   }
 
   get projHeight() {
     return this._projHeight
-  }
-
-
-
-  set fov(val) {
-    if (val !== this._fov) {
-      this.changed = true
-    }
-    this._fov = val
   }
 
   set near(val) {
@@ -262,14 +238,8 @@ class DirectionalLight extends Light {
 
   }
 
-  bindGlToThisTexture(gl) {
-    return
-  }
 
-
-  recomputeMapMatrix() {
-    this.updateWorldMatrix()
-
+  getWorldSourceAndTargetLightPosition() {
     // Join target and source coordinates and apply transformation to them
     let localSrcPos = [0.0, 0.0, 0.0, 1.0]
     let localTargetPos = [...localSrcPos]
@@ -284,79 +254,131 @@ class DirectionalLight extends Light {
     let srcPos = [c[0], c[1], c[2]]
     let targetPos = [c[8], c[9], c[10]]
 
-    let changed = false || this.changed
+    return [srcPos, targetPos]
+  }
 
-    if (!this.lastCoord) {
-      this.lastCoord = srcPos
-      this.lastTarget = targetPos
+
+  updateMatrixFromSourceAndTargetPosition(srcPos, targetPos) {
+    return
+  }
+
+
+  postProcessSrcAndTargetPos(srcPos, targetPos) {
+    return [srcPos, targetPos]
+  }
+
+
+  updateChangedStatusFromNewPositions(srcPos, targetPos) {
+    if (length(subtract(this.lastSrcPos, srcPos)) > 0.001) {
+      this.lastSrcPos = srcPos
+      this.changed = true
+    }
+    if (length(subtract(this.lastTargetPos, targetPos)) > 0.001) {
+      this.lastTargetPos = targetPos
+      this.changed = true
+    }
+  }
+
+
+  computeProjectionMatrix() {
+  }
+
+
+  recomputeMapMatrix() {
+    this.updateWorldMatrix()
+    let [srcPos, targetPos] = this.getWorldSourceAndTargetLightPosition();
+    [srcPos, targetPos] = this.postProcessSrcAndTargetPos(srcPos, targetPos)
+
+    let changed = false
+
+    if (!this.lastSrcPos) {
+      this.lastSrcPos = srcPos
+      this.lastTargetPos = targetPos
       changed = true
     } else {
-
-      // uncomment this if you care only about  the direction
-      let focusToDirectionOnly = true
-
-      if (focusToDirectionOnly) {
-        let diff = normalize(subtract(srcPos, targetPos))
-        targetPos = scale(-1, diff)
-        srcPos = scale(1, diff)
-
-        this.lightDirection = diff
-      }
-
-      if (length(subtract(this.lastCoord, srcPos)) > 0.001) {
-        this.lastCoord = srcPos
-        changed = true
-      }
-      if (length(subtract(this.lastTarget, targetPos)) > 0.001) {
-        this.lastTarget = targetPos
-        changed = true
-      }
-
-      if (changed) {
-        // console.log(srcPos, targetPos)
-      }
+      this.updateChangedStatusFromNewPositions(srcPos, targetPos)
     }
+
+    changed |= this.changed
 
     if (changed) {
 
-      let multiplier = this.multiplier || 10
+      console.log('changed')
 
       let up = [0, 0, 1]
       let pointDirection = subtract(srcPos, targetPos)
       let angleBetween = radToDeg(Math.acos(dot(up, pointDirection) / length(pointDirection) / length(up)))
-      
+
       if (angleBetween > 179 || angleBetween < -179 || angleBetween < 1 && angleBetween > -1) {
         up = [0, 1, 0]
       }
 
       this.lightWorldMatrix = flatten(lookAt(srcPos, targetPos, up))
-
-      let width = this._projWidth / 2
-      let height = this._projHeight / 2
-      let [left, right, bottom, top] = [-width, width, -height, height]
-
-      // uncomment this if you want the near and far to be scaled symettrically
-      let scaleSymettrically = true
-      
-      let [near, far] = [this._near, this._far]
-
-      if (scaleSymettrically) {
-        let dist = Math.abs(far - near) / 2
-        near = -dist
-        far = dist
-      }
-
-      let isPerspective = false
-
-      if (isPerspective) {
-        let aspect = width / height
-        this.lightProjectionMatrix = flatten(perspective(this._fov, aspect, near, far))
-      } else {
-      this.lightProjectionMatrix = flatten(ortho(left, right, bottom, top, near, far))
-      }
-
+      this.computeProjectionMatrix()
       this.changed = false
     }
+  }
+}
 
+
+class DirectionalLight extends MatrixBasedLight {
+
+  postProcessSrcAndTargetPos(srcPos, targetPos) {
+    let diff = normalize(subtract(srcPos, targetPos))
+    targetPos = scale(-1, diff)
+    srcPos = scale(1, diff)
+
+    this.lightDirection = diff
+    return [srcPos, targetPos]
+  }
+
+
+  computeProjectionMatrix() {
+    let width = this._projWidth / 2
+    let height = this._projHeight / 2
+    let [left, right, bottom, top] = [-width, width, -height, height]
+
+    // Make near & far symmetric each other
+
+    let dist = Math.abs(this._far - this._near) / 2
+    let near = -dist
+    let far = dist
+    
+    this.lightProjectionMatrix = flatten(ortho(left, right, bottom, top, near, far))
+  }
+}
+
+
+class SpotLight extends MatrixBasedLight {
+  constructor(textureSize) {
+    super(textureSize)
+    this._fov = 40.0
+    this.shadowMapIndex = 3
+  }
+
+  get fov() {
+    return this._fov
+  }
+
+  set fov(val) {
+    if (val !== this._fov) {
+      this.changed = true
+    }
+    this._fov = val
+  }
+
+  postProcessSrcAndTargetPos(srcPos, targetPos) {
+    let diff = normalize(subtract(srcPos, targetPos))
+    this.lightDirection = diff
+    return [srcPos, targetPos]
+  }
+
+  computeProjectionMatrix() {
+
+    let width = this._projWidth / 2
+    let height = this._projHeight / 2
+    let aspect = width / height
+
+    this.lightProjectionMatrix = flatten(perspective(this._fov, aspect, this._near, this._far))
   }
 }

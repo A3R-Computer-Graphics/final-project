@@ -386,26 +386,34 @@ function createCubeLight() {
   window.sun = new DirectionalLight()
   sun.name = app.getNextUniqueName('sun')
   sun.position.set(-1.4, -1.65, 1.45)
-  sun.scale.set(0.2, 0.2, 0.2)
+  sun.scale.set(0.6)
 
-  // Parent this light to Suzanne object
-  app.objects['Suzanne'].add(sun)
-  app.objects['Suzanne'].rotation.setX(60)
+  sun.intensity = 0.3
 
+  // Make it tilt
+  sun.rotation.setX(50.0)
+  
+  scene.add(sun)
+  app.addObject(sun)
+  
   
   window.lamp = new PointLight()
   lamp.name = app.getNextUniqueName('lamp')
-  lamp.position.set(0.0, -1.0, 3.0)
+  lamp.position.set(1.0, -1.0, 2.0)
   lamp.scale.set(0.2, 0.2, 0.2)
 
-  // Parent this light to Cube object
-  app.objects['Cube'].add(lamp)
-
-  // Add object to app's object list
-  app.addObject(sun)
+  scene.add(lamp)
   app.addObject(lamp)
+  
+  window.mushroomLight = new SpotLight()
+  mushroomLight.name = app.getNextUniqueName('mushroom-light')
+  mushroomLight.scale.set(0.2, 0.2, 0.2);
 
-  light = window.lamp
+  // If there's a cone object, attach this light to it. Otherwise, just use the scene.
+  (app.objects['Cone'] || scene).add(mushroomLight)
+  app.addObject(mushroomLight)
+
+  light = window.sun
 }
 
 

@@ -10,6 +10,7 @@ varying vec2 v_texcoord;
 uniform mat4 u_world, u_cam, u_proj, u_normCam;
 
 uniform vec3 lightPosition;
+uniform vec3 u_viewWorldPosition;
 
 uniform bool isTreeLeaf;
 uniform bool isGrass;
@@ -17,8 +18,14 @@ uniform float time;
 
 varying vec3 v_camNorm, v_worldNorm, v_camPos, v_camLightPos, v_pos;
 
-uniform mat4 u_textureMatrix;
-varying vec4 v_projectedTexcoord;
+uniform mat4 u_textureMatrix_dir;
+varying vec4 v_projectedTexcoord_dir;
+
+// For spotlight;
+varying vec3 v_surfaceToLight, v_surfaceToView;
+uniform mat4 u_textureMatrix_spot;
+uniform vec3 lightPosition_spot;
+varying vec4 v_projectedTexcoord_spot;
 
 
 
@@ -59,7 +66,11 @@ void main()
     v_camLightPos = (u_cam * vec4(lightPosition, 1.0)).xyz;
 
     v_texcoord = a_texcoord;
-    v_projectedTexcoord = u_textureMatrix * worldPos;
+    v_projectedTexcoord_dir = u_textureMatrix_dir * worldPos;
+    v_projectedTexcoord_spot = u_textureMatrix_spot * worldPos;
+    
+    v_surfaceToLight = lightPosition_spot - v_pos;
+    v_surfaceToView = u_viewWorldPosition - v_pos;
     
     gl_Position = u_proj * v_camPos4;
 }

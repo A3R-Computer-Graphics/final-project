@@ -291,15 +291,24 @@ class Geometry {
 
     let geomUvs = this.uvBufferData
     let uvCoordIndex = 0
+    let maxUvLen = uvCoordinates.length
 
     indices.forEach(indice => {
       let vertexCount = indice.length
 
       for (let i = 1; i < vertexCount - 1; i++) {
         let cId = uvCoordIndex + i
-        geomUvs[startIndex++] = uvCoordinates[uvCoordIndex]
-        geomUvs[startIndex++] = uvCoordinates[cId]
-        geomUvs[startIndex++] = uvCoordinates[cId + 1]
+        
+        // Failsafe: if the UV coords cannot be defined, use default values
+        if (uvCoordIndex >= maxUvLen) {
+          geomUvs[startIndex++] = [0.0, 0.0]
+          geomUvs[startIndex++] = [0.0, 0.1]
+          geomUvs[startIndex++] = [0.1, 0.1]
+        } else {
+          geomUvs[startIndex++] = uvCoordinates[uvCoordIndex]
+          geomUvs[startIndex++] = uvCoordinates[cId]
+          geomUvs[startIndex++] = uvCoordinates[cId + 1]
+        }
       }
 
       uvCoordIndex += vertexCount

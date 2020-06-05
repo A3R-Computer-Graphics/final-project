@@ -74,19 +74,34 @@ class Renderer extends EventDispatcher {
       'shadowClipNear',
       'shadowClipFar',
 
-      // For directional ligt
+      // For directional light
       'u_reverseLightDirection',
+
+      // For spotlight
+      'lightPosition_spot',
+      'u_viewWorldPos',
+      'u_innerLimit',
+      'u_outerLimit',
+      'u_viewWorldPosition',
+      'u_lightDirection',
 
       /* These are not necessary, just to make leaf and trees wave */
       'time',
       'isTreeLeaf',
       'isGrass',
       'isRenderingWireframe',
-      
+
       'isPointLight',
-      'u_textureMatrix',
-      'v_projectedTexcoord',
-      'u_projectedTexture',
+      'u_textureMatrix_dir',
+      'u_textureMatrix_spot',
+      'v_projectedTexcoord_dir',
+      'v_projectedTexcoord_spot',
+      'u_projectedTexture_dir',
+      'u_projectedTexture_spot',
+
+      'pointLightIntensity',
+      'directionalLightIntensity',
+      'spotlightIntensity'
     ]
 
     this.programAttribList = [
@@ -103,7 +118,7 @@ class Renderer extends EventDispatcher {
       'lightPosition',
       'shadowClipNear',
       'shadowClipFar',
-      
+
       'isPointLight',
 
       /* These are not necessary, just to make leaf and trees wave */
@@ -151,7 +166,8 @@ class Renderer extends EventDispatcher {
 
     gl.uniform1i(this.program.uniforms.u_texture, 0)
     gl.uniform1i(this.program.uniforms.pointLightShadowMap, 1)
-    gl.uniform1i(this.program.uniforms.u_projectedTexture, 2)
+    gl.uniform1i(this.program.uniforms.u_projectedTexture_dir, 2)
+    gl.uniform1i(this.program.uniforms.u_projectedTexture_spot, 3)
 
     this.initShadowMapCameras()
 
@@ -299,32 +315,53 @@ class Renderer extends EventDispatcher {
     gl.useProgram(this.program)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     gl.clearColor(0.2, 0.2, 0.2, 1.0)
-    
-    for (const light of lights) {  
+
+    for (const light of lights) {
+
       if (light instanceof PointLight) {
-        light.updateLightToRenderer(this)
+
         gl.uniform3fv(this.program.uniforms.lightPosition, this.usedLightPosition)
-    
+        gl.uniform1f(this.program.uniforms.pointLightIntensity, light.intensity || 0.0)
+
         gl.activeTexture(gl.TEXTURE1)
         gl.uniform1i(this.program.uniforms.pointLightShadowMap, 1)
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, light.shadowMapTexture)
-        
-      } else if (light instanceof DirectionalLight) {
-        
+
+      } else if (light instanceof MatrixBasedLight) {
+
         let textureMatrix = m4.translation(0.5, 0.5, 0.5)
         textureMatrix = m4.scale(textureMatrix, 0.5, 0.5, 0.5)
         textureMatrix = m4.multiply(textureMatrix, light.lightProjectionMatrix)
         textureMatrix = m4.multiply(textureMatrix, light.lightWorldMatrix)
-        
-        gl.uniformMatrix4fv(this.program.uniforms.u_textureMatrix, false, textureMatrix)
-        gl.uniform3fv(this.program.uniforms.u_reverseLightDirection, light.lightDirection)
-  
-        gl.activeTexture(gl.TEXTURE2);
-        gl.uniform1i(this.program.uniforms.u_projectedTexture, 2)
-        gl.bindTexture(gl.TEXTURE_2D, light.shadowMapTexture)        
+
+        if (light instanceof DirectionalLight) {
+
+          gl.uniform3fv(this.program.uniforms.u_reverseLightDirection, light.lightDirection)
+          gl.uniformMatrix4fv(this.program.uniforms.u_textureMatrix_dir, false, textureMatrix)
+
+          gl.activeTexture(gl.TEXTURE2);
+          gl.uniform1i(this.program.uniforms.u_projectedTexture_dir, 2)
+          gl.bindTexture(gl.TEXTURE_2D, light.shadowMapTexture)
+
+          gl.uniform1f(this.program.uniforms.directionalLightIntensity, light.intensity || 0.0)
+
+        } else {
+          gl.uniformMatrix4fv(this.program.uniforms.u_textureMatrix_spot, false, textureMatrix)
+          gl.uniform3fv(this.program.uniforms.lightPosition_spot, light.worldPosition)
+
+          gl.uniform1f(this.program.uniforms.u_innerLimit, Math.cos(degToRad(light._fov / 2 - 10)))
+          gl.uniform1f(this.program.uniforms.u_outerLimit, Math.cos(degToRad(light._fov / 2)))
+          gl.uniform3fv(this.program.uniforms.u_lightDirection, scale(-1, light.lightDirection))
+
+          gl.activeTexture(gl.TEXTURE3);
+          gl.uniform1i(this.program.uniforms.u_projectedTexture_spot, 3)
+          gl.bindTexture(gl.TEXTURE_2D, light.shadowMapTexture)
+
+          gl.uniform1f(this.program.uniforms.spotlightIntensity, light.intensity || 0.0)
+        }
       }
     }
-    
+
     gl.uniform1f(this.program.uniforms.isPointLight, light instanceof PointLight)
 
     // Set near & far
@@ -384,12 +421,12 @@ class Renderer extends EventDispatcher {
     gl.enableVertexAttribArray(attributes.a_pos)
 
     light.recomputeMapMatrix()
-    
+
     gl.uniformMatrix4fv(shadowGenProgram.uniforms.u_proj, false, light.lightProjectionMatrix)
     gl.uniformMatrix4fv(shadowGenProgram.uniforms.u_cam, false, light.lightWorldMatrix)
 
     this.renderShadowObjectTree(scene, app)
-    
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   }
 
@@ -405,13 +442,13 @@ class Renderer extends EventDispatcher {
     gl.enableVertexAttribArray(attributes.a_pos)
 
     // Prepare rendering to framebuffer, renderbuffer and shadow cubemap texture
-    
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, light.framebuffer)
     gl.bindRenderbuffer(gl.RENDERBUFFER, light.renderbuffer)
 
     // Resize viewport
     gl.viewport(0, 0, light.shadowMapTextureSize, light.shadowMapTextureSize)
-    
+
     light.updateWorldMatrix()
     this.usedLightPosition = light.worldPosition
     light.bindGlToThisTexture(gl)
@@ -551,7 +588,7 @@ class Renderer extends EventDispatcher {
 
 
     // draw helpers, right now using isSelected shader as quick material pick
-    if (object instanceof DirectionalLight) {
+    if (object instanceof MatrixBasedLight) {
       let light = object
       gl.uniform1f(uniforms.isSelected, true)
 
@@ -571,7 +608,7 @@ class Renderer extends EventDispatcher {
       gl.drawArrays(gl.LINES, start, count)
 
     }
-    
+
   }
 
 
@@ -604,7 +641,7 @@ class Renderer extends EventDispatcher {
     let gl = this.gl
     let program = this.shadowGenProgram
     let uniforms = program.uniforms
-    
+
     gl.uniform1f(uniforms.isTreeLeaf, object.name === 'Daun')
     gl.uniform1f(uniforms.isGrass, object.name === 'rumput')
     gl.uniformMatrix4fv(uniforms.u_world, false, flatten(object.worldMatrix))
