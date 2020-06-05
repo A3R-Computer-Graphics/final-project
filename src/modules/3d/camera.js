@@ -29,14 +29,11 @@ class CameraPrototype extends Object3D {
     this.updateProjectionMatrix()
 
     let gl = renderer.gl
+    let uniforms = program.uniforms
 
-    // NOTE: Assumed using renderer.programs
-
-    let projectionLoc = program.uniforms.projectionMatrix
-    gl.uniformMatrix4fv(projectionLoc, false, flatten(this.projectionMatrix))
-
-    let viewLoc = program.uniforms.viewMatrix
-    gl.uniformMatrix4fv(viewLoc, false, flatten(this.viewMatrix))
+    gl.uniformMatrix4fv(uniforms.u_proj, false, this.projectionMatrix)
+    gl.uniformMatrix4fv(uniforms.u_cam, false, this.viewMatrix)
+    gl.uniform3fv(uniforms.u_viewWorldPosition, m4.inverse(this.viewMatrix).slice(12, 15))
 
     this.cameraMatrixNeedsUpdate = false
   }
@@ -53,7 +50,7 @@ class PerspectiveCamera extends CameraPrototype {
   }
 
   updateProjectionMatrix() {
-    this.projectionMatrix = perspective(this.fovy, this.aspect, this.near, this.far)
+    this.projectionMatrix = flatten(perspective(this.fovy, this.aspect, this.near, this.far))
   }
 
   // Getter and setter for near

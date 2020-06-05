@@ -8,13 +8,13 @@ let renderer
 let app
 let animationManager
 
-let cameraRadius = 8
+let cameraRadius = 13
 let theta = 0
 let phi = 0
-let cameraPosIndex = 17
+let cameraPosIndex = 22
 let coordinateDirectionOrder = ['UP', 'LEFT', 'DOWN', 'RIGHT']
 
-let at = vec3(0.0, 0.0, 0.0)
+let at = vec3(0.6, -1.0, 2.5)
 
 // rendering engine variables variables
 
@@ -375,20 +375,40 @@ function matchSlidersToAnimation() {
 }
 
 
-
 let light
 
 function createCubeLight() {
-  light = new PointLight()
-  light.name = app.getNextUniqueName('cube-lighting')
-  light.position.set(-1.4, -1.65, 1.45)
-  light.scale.set(0.2, 0.2, 0.2)
+  window.sun = new DirectionalLight()
+  sun.name = app.getNextUniqueName('sun')
+  sun.position.set(-1.4, -1.65, 1.45)
+  sun.scale.set(0.6)
 
-  // Parent this light to Suzanne object
-  app.objects['Suzanne'].add(light)
+  sun.intensity = 0.3
 
-  // Add object to app's object list
-  app.addObject(light)
+  // Make it tilt
+  sun.rotation.setX(50.0)
+  
+  scene.add(sun)
+  app.addObject(sun)
+  
+  
+  window.lamp = new PointLight()
+  lamp.name = app.getNextUniqueName('lamp')
+  lamp.position.set(1.0, -1.0, 2.0)
+  lamp.scale.set(0.2, 0.2, 0.2)
+
+  scene.add(lamp)
+  app.addObject(lamp)
+  
+  window.mushroomLight = new SpotLight()
+  mushroomLight.name = app.getNextUniqueName('mushroom-light')
+  mushroomLight.scale.set(0.2, 0.2, 0.2);
+
+  // If there's a cone object, attach this light to it. Otherwise, just use the scene.
+  (app.objects['Cone'] || scene).add(mushroomLight)
+  app.addObject(mushroomLight)
+
+  light = window.sun
 }
 
 
@@ -610,6 +630,6 @@ async function render(currentFrame) {
   
   // Switch between render every 1 seconds (for debugging purposes)
   // and continuously
-  // setTimeout(() => window.requestAnimationFrame(render), 1000)
+  // setTimeout(() => window.requestAnimationFrame(render), 100)
   window.requestAnimationFrame(render)
 }

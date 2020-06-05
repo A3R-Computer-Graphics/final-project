@@ -13,7 +13,11 @@ class Property3D {
 
   set(newValue) {
     if (!Array.isArray(newValue)) {
-      newValue = [arguments[0], arguments[1], arguments[2]]
+      if (arguments.length < 2) {
+        newValue = [newValue, newValue, newValue]
+      } else {
+        newValue = [arguments[0], arguments[1], arguments[2]]
+      }
     }
     this.property[0] = newValue[0]
     this.property[1] = newValue[1]

@@ -7,14 +7,21 @@ class Geometry {
 
   static bufferDataNeedsUpdate = true
 
-  constructor({ vertices, normals, indices, uvCoordinates }, moveToDataImmediately = true) {
-    this.bufferStartIndex = -1
+  constructor({ vertices, normals, indices, uvCoordinates },
+    moveToDataImmediately = true, wireframeMode = false, writeNormals = true, writeUvs = true) {
+    this.vertexStartIndex = -1
+    this.normalStartIndex = -1
+    this.uvStartIndex = -1
     this.triangleVerticesCount = 0
 
     this.vertices = vertices
     this.normals = normals
     this.indices = indices
     this.uvCoordinates = uvCoordinates
+
+    this.wireframeMode = wireframeMode !== undefined && wireframeMode !== null ? wireframeMode : false
+    this.writeNormals = writeNormals !== undefined
+    this.writeUvs = writeUvs
 
     if (moveToDataImmediately) {
       this.moveToBufferData()
@@ -41,8 +48,8 @@ class Geometry {
     gl.bindBuffer(gl.ARRAY_BUFFER, renderer.verticesBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.verticesBufferData), gl.STATIC_DRAW)
 
-    gl.vertexAttribPointer(attributes.vPosition, 4, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.vPosition)
+    gl.vertexAttribPointer(attributes.a_pos, 3, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(attributes.a_pos)
 
     // Update UV coordinate buffer
 
@@ -57,8 +64,8 @@ class Geometry {
     gl.bindBuffer(gl.ARRAY_BUFFER, renderer.normalsBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normalsBufferData), gl.STATIC_DRAW)
 
-    gl.vertexAttribPointer(attributes.vNormal, 4, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(attributes.vNormal)
+    gl.vertexAttribPointer(attributes.a_norm, 3, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(attributes.a_norm)
 
     Geometry.bufferDataNeedsUpdate = false
   }
@@ -69,20 +76,21 @@ class Geometry {
    * @param {*} autoComputeUvCoordinate 
    */
 
-  moveToBufferData(autoComputeNormals, autoComputeUvCoordinate) {
+  moveToBufferData() {
     let vertices = this.vertices,
       normals = this.normals,
       indices = this.indices,
       uvCoordinates = this.uvCoordinates
 
-    let startIndex = Geometry.verticesBufferData.length
-    this.bufferStartIndex = startIndex
+    this.vertexStartIndex = Geometry.verticesBufferData.length
+    this.normalStartIndex = Geometry.normalsBufferData.length
+    this.uvStartIndex = Geometry.uvBufferData.length
 
-    Geometry.populateMeshData({ vertices, normals, indices, uvCoordinates },
-      startIndex, autoComputeNormals, autoComputeUvCoordinate)
+    Geometry._populateMeshData({ vertices, normals, indices, uvCoordinates },
+      this.wireframeMode, this.writeNormals, this.writeUvs)
 
     let endIndex = Geometry.verticesBufferData.length
-    this.triangleVerticesCount = endIndex - startIndex
+    this.triangleVerticesCount = endIndex - this.vertexStartIndex
 
     this.vertices = undefined
     this.normals = undefined
@@ -93,7 +101,7 @@ class Geometry {
   }
 
   get movedToBufferData() {
-    return this.bufferStartIndex >= 0
+    return this.vertexStartIndex >= 0
   }
 
   /**
@@ -111,54 +119,55 @@ class Geometry {
    * compute UV coordinates or use uniform dummy value instead.
    */
 
-  static populateMeshData(meshData, startIndex, autoComputeNormals, autoComputeUvCoordinate) {
-    if (startIndex === undefined) {
-      startIndex = Geometry.verticesBufferData.length
-    }
-
-    if (autoComputeNormals === undefined) {
-      autoComputeNormals = true
-    }
-    if (autoComputeUvCoordinate === undefined) {
-      autoComputeUvCoordinate = true
-    }
-
+  static _populateMeshData(meshData, wireframeMode, writeNormals, writeUvs) {
     const { vertices, indices, normals, uvCoordinates } = meshData
-
-    let facesCount = indices.length
-    let trianglesCount = indices.reduce((p, c) => p + c.length, 0) - facesCount * 2
-
-    let geomVerts = this.verticesBufferData
-    let geomNorms = this.normalsBufferData
-    let geomUvs = this.uvBufferData
-
-    let finalDataCount = startIndex + trianglesCount
-
-    // Allocate empty space
-
-    geomVerts.length = finalDataCount
-    geomNorms.length = finalDataCount
-    geomUvs.length = finalDataCount
-
-    this.populateVerticesData(vertices, indices, startIndex)
-
     let normalsAvailable = !!normals
     let uvCoordinatesAvailable = !!uvCoordinates
 
-    if (normalsAvailable) {
-      this.populateNormalsData(normals, indices, startIndex)
-    } else if (autoComputeNormals) {
-      this.computeAndPopulateNormalsData(vertices, indices, startIndex)
+    let facesCount = indices.length
+    let numVerts = indices.reduce((p, c) => p + c.length, 0)
+    let numVertexInTris = numVerts - facesCount * 2
+    let numVertexInEdge = numVerts * 2
+
+    let vertexCount = wireframeMode ? numVertexInEdge : numVertexInTris
+
+    writeNormals &= !wireframeMode
+    writeUvs &= !wireframeMode
+
+    // Write vertex data
+
+    let geomVerts = this.verticesBufferData
+    let startIndex = geomVerts.length
+    geomVerts.length += vertexCount
+
+    if (wireframeMode) {
+      this.populateVerticesDataInWireframeMode(vertices, indices, startIndex)
     } else {
-      this.populateNormalsDataWithDummy(indices, startIndex)
+      this.populateVerticesData(vertices, indices, startIndex)
     }
 
-    if (uvCoordinatesAvailable) {
-      this.populateUvsData(uvCoordinates, indices, startIndex)
-    } else if (autoComputeUvCoordinate) {
-      this.computeAndPopulateUvsData(indices, startIndex)
-    } else {
-      this.populateUvsDataWithDummy(indices, startIndex)
+    if (writeNormals) {
+      let geomNorms = this.normalsBufferData
+      startIndex = geomNorms.length
+      geomNorms.length += vertexCount
+
+      if (normalsAvailable) {
+        this.populateNormalsData(normals, indices, startIndex)
+      } else {
+        this.computeAndPopulateNormalsData(vertices, indices, startIndex)
+      }
+    }
+
+    if (writeUvs) {
+      let geomUvs = this.uvBufferData
+      startIndex = geomUvs.length
+      geomUvs.length += vertexCount
+
+      if (uvCoordinatesAvailable) {
+        this.populateUvsData(uvCoordinates, indices, startIndex)
+      } else {
+        this.computeAndPopulateUvsData(indices, startIndex)
+      }
     }
   }
 
@@ -178,24 +187,51 @@ class Geometry {
 
       let vertexCount = indice.length
 
-      // Add fourth component
+      // Convert indices into real vertex coordinate
 
-      let initVertices = new Array(vertexCount)
-
+      let mappedVertices = new Array(vertexCount)
       indice.forEach((vertexIndex, i) => {
-        let vertex = vertices[vertexIndex]
-        initVertices[i] = [vertex[0], vertex[1], vertex[2], 1.0]
+        mappedVertices[i] = vertices[vertexIndex]
       })
 
       // Populate vertices location data in triangle fan style
 
       for (let i = 1; i < vertexCount - 1; i++) {
-        geomVerts[startIndex++] = initVertices[0]
-        geomVerts[startIndex++] = initVertices[i]
-        geomVerts[startIndex++] = initVertices[i + 1]
+        geomVerts[startIndex++] = mappedVertices[0]
+        geomVerts[startIndex++] = mappedVertices[i]
+        geomVerts[startIndex++] = mappedVertices[i + 1]
       }
     })
   }
+
+
+  static populateVerticesDataInWireframeMode(vertices, indices, startIndex) {
+    let geomVerts = this.verticesBufferData
+
+    indices.forEach(indice => {
+
+      let vertexCount = indice.length
+
+      // Convert indices into real vertex coordinate
+
+      let mappedVertices = new Array(vertexCount)
+      indice.forEach((vertexIndex, i) => {
+        mappedVertices[i] = vertices[vertexIndex]
+      })
+
+      // write first edges
+      for (let i = 0; i < vertexCount - 1; i++) {
+        geomVerts[startIndex++] = mappedVertices[i]
+        geomVerts[startIndex++] = mappedVertices[i + 1]
+      }
+
+      // write last edges
+      geomVerts[startIndex++] = mappedVertices[vertexCount - 1]
+      geomVerts[startIndex++] = mappedVertices[0]
+    })
+  }
+
+
 
   /**
    * 
@@ -241,7 +277,7 @@ class Geometry {
 
       let t1 = subtract(b, a)
       let t2 = subtract(c, b)
-      let faceNormal = vec4(cross(t1, t2))
+      let faceNormal = vec3(cross(t1, t2))
 
       let vertexCount = indice.length
       for (let i = 1; i < vertexCount - 1; i++) {
@@ -253,28 +289,6 @@ class Geometry {
 
   }
 
-  /**
-   * Populate normals data (just to fill up the normals buffer) using uniform values
-   * 
-   * @param {*} indices 
-   * @param {*} startIndex 
-   * @param {*} dummyValue 
-   */
-
-  static populateNormalsDataWithDummy(indices, startIndex, dummyValue = [0, 1, 0]) {
-
-    let geomNorms = this.normalsBufferData
-
-    indices.forEach(indice => {
-      let vertexCount = indice.length
-      for (let i = 1; i < vertexCount - 1; i++) {
-        geomNorms[startIndex++] = dummyValue
-        geomNorms[startIndex++] = dummyValue
-        geomNorms[startIndex++] = dummyValue
-      }
-    })
-
-  }
 
   /**
    * Populate UV coordinates data in a triangle-fan style.
@@ -291,15 +305,24 @@ class Geometry {
 
     let geomUvs = this.uvBufferData
     let uvCoordIndex = 0
+    let maxUvLen = uvCoordinates.length
 
     indices.forEach(indice => {
       let vertexCount = indice.length
 
       for (let i = 1; i < vertexCount - 1; i++) {
         let cId = uvCoordIndex + i
-        geomUvs[startIndex++] = uvCoordinates[uvCoordIndex]
-        geomUvs[startIndex++] = uvCoordinates[cId]
-        geomUvs[startIndex++] = uvCoordinates[cId + 1]
+
+        // Failsafe: if the UV coords cannot be defined, use default values
+        if (uvCoordIndex >= maxUvLen) {
+          geomUvs[startIndex++] = [0.0, 0.0]
+          geomUvs[startIndex++] = [0.0, 0.1]
+          geomUvs[startIndex++] = [0.1, 0.1]
+        } else {
+          geomUvs[startIndex++] = uvCoordinates[uvCoordIndex]
+          geomUvs[startIndex++] = uvCoordinates[cId]
+          geomUvs[startIndex++] = uvCoordinates[cId + 1]
+        }
       }
 
       uvCoordIndex += vertexCount
@@ -368,24 +391,49 @@ class Geometry {
 
   }
 
-  /**
-   * Populate UV data (just to fill up the normals buffer) using uniform values
-   * @param {*} indices 
-   * @param {*} startIndex 
-   */
 
-  static populateUvsDataWithDummy(indices, startIndex, dummyValue = [0, 1]) {
+  bindBufferRendererToThis(gl, renderer, program) {
 
-    let geomUvs = this.uvBufferData
+    const ATTRIB_VERTEX_SIZE = 3
+    const ATTRIB_TEXCOORD_SIZE = 2
+    const ATTRIB_NORMAL_SIZE = 3
 
-    indices.forEach(indice => {
-      let vertexCount = indice.length
-      for (let i = 1; i < vertexCount - 1; i++) {
-        geomUvs[startIndex++] = dummyValue
-        geomUvs[startIndex++] = dummyValue
-        geomUvs[startIndex++] = dummyValue
-      }
-    })
+    const FLOAT_BYTE_LENGTH = 4
+
+    let startVertex = this.vertexStartIndex * FLOAT_BYTE_LENGTH * ATTRIB_VERTEX_SIZE
+    let startNormal = this.normalStartIndex * FLOAT_BYTE_LENGTH * ATTRIB_NORMAL_SIZE
+    let startUv = this.uvStartIndex * FLOAT_BYTE_LENGTH * ATTRIB_TEXCOORD_SIZE
+
+    let attribs = program.attribs
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, renderer.verticesBuffer)
+    gl.vertexAttribPointer(attribs.a_pos, ATTRIB_VERTEX_SIZE, gl.FLOAT, false, 0, startVertex)
+    gl.enableVertexAttribArray(attribs.a_pos)
+
+    // Update UV coordinate buffer
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, renderer.texcoordsBuffer)
+    gl.vertexAttribPointer(attribs.a_texcoord, ATTRIB_TEXCOORD_SIZE, gl.FLOAT, false, 0, startUv)
+    gl.enableVertexAttribArray(attribs.a_texcoord)
+
+    // Update normals buffer
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, renderer.normalsBuffer)
+    gl.vertexAttribPointer(attribs.a_norm, ATTRIB_NORMAL_SIZE, gl.FLOAT, false, 0, startNormal)
+    gl.enableVertexAttribArray(attribs.a_norm)
+
+  }
+
+  bindShadowBufferRendererToThis(gl, renderer, program) {
+    const ATTRIB_VERTEX_SIZE = 3
+    const FLOAT_BYTE_LENGTH = 4
+
+    let startVertex = this.vertexStartIndex * FLOAT_BYTE_LENGTH * ATTRIB_VERTEX_SIZE
+    let attribs = program.attribs
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, renderer.verticesBuffer)
+    gl.vertexAttribPointer(attribs.a_pos, ATTRIB_VERTEX_SIZE, gl.FLOAT, false, 0, startVertex)
+    gl.enableVertexAttribArray(attribs.a_pos)
 
   }
 }
