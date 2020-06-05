@@ -21,19 +21,20 @@ class CameraPrototype extends Object3D {
     this.projectionMatrix = m4.identity()
   }
 
-  updateCameraToRenderer(renderer, program) {
+  updateCameraToRenderer(renderer, programInfo) {
     if (!this.cameraMatrixNeedsUpdate) {
       return
     }
 
     this.updateProjectionMatrix()
+    
+    let uniforms = {
+      u_proj: this.projectionMatrix,
+      u_cam: this.viewMatrix,
+      u_viewWorldPosition: m4.inverse(this.viewMatrix).slice(12, 15)
+    }
 
-    let gl = renderer.gl
-    let uniforms = program.uniforms
-
-    gl.uniformMatrix4fv(uniforms.u_proj, false, this.projectionMatrix)
-    gl.uniformMatrix4fv(uniforms.u_cam, false, this.viewMatrix)
-    gl.uniform3fv(uniforms.u_viewWorldPosition, m4.inverse(this.viewMatrix).slice(12, 15))
+    twgl.setUniforms(programInfo, uniforms)
 
     this.cameraMatrixNeedsUpdate = false
   }

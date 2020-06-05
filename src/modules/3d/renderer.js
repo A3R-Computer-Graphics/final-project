@@ -130,6 +130,14 @@ class Renderer extends EventDispatcher {
       'a_pos',
     ]
 
+
+    this.programInfos = {
+      main: null,
+      shadowGen: null,
+      objectPick: null,
+    }
+    this.bufferInfo = null
+
     this.SHADER_DIR = '/resources/shaders/'
     this.shaders = [
       'Default.fs.glsl', 'Default.vs.glsl',
@@ -189,10 +197,11 @@ class Renderer extends EventDispatcher {
   async initCanvasAndGL() {
 
     let canvas = this.canvas
-    let gl = WebGLUtils.setupWebGL(canvas)
-    const ext = gl.getExtension('WEBGL_depth_texture');
+    const gl = WebGLUtils.setupWebGL(canvas)
+    const ext = gl.getExtension('WEBGL_depth_texture')
+
     if (!ext) {
-      return alert('need WEBGL_depth_texture');  // eslint-disable-line
+      return alert('need WEBGL_depth_texture')  // eslint-disable-line
     }
     this.gl = gl
 
@@ -205,13 +214,14 @@ class Renderer extends EventDispatcher {
     await this.fetchShadersCodes()
     let shaders = this.shadersCodes
 
-    this.shadowGenProgram = initShadersFromCode(gl,
-      shaders['ShadowGen.vs.glsl'],
-      shaders['ShadowGen.fs.glsl'])
-    this.program = initShadersFromCode(gl,
-      shaders['Default.vs.glsl'],
-      shaders['Default.fs.glsl'])
+    let progInfos = this.programInfos
+    progInfos.main = twgl.createProgramInfo(gl, [shaders['Default.vs.glsl'], shaders['Default.fs.glsl']])
+    progInfos.shadowGen = twgl.createProgramInfo(gl, [shaders['ShadowGen.vs.glsl'], shaders['ShadowGen.fs.glsl']])
 
+    // NOTE: this.program & shadowGenProgram will be deprecated
+
+    this.program = progInfos.main.program
+    this.shadowGenProgram = progInfos.shadowGen.program
     gl.useProgram(this.program)
   }
 
@@ -219,13 +229,25 @@ class Renderer extends EventDispatcher {
   initBuffers() {
     let gl = this.gl
 
-    this.verticesBuffer = gl.createBuffer()
-    this.normalsBuffer = gl.createBuffer()
-    this.texcoordsBuffer = gl.createBuffer()
+    let arrays = {
+      a_pos: { numComponents: 3 },
+      a_texcoord: { numComponents: 2 },
+      a_norm:   { numComponents: 3 },
+    }
+
+    this.bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays)
+
+    // NOTE: All of these buffers will be deprecated
+
+    this.verticesBuffer = this.bufferInfo.attribs.a_pos.buffer
+    this.normalsBuffer = this.bufferInfo.attribs.a_norm.buffer
+    this.texcoordsBuffer = this.bufferInfo.attribs.a_texcoord.buffer
   }
 
 
+  // NOTE: Will be deprecated in favor of TWGL's
   initUniforms() {
+
     let gl = this.gl
 
     let programs = [this.program, this.shadowGenProgram]
@@ -242,7 +264,10 @@ class Renderer extends EventDispatcher {
   }
 
 
+  // NOTE: Will be deprecated in favor of TWGL's
   initAttributes() {
+    
+
     let gl = this.gl
 
     let programs = [this.program, this.shadowGenProgram]
@@ -370,7 +395,7 @@ class Renderer extends EventDispatcher {
     gl.uniform1f(this.program.uniforms.shadowClipFar, this.shadowClipFar)
     gl.uniform1f(this.program.uniforms.time, this.time)
 
-    camera.updateCameraToRenderer(this, this.program)
+    camera.updateCameraToRenderer(this, this.programInfos.main)
     this.renderObjectTree(scene, camera, app)
 
     this.time += 0.04
