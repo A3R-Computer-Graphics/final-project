@@ -199,7 +199,7 @@ void main()
     vec4 fColor;
 
     if (isRenderingWireframe) {
-        fColor = vec4(selectedObjectColor.rgb * 0.1, 0.3);
+        fColor = vec4(selectedObjectColor.rgb * 0.4 + float(isSelected), 0.3);
     } else if (!isSelected) {
         fColor = defaultShader();
     } else {

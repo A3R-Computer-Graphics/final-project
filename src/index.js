@@ -7,13 +7,13 @@ let renderer
 let app
 let animationManager
 
-let cameraRadius = 8
+let cameraRadius = 13
 let theta = 0
 let phi = 0
-let cameraPosIndex = 17
+let cameraPosIndex = 22
 let coordinateDirectionOrder = ['UP', 'LEFT', 'DOWN', 'RIGHT']
 
-let at = vec3(0.0, 0.0, 0.0)
+let at = vec3(0.6, -1.0, 2.5)
 
 // rendering engine variables variables
 
@@ -635,6 +635,6 @@ function render() {
   
   // Switch between render every 1 seconds (for debugging purposes)
   // and continuously
-  // setTimeout(() => window.requestAnimationFrame(render), 1000)
+  // setTimeout(() => window.requestAnimationFrame(render), 100)
   window.requestAnimationFrame(render)
 }

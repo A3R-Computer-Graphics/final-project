@@ -519,7 +519,7 @@ class Renderer extends EventDispatcher {
 
     // Ignore if geometry is none
 
-    if (!object.geometry || object.geometry.bufferStartIndex < 0) {
+    if (!object.geometry || object.geometry.vertexStartIndex < 0) {
       return
     }
 
@@ -580,35 +580,36 @@ class Renderer extends EventDispatcher {
     }
 
     gl.uniform1f(uniforms.textureMix, textureMix)
-
     gl.uniform1f(uniforms.isTreeLeaf, object.name === 'Daun')
     gl.uniform1f(uniforms.isGrass, object.name === 'rumput')
 
     let geometry = object.geometry
-    let start = geometry.bufferStartIndex
-    let count = geometry.triangleVerticesCount
-    gl.drawArrays(gl.TRIANGLES, start, count)
+    geometry.bindBufferRendererToThis(gl, this, program)
+    gl.uniform1f(uniforms.isRenderingWireframe, geometry.wireframeMode)
 
+    if (geometry.wireframeMode) {
+      gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
+    } else {
+      gl.drawArrays(gl.TRIANGLES, 0, geometry.triangleVerticesCount)
+    }
 
-    // draw helpers, right now using isSelected shader as quick material pick
     if (object instanceof MatrixBasedLight) {
       let light = object
-      gl.uniform1f(uniforms.isSelected, true)
 
       let geometry = light.directionHelper
-      let start = geometry.bufferStartIndex
-      let count = 2
-      gl.drawArrays(gl.LINES, start, count)
+      gl.uniform1f(uniforms.isRenderingWireframe, geometry.wireframeMode)
+      geometry.bindBufferRendererToThis(gl, this, program)
+      gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
 
-      // let localHelperMatrix = m4.identity()
-      let mat = m4.multiply(m4.inverse(light.lightWorldMatrix), m4.inverse(light.lightProjectionMatrix))
-      mat = m4.scale(mat, 2, 2, 2)
-      gl.uniformMatrix4fv(uniforms.u_world, false, mat)
-
-      geometry = light.areaHelper
-      start = geometry.bufferStartIndex
-      count = geometry.triangleVerticesCount
-      gl.drawArrays(gl.LINES, start, count)
+      if (selected) {
+        let mat = m4.multiply(m4.inverse(light.lightWorldMatrix), m4.inverse(light.lightProjectionMatrix))
+        mat = m4.scale(mat, 2, 2, 2)
+        gl.uniformMatrix4fv(uniforms.u_world, false, mat)
+  
+        geometry = light.areaHelper
+        geometry.bindBufferRendererToThis(gl, this, program)
+        gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
+      }
 
     }
 
@@ -631,7 +632,7 @@ class Renderer extends EventDispatcher {
 
     // Ignore if the object has no geometry
 
-    if (!object.geometry || object.geometry.bufferStartIndex < 0) {
+    if (!object.geometry || object.geometry.vertexStartIndex < 0) {
       return
     }
 
@@ -650,8 +651,7 @@ class Renderer extends EventDispatcher {
     gl.uniformMatrix4fv(uniforms.u_world, false, flatten(object.worldMatrix))
 
     let geometry = object.geometry
-    let start = geometry.bufferStartIndex
-    let count = geometry.triangleVerticesCount
-    gl.drawArrays(gl.TRIANGLES, start, count)
+    geometry.bindShadowBufferRendererToThis(gl, this, program)
+    gl.drawArrays(gl.TRIANGLES, 0, geometry.triangleVerticesCount)
   }
 }

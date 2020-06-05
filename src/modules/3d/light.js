@@ -6,7 +6,7 @@ class Light extends Object3D {
   // This is done to avoid using different geometery and materials
   // since light doesn't need that.
 
-  static lightCubeGeometry = new PrimitiveCube()
+  static lightCubeGeometry = new Icosphere(true)
   static lightCubeMaterial = new EmissionMaterial()
   static lastShadowMapIndex = 1 // Added 1 because the 0 is used for material texture
 
@@ -111,8 +111,8 @@ class MatrixBasedLight extends Light {
 
     let LINE_LENGTH = 40
 
-    this.areaHelper = new PrimitiveCube()
-    this.directionHelper = new PrimitiveLine(LINE_LENGTH, PrimitiveLine.NEGATIVE_Z)
+    this.areaHelper = new PrimitiveCube(true)
+    this.directionHelper = new PrimitiveLine(LINE_LENGTH, PrimitiveLine.NEGATIVE_Z, true)
 
     this.unusedTexture = null
 
@@ -302,9 +302,6 @@ class MatrixBasedLight extends Light {
     changed |= this.changed
 
     if (changed) {
-
-      console.log('changed')
-
       let up = [0, 0, 1]
       let pointDirection = subtract(srcPos, targetPos)
       let angleBetween = radToDeg(Math.acos(dot(up, pointDirection) / length(pointDirection) / length(up)))
