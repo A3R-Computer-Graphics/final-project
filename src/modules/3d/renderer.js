@@ -581,6 +581,9 @@ class Renderer extends EventDispatcher {
 
     gl.uniform1f(uniforms.textureMix, textureMix)
 
+    gl.uniform1f(uniforms.isTreeLeaf, object.name === 'Daun')
+    gl.uniform1f(uniforms.isGrass, object.name === 'rumput')
+
     let geometry = object.geometry
     let start = geometry.bufferStartIndex
     let count = geometry.triangleVerticesCount

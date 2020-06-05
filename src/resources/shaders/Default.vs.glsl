@@ -55,8 +55,8 @@ void displaceIfLeafOrGrass(inout vec3 pos) {
 void main()
 {
     vec4 worldPos = u_world * vec4(a_pos.xyz, 1.0);
+    displaceIfLeafOrGrass(worldPos.xyz);
     v_pos = (worldPos).xyz;
-    displaceIfLeafOrGrass(v_pos);
 
     vec4 v_camPos4 = u_cam * worldPos;
 
