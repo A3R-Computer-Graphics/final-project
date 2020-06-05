@@ -124,6 +124,16 @@ class NavigableCamera {
     this.AXIS_RIGHT_ID = 2
     this.AXIS_BACK_ID = 3
 
+    this.lastFrame = 0
+    this.pressedKeys = {
+      forward: false,
+      backward: false,
+      leftward: false,
+      rightward: false,
+      upward: false,
+      downward: false,
+    }
+
     this.cancelCurrentFocusAnimation = function () { }
 
     this.setup()
@@ -159,8 +169,81 @@ class NavigableCamera {
   }
 
   setupNavigateUsingKeyboard() {
-    canvas.parentElement.addEventListener('keydown', this._proxy(this.processCanvasArrowKeydown))
-    canvas.parentElement.addEventListener('keydown', this._proxy(this.processCanvasFocusKeydown))
+    window.addEventListener('keydown', this._proxy(this.processCanvasArrowKeydown))
+    window.addEventListener('keydown', this._proxy(this.processCanvasFocusKeydown))
+    window.addEventListener('keydown', this._proxy(this.processCameraMovementKeyDown))
+    window.addEventListener('keyup', this._proxy(this.processCameraMovementKeyUp))
+  }
+
+  eventToDirection(event) {
+    const key = NavigableCameraUtils.alphabetFromEvent(event)
+    switch (key) {
+      case "W":
+        return "forward"
+      case "A":
+        return "leftward"
+      case "S":
+        return "backward"
+      case "D":
+        return "rightward"
+      default:
+        return ""
+    }
+  }
+
+  get isMovementKeyPressed() {
+    for (var key in this.pressedKeys) if (this.pressedKeys[key]) return true;
+    return false;
+  }
+
+  processCameraMovementKeyDown(event) {
+    const direction = this.eventToDirection(event)
+    this.pressedKeys[direction] = true
+  }
+
+  processCameraMovementKeyUp(event) {
+    const direction = this.eventToDirection(event)
+    this.pressedKeys[direction] = false
+  }
+
+  update(currentFrame) {
+    if (!this.isMovementKeyPressed) return
+    const util = NavigableCameraUtils
+
+    let viewMatrix = camera.viewMatrix
+    viewMatrix = m4.inverse(viewMatrix)
+    viewMatrix = util.mat4As2D(viewMatrix)
+
+    let axis = util.multiplyUsingReduce(this.axisCoordinates, viewMatrix)
+
+    let base = axis[this.AXIS_BASE_ID]
+    let up = axis[this.AXIS_UP_ID]
+    let back = axis[this.AXIS_BACK_ID]
+    
+    up = subtract(up, base).splice(0, 3)
+    up = normalize(up)
+    
+    back = subtract(back, base).splice(0, 3)
+    back = normalize(back)
+
+    let right = cross(up, back)
+    right = normalize(right)
+
+    let deltaX = 0;
+    if (this.pressedKeys.rightward && !this.pressedKeys.leftward) deltaX = 0.1;
+    else if (this.pressedKeys.leftward && !this.pressedKeys.rightward) deltaX = -0.1;
+
+    let deltaY = 0;
+    if (this.pressedKeys.forward && !this.pressedKeys.backward) deltaY = -0.1;
+    else if (this.pressedKeys.backward && !this.pressedKeys.forward) deltaY = 0.1;
+
+    let deltaMovement = scale(deltaX, right)
+    let deltaBack = scale(deltaY, back)
+    deltaMovement = add(deltaMovement, deltaBack)
+
+    at = add(at, deltaMovement)
+    camera.position.set(add(camera.position.get(), deltaMovement))
+    updateCameraView()
   }
 
   /**

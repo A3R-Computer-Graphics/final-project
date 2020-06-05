@@ -3,7 +3,7 @@
  * Make sure to import objects-data.js or objects-data-simple.js first
  */
 
-var [LENGTH, WIDTH, HEIGHT] = [10.0, 10.0, 10.0];
+var [LENGTH, WIDTH, HEIGHT] = [20.0, 20.0, 10.0];
 
 objects_info = {
     ...objects_info,

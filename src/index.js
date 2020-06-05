@@ -2,6 +2,7 @@
 
 let scene
 let camera
+let navigableCamera
 let renderer
 
 let app
@@ -240,20 +241,14 @@ function updateCameraView() {
 
 let isSpaceKeyPressed = false
 
-function handleSpaceKeydown(event) {
-  if (isSpaceKeyPressed) {
-    return
-  }
-  if (event.code === 'Space' || event.key === ' ' || event.keyCode === 32) {
+function handleKeyDown(event) {
+  if (!isSpaceKeyPressed && (event.code === 'Space' || event.key === ' ' || event.keyCode === 32)) {
     toggleAnimation()
     isSpaceKeyPressed = true
   }
 }
 
-function handleSpaceKeyup(event) {
-  if (!isSpaceKeyPressed) {
-    return
-  }
+function handleKeyUp(event) {
   if (event.code === 'Space' || event.key === ' ' || event.keyCode === 32) {
     isSpaceKeyPressed = false
   }
@@ -574,8 +569,8 @@ window.addEventListener('load', async function init() {
 
   // Attach event listener handles
 
-  canvas.parentElement.addEventListener('keydown', handleSpaceKeydown)
-  canvas.parentElement.addEventListener('keyup', handleSpaceKeyup)
+  canvas.parentElement.addEventListener('keydown', handleKeyDown)
+  canvas.parentElement.addEventListener('keyup', handleKeyUp)
   window.addEventListener('resize', adjustViewport)
 
   document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
@@ -595,8 +590,6 @@ window.addEventListener('load', async function init() {
     initObjectSelectionMechanism()
   }
 
-  let navigableCamera = null
-
   if (typeof NavigableCameraUtils !== 'undefined') {
     navigableCamera = new NavigableCamera()
   }
@@ -608,9 +601,11 @@ window.addEventListener('load', async function init() {
   render()
 })
 
-async function render() {
-  let gl = renderer.gl
+async function render(currentFrame) {
+  const gl = renderer.gl
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+  navigableCamera.update(currentFrame)
+
   await renderer.render(scene, camera, app)
   
   // Switch between render every 1 seconds (for debugging purposes)

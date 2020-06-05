@@ -172,6 +172,7 @@ class Renderer extends EventDispatcher {
     }
 
     gl.enable(gl.DEPTH_TEST)
+    gl.enable(gl.CULL_FACE)
 
     await this.fetchShadersCodes()
     let shaders = this.shadersCodes
