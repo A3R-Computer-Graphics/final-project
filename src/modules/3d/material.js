@@ -56,7 +56,6 @@ class ImageTextureMaterial extends PhongMaterial {
 
   static initMaterialsToRenderer(renderer) {
     let gl = renderer.gl
-    let mainProgram = renderer.program
 
     let list = ImageTextureMaterial.textureMaterialList
     let startInit = this.lastInitializedIndex + 1
@@ -64,7 +63,7 @@ class ImageTextureMaterial extends PhongMaterial {
     for (let i = startInit; i < list.length; i++) {
       let material = list[i]
       if (material !== null) {
-        material.initTexture(gl, mainProgram)
+        material.initTexture(gl, renderer.programInfos.main)
       }
 
       this.lastInitializedIndex = i
@@ -76,43 +75,40 @@ class ImageTextureMaterial extends PhongMaterial {
    * @param {*} gl 
    */
 
-  initTexture(gl, mainProgram) {
+  initTexture(gl, programInfo) {
     if (!this.textureNeedsInitialization) {
       return
     }
 
-    let texture = gl.createTexture()
-    this.texture = texture
+    let texture = twgl.createTexture(gl, {
+      target: gl.TEXTURE_2D,
+      color: [1.0, 0, 1.0, 1.0],
+      level: 0,
+      format: gl.RGBA, // default value
+      internalFormat: gl.RGBA, // default value
+      width: 1,
+      height: 1,
+      type: gl.UNSIGNED_BYTE,
+      src: 'resources/objects/material_resources/' + this.imageSource,
 
-    gl.bindTexture(gl.TEXTURE_2D, texture)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-      new Uint8Array([255, 0, 255, 255]))
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT)
-
-    this.textureNeedsInitialization = false
-
-    if (!this.imageSource) {
-      return
-    }
-
-    let textureImage = new Image()
-    textureImage.src = 'resources/objects/material_resources/' + this.imageSource
-
-    const self = this
-    textureImage.addEventListener('load', function () {
-      self.imageLoaded = true
-      
-      gl.activeTexture(gl.TEXTURE0);      
-      gl.bindTexture(gl.TEXTURE_2D, texture)
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureImage)
-      gl.generateMipmap(gl.TEXTURE_2D)
+      minMag: gl.LINEAR,
+      wrap: gl.MIRRORED_REPEAT
+    },
+    
+    function() {
+      twgl.setUniforms(programInfo, {
+        u_texture: texture
+      })
     })
+
+    this.texture = texture
+    this.textureNeedsInitialization = false
   }
 
-  delete() {
+  delete(gl) {
+    if (this.texture) {
+      gl.deleteTexture(this.texture)
+    }
     ImageTextureMaterial[this.materialId] = null
     super.delete()
   }
