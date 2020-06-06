@@ -109,7 +109,7 @@ function displayTree() {
     // displayElement.innerText = name
 
     let spanElement = document.createElement('span')
-    spanElement.innerText = name
+    spanElement.innerText = `${!object.displayName ? '' : object.displayName + ' - '}${object.name}`
 
     let buttonElement = document.createElement('button')
     buttonElement.innerText = 'Hide'

@@ -240,8 +240,59 @@ class NavigableCamera {
     camera.computeFirstPersonViewCamera(currentFirstPersonViewObject)
   }
 
+  controlSelectedObject() {
+    const selected = camera.currentFirstPersonViewObject.root
+    window.selected = selected
+    console.log(selected)
+    const util = NavigableCameraUtils
+
+    let viewMatrix = camera.viewMatrix
+    viewMatrix = m4.inverse(viewMatrix)
+    viewMatrix = util.mat4As2D(viewMatrix)
+
+    let axis = util.multiplyUsingReduce(this.axisCoordinates, viewMatrix)
+
+    let base = axis[this.AXIS_BASE_ID]
+    let up = axis[this.AXIS_UP_ID]
+    let back = axis[this.AXIS_BACK_ID]
+    
+    up = subtract(up, base).splice(0, 3)
+    up = normalize(up)
+    
+    back = subtract(back, base).splice(0, 3)
+    back = normalize(back)
+
+    let right = cross(up, back)
+    right = normalize(right)
+
+    let deltaX = 0;
+    if (this.pressedKeys.rightward && !this.pressedKeys.leftward) deltaX = 0.1;
+    else if (this.pressedKeys.leftward && !this.pressedKeys.rightward) deltaX = -0.1;
+
+    let deltaY = 0;
+    if (this.pressedKeys.forward && !this.pressedKeys.backward) deltaY = -0.1;
+    else if (this.pressedKeys.backward && !this.pressedKeys.forward) deltaY = 0.1;
+
+    let deltaZ = 0;
+    if (this.pressedKeys.upward && !this.pressedKeys.downward) deltaZ = 0.1;
+    else if (this.pressedKeys.downward && !this.pressedKeys.upward) deltaZ = -0.1;
+
+    let deltaMovement = scale(deltaX, right)
+    let deltaBack = scale(deltaY, back)
+    let deltaUp = scale(deltaZ, up)
+    deltaMovement = add(deltaMovement, deltaBack)
+    deltaMovement = add(deltaMovement, deltaUp)
+
+    selected.position.set(add(selected.position.property, deltaMovement))
+    selected.localMatrixNeedUpdate = true
+  }
+
   updateCameraMovement() {
     if (!this.isMovementKeyPressed) return
+    if (camera.isFirstPersonView) {
+      this.controlSelectedObject()
+      return
+    }
     const util = NavigableCameraUtils
 
     let viewMatrix = camera.viewMatrix
