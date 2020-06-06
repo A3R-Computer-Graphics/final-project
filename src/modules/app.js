@@ -31,4 +31,29 @@ class App {
     getNextUniqueName(name) {
         return ModuleUtil.getNextUniqueNameFromDict(name, this.objects)
     }
+
+    switchToFirstPersonView(oldAt, oldPosition) {
+        if (!this.isFirstPersonView) {
+            this.lastThirdPersonViewInformation.position = oldPosition
+            this.lastThirdPersonViewInformation.at = oldAt
+        }
+
+        this.isFirstPersonView = true
+        this.currentFirstPersonViewObject = this.selectedObject
+    }
+
+    switchBackToThirdPersonView() {
+        const { position, at: lastAt } = this.lastThirdPersonViewInformation
+        camera.position.set(position)
+        camera.lookAt(lastAt)
+
+        at = lastAt
+        this.isFirstPersonView = false
+        this.currentFirstPersonViewObject = null
+        return
+    }
+
+    get shouldSwitchBackToThirdPersonView() {
+        return this.isFirstPersonView && this.selectedObject == this.currentFirstPersonViewObject
+    }
 }

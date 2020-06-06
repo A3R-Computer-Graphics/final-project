@@ -219,7 +219,7 @@ function connectLightPositionSliders() {
  */
 
 function updateCameraView() {
-  if (app.isFirstPersonView) return
+  if (camera.isFirstPersonView) return
   let r = cameraRadius;
 
   theta = (Math.sign(theta) || 1) * Math.max(Math.abs(theta), 0.1)
@@ -535,7 +535,7 @@ function initObjectsDataFromBlender() {
 
     let geometry = new Geometry({
       vertices, indices, uvCoordinates, normals
-    })
+    }, true, false)
 
     let object = app.objects[objectName]
     object.setGeometry(geometry)

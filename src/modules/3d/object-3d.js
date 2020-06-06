@@ -212,9 +212,12 @@ class Object3D {
     return [mat[12], mat[13], mat[14]]
   }
 
-  get eye() {
-    if (this.isEye) return this;
-    // TODO(albertusangga) -> Match object with closest eye 
-    return this;
+  get root() {
+    if (!this.parent || this.parent instanceof Scene) {
+      this.rootObject = this
+      return this
+    }
+    this.rootObject = this.parent.root
+    return this.rootObject
   }
 }
