@@ -90,9 +90,9 @@ class CameraPrototype extends Object3D {
       let progress = 0
       let animationCancelled = false
       this.cancelSwitchCameraAnimation = () => {
-        animationCancelled = true
         this.position.set(newPosition)
         at = newPosition
+        animationCancelled = true
       }
 
       let animationDuration = NavigableCamera.MAX_FOCUS_PROGRESS_FRAME_DURATION * 2
@@ -101,8 +101,7 @@ class CameraPrototype extends Object3D {
       let animateFocusTransition = () => {
         if (progress > animationDuration || animationCancelled) {
           this.animationStillRunning = false
-          for (var pendingFunction of this.pendingFunctions)
-            pendingFunction()
+          for (var pendingFunction of this.pendingFunctions) pendingFunction()
           this.pendingFunctions = []
           return
         }
@@ -113,11 +112,9 @@ class CameraPrototype extends Object3D {
 
         const interpolatePos = mix(oldPosition, newPosition, y)
         const interpolateAt = mix(oldAt, newAt, y)
-        console.log(x, '\ninterpolate pos: ', interpolatePos, '\ninterpolate at: ', interpolateAt)
 
         this.position.set(interpolatePos)
         this.lookAt(interpolateAt)
-        console.log(x, )
         
         progress += 1
         window.requestAnimationFrame(animateFocusTransition)
