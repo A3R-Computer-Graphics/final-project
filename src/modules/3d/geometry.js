@@ -68,8 +68,15 @@ class Geometry {
       uvCoordinates = this.uvCoordinates
 
     this.vertexStartIndex = Geometry.verticesBufferData.length
-    this.normalStartIndex = Geometry.normalsBufferData.length
-    this.uvStartIndex = Geometry.uvBufferData.length
+
+    if (this.writeNormals && !this.wireframeMode) {
+      this.normalStartIndex = Geometry.normalsBufferData.length
+
+    }
+
+    if (this.writeUvs && !this.wireframeMode) {
+      this.uvStartIndex = Geometry.uvBufferData.length
+    }
 
     Geometry._populateMeshData({ vertices, normals, indices, uvCoordinates },
       this.wireframeMode, this.writeNormals, this.writeUvs)
@@ -387,24 +394,31 @@ class Geometry {
     let startNormal = this.normalStartIndex * FLOAT_BYTE_LENGTH * ATTRIB_NORMAL_SIZE
     let startUv = this.uvStartIndex * FLOAT_BYTE_LENGTH * ATTRIB_TEXCOORD_SIZE
 
-    this.geometryBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+    let arrays = {
       a_pos: {
         buffer: renderer.bufferInfo.attribs.a_pos.buffer,
         numComponents: 3,
         offset: startVertex
       },
-      a_texcoord: {
-        buffer: renderer.bufferInfo.attribs.a_texcoord.buffer,
-        numComponents: 2,
-        offset: startUv
-      },
-      a_norm: {
+    }
+
+    if (this.normalStartIndex >= 0) {
+      arrays.a_norm = {
         buffer: renderer.bufferInfo.attribs.a_norm.buffer,
         numComponents: 3,
         offset: startNormal
       }
-    }, renderer.bufferInfo)
+    }
 
+    if (this.uvStartIndex >= 0) {
+      arrays.a_texcoord = {
+        buffer: renderer.bufferInfo.attribs.a_texcoord.buffer,
+        numComponents: 2,
+        offset: startUv
+      }
+    }   
+
+    this.geometryBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays, renderer.bufferInfo)
     this.geometryBufferInfo.numElements = this.triangleVerticesCount
   }
 
