@@ -49,88 +49,7 @@ class Renderer extends EventDispatcher {
 
     this.canvas = canvas
     this.gl = null
-    this.program = null
-    this.shadowGenProgram = null
-
-    this.programUniformList = [
-      "ambientProduct",
-      "diffuseProduct",
-      "specularProduct",
-      "shininess",
-
-      "u_world",
-      "u_cam",
-      "u_proj",
-      "u_normCam",
-
-      "isSelected",
-
-      "u_texture",
-      "textureMix",
-
-      "lightPosition",
-      "pointLightShadowMap",
-
-      'shadowClipNear',
-      'shadowClipFar',
-
-      // For directional light
-      'u_reverseLightDirection',
-
-      // For spotlight
-      'lightPosition_spot',
-      'u_viewWorldPos',
-      'u_innerLimit',
-      'u_outerLimit',
-      'u_viewWorldPosition',
-      'u_lightDirection',
-
-      /* These are not necessary, just to make leaf and trees wave */
-      'time',
-      'isTreeLeaf',
-      'isGrass',
-      'isRenderingWireframe',
-
-      'isPointLight',
-      'u_textureMatrix_dir',
-      'u_textureMatrix_spot',
-      'v_projectedTexcoord_dir',
-      'v_projectedTexcoord_spot',
-      'u_projectedTexture_dir',
-      'u_projectedTexture_spot',
-
-      'pointLightIntensity',
-      'directionalLightIntensity',
-      'spotlightIntensity'
-    ]
-
-    this.programAttribList = [
-      "a_texcoord",
-      "a_pos",
-      "a_norm"
-    ]
-
-    this.shadowGenProgram = null
-    this.shadowGenProgramUniformList = [
-      'u_proj',
-      'u_cam',
-      'u_world',
-      'lightPosition',
-      'shadowClipNear',
-      'shadowClipFar',
-
-      'isPointLight',
-
-      /* These are not necessary, just to make leaf and trees wave */
-      'time',
-      'isTreeLeaf',
-      'isGrass',
-    ]
-    this.shadowGenProgramAttribList = [
-      'a_pos',
-    ]
-
-
+    
     this.programInfos = {
       main: null,
       shadowGen: null,
@@ -159,11 +78,8 @@ class Renderer extends EventDispatcher {
 
   async init() {
     await this.initCanvasAndGL()
-    this.initUniforms()
-    this.initAttributes()
     this.initBuffers()
 
-    // Init texture coords
     let gl = this.gl
 
     gl.enable(gl.BLEND)
@@ -215,11 +131,7 @@ class Renderer extends EventDispatcher {
     progInfos.main = twgl.createProgramInfo(gl, [shaders['Default.vs.glsl'], shaders['Default.fs.glsl']])
     progInfos.shadowGen = twgl.createProgramInfo(gl, [shaders['ShadowGen.vs.glsl'], shaders['ShadowGen.fs.glsl']])
 
-    // NOTE: this.program & shadowGenProgram will be deprecated
-
-    this.program = progInfos.main.program
-    this.shadowGenProgram = progInfos.shadowGen.program
-    gl.useProgram(this.program)
+    gl.useProgram(this.programInfos.main.program)
   }
 
 
@@ -233,45 +145,6 @@ class Renderer extends EventDispatcher {
     }
 
     this.bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays)
-  }
-
-
-  // NOTE: Will be deprecated in favor of TWGL's
-  initUniforms() {
-
-    let gl = this.gl
-
-    let programs = [this.program, this.shadowGenProgram]
-    let uniformLists = [this.programUniformList, this.shadowGenProgramUniformList]
-
-    programs.forEach((program, index) => {
-      let uniforms = program.uniforms = {}
-      let uniformList = uniformLists[index]
-
-      uniformList.forEach(uniformName => {
-        uniforms[uniformName] = gl.getUniformLocation(program, uniformName)
-      })
-    })
-  }
-
-
-  // NOTE: Will be deprecated in favor of TWGL's
-  initAttributes() {
-
-
-    let gl = this.gl
-
-    let programs = [this.program, this.shadowGenProgram]
-    let attribLists = [this.programAttribList, this.shadowGenProgramAttribList]
-
-    programs.forEach((program, index) => {
-      let attribs = program.attribs = {}
-      let attribList = attribLists[index]
-
-      attribList.forEach(attribName => {
-        attribs[attribName] = gl.getAttribLocation(program, attribName)
-      })
-    })
   }
 
 
