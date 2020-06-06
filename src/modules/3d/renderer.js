@@ -49,7 +49,7 @@ class Renderer extends EventDispatcher {
 
     this.canvas = canvas
     this.gl = null
-    
+
     this.programInfos = {
       main: null,
       shadowGen: null,
@@ -85,10 +85,10 @@ class Renderer extends EventDispatcher {
     gl.enable(gl.BLEND)
 
     twgl.setUniforms(this.programInfos.main, twgl.createTextures(gl, {
-      u_texture: {src: null, target: gl.TEXTURE_2D, width: 1, height: 1},
-      pointLightShadowMap: {src: null, target: gl.TEXTURE_CUBE_MAP, width: 1, height: 1},
-      u_projectedTexture_dir: {src: null, target: gl.TEXTURE_2D, width: 1, height: 1},
-      u_projectedTexture_spot: {src: null, target: gl.TEXTURE_2D, width: 1, height: 1}
+      u_texture: { src: null, target: gl.TEXTURE_2D, width: 1, height: 1 },
+      pointLightShadowMap: { src: null, target: gl.TEXTURE_CUBE_MAP, width: 1, height: 1 },
+      u_projectedTexture_dir: { src: null, target: gl.TEXTURE_2D, width: 1, height: 1 },
+      u_projectedTexture_spot: { src: null, target: gl.TEXTURE_2D, width: 1, height: 1 }
     }))
 
     this.initShadowMapCameras()
@@ -184,6 +184,7 @@ class Renderer extends EventDispatcher {
     let programInfo = this.programInfos.shadowGen
     let program = programInfo.program
     gl.useProgram(program)
+    twgl.setBuffersAndAttributes(gl, programInfo, this.bufferInfo)
 
     let setUniform = programInfo.uniformSetters
     setUniform.time(this.time)
@@ -218,10 +219,7 @@ class Renderer extends EventDispatcher {
 
         twgl.setUniforms(programInfo, {
           lightPosition: this.usedLightPosition,
-          pointLightIntensity: light.intensity || 0.0
-        })
-
-        twgl.setUniforms(programInfo, {
+          pointLightIntensity: light.intensity || 0.0,
           pointLightShadowMap: light.shadowMapTexture
         })
 
@@ -262,7 +260,7 @@ class Renderer extends EventDispatcher {
 
     twgl.setUniforms(programInfo, {
       // Set near & far
-      
+
       shadowClipNear: this.shadowClipNear,
       shadowClipFar: this.shadowClipFar,
 
@@ -308,15 +306,12 @@ class Renderer extends EventDispatcher {
   generateDirectionalLightShadowMap(light, app) {
 
     let gl = this.gl
+    let programInfo = this.programInfos.shadowGen
     let texSize = light.shadowMapTextureSize
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, light.framebuffer)
     gl.viewport(0, 0, texSize, texSize)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-    // TODO NOW: Move this into the outerfunction (this.renderShadowMap)
-    let programInfo = this.programInfos.shadowGen
-    twgl.setBuffersAndAttributes(gl, programInfo, this.bufferInfo)
 
     light.recomputeMapMatrix()
 
@@ -334,7 +329,6 @@ class Renderer extends EventDispatcher {
 
     let gl = this.gl
     let programInfo = this.programInfos.shadowGen
-    twgl.setBuffersAndAttributes(gl, programInfo, this.bufferInfo)
 
     // Prepare rendering to framebuffer, renderbuffer and shadow cubemap texture
 
@@ -439,8 +433,6 @@ class Renderer extends EventDispatcher {
     if (!selected) {
       if (material instanceof PhongMaterial) {
         let { ambient, diffuse, specular, shininess } = material
-
-        // TODO: Delete this multiplication. It's not needed.
 
         let light = Light.lightList[0]
         if (light) {
