@@ -168,13 +168,14 @@ class Renderer extends EventDispatcher {
 
     gl.enable(gl.BLEND)
 
-    gl.uniform1i(this.program.uniforms.u_texture, 0)
-    gl.uniform1i(this.program.uniforms.pointLightShadowMap, 1)
-    gl.uniform1i(this.program.uniforms.u_projectedTexture_dir, 2)
-    gl.uniform1i(this.program.uniforms.u_projectedTexture_spot, 3)
+    twgl.setUniforms(this.programInfos.main, twgl.createTextures(gl, {
+      u_texture: {src: null, target: gl.TEXTURE_2D, width: 1, height: 1},
+      pointLightShadowMap: {src: null, target: gl.TEXTURE_CUBE_MAP, width: 1, height: 1},
+      u_projectedTexture_dir: {src: null, target: gl.TEXTURE_2D, width: 1, height: 1},
+      u_projectedTexture_spot: {src: null, target: gl.TEXTURE_2D, width: 1, height: 1}
+    }))
 
     this.initShadowMapCameras()
-
     this.dispatchEvent('initialized')
   }
 
@@ -319,7 +320,7 @@ class Renderer extends EventDispatcher {
     for (const light of lights) {
 
       if (!light.shadowMapTextureInitialized) {
-        light.initTexture(gl)
+        light.initTexture(gl, programInfo)
       }
 
       setUniform.isPointLight(light instanceof PointLight)
@@ -347,8 +348,9 @@ class Renderer extends EventDispatcher {
           pointLightIntensity: light.intensity || 0.0
         })
 
-        gl.activeTexture(gl.TEXTURE1)
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, light.shadowMapTexture)
+        twgl.setUniforms(programInfo, {
+          pointLightShadowMap: light.shadowMapTexture
+        })
 
       } else if (light instanceof MatrixBasedLight) {
 
@@ -359,19 +361,14 @@ class Renderer extends EventDispatcher {
 
         if (light instanceof DirectionalLight) {
 
-          gl.activeTexture(gl.TEXTURE2)
-          gl.bindTexture(gl.TEXTURE_2D, light.shadowMapTexture)
-
           twgl.setUniforms(programInfo, {
             u_reverseLightDirection: light.lightDirection,
             u_textureMatrix_dir: textureMatrix,
-            directionalLightIntensity: light.intensity || 0.0
+            directionalLightIntensity: light.intensity || 0.0,
+            u_projectedTexture_dir: light.shadowMapTexture
           })
 
         } else {
-
-          gl.activeTexture(gl.TEXTURE3)
-          gl.bindTexture(gl.TEXTURE_2D, light.shadowMapTexture)
 
           twgl.setUniforms(programInfo, {
             u_textureMatrix_spot: textureMatrix,
@@ -381,7 +378,9 @@ class Renderer extends EventDispatcher {
             u_outerLimit: Math.cos(degToRad(light._fov / 2)),
             u_lightDirection: scale(-1, light.lightDirection),
 
-            spotlightIntensity: light.intensity || 0.0
+            spotlightIntensity: light.intensity || 0.0,
+
+            u_projectedTexture_spot: light.shadowMapTexture
           })
 
         }
@@ -587,8 +586,9 @@ class Renderer extends EventDispatcher {
 
       if (material instanceof ImageTextureMaterial) {
         textureMix = 1
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, material.texture)
+        twgl.setUniforms(programInfo, {
+          u_texture: material.texture
+        })
       }
     }
 
