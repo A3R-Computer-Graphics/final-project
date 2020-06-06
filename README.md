@@ -6,4 +6,7 @@ Oleh A3R:
 - Mohammad Ammar Ramadhan (1606918591)
 - Rachmat Ridwan (1606886974)
 
-deploy: http://a3r-final.herokuapp.com/
+## Deployment
+- [Netlify](https://a3r-final.netlify.app/)
+- [Heroku](http://a3r-final.herokuapp.com/)
+
