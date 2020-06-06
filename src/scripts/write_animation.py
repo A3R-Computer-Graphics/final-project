@@ -85,4 +85,4 @@ for obj in objs:
         objs_animation_data[written_anim_name] = keyframes_as_string
 
 with open(ANIMATION_FPATH, "w+") as outfile:
-    outfile.write("var animations_definition = " + json.dumps(objs_animation_data))
+    outfile.write("animations_definition = Object.assign(animations_definition, " + json.dumps(objs_animation_data) + ")")

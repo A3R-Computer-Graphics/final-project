@@ -169,44 +169,150 @@ class NavigableCamera {
   }
 
   setupNavigateUsingKeyboard() {
-    window.addEventListener('keydown', this._proxy(this.processCanvasArrowKeydown))
+    // window.addEventListener('keydown', this._proxy(this.processCanvasArrowKeydown))
     window.addEventListener('keydown', this._proxy(this.processCanvasFocusKeydown))
+    window.addEventListener('keydown', this._proxy(this.processCanvasPerspectiveKeyDown))
     window.addEventListener('keydown', this._proxy(this.processCameraMovementKeyDown))
     window.addEventListener('keyup', this._proxy(this.processCameraMovementKeyUp))
   }
 
+processCanvasPerspectiveKeyDown(event) {
+  const key = NavigableCameraUtils.alphabetFromEvent(event)
+  const { selectedObject } = app
+
+  if (key !== 'P' || !selectedObject) {
+    console.log('Trying to switch perspective without selecting an object...')
+    return
+  }
+
+  if (app.isFirstPersonView && selectedObject == app.currentFirstPersonViewObject) {
+    // toggle off
+    const { position, at: lastAt } = app.lastThirdPersonViewInformation
+    camera.position.set(position)
+    camera.lookAt(lastAt)
+    at = lastAt
+    app.isFirstPersonView = false
+    app.currentFirstPersonViewObject = null
+    return
+  }
+
+  let objectMatrix = selectedObject.worldMatrix
+  let direction = [0.0, -2.0, 0.0, 1.0]
+  let matrix = [[0.0, -1.0, 0.0, 1.0], direction, direction, direction]
+
+  let oldAt = at
+  let resultingMatrix = m4.multiply(objectMatrix, flatten(matrix))
+  let newAt = resultingMatrix.slice(4, 7)
+  at = newAt
+  
+  let oldPosition = [...camera.position.property]
+  let newPosition = resultingMatrix.slice(0, 3)
+
+  camera.position.set(newPosition)
+  camera.lookAt(newAt)
+
+  if (!app.isFirstPersonView ) {
+    app.lastThirdPersonViewInformation.position = oldPosition
+    app.lastThirdPersonViewInformation.at = oldAt
+  }
+
+  app.isFirstPersonView = true
+  app.currentFirstPersonViewObject = selectedObject
+  
+  console.log('Old position: ', oldPosition, '\nNew position: ', newPosition)
+  console.log('Old at: ', oldAt, '\nNew at: ', newAt)
+  return
+  
+
+  this.cancelCurrentFocusAnimation()
+  let progress = 0
+
+  let animationCancelled = false
+
+  this.cancelCurrentFocusAnimation = function () {
+    animationCancelled = true
+  }
+
+  let animationDuration = NavigableCamera.MAX_FOCUS_PROGRESS_FRAME_DURATION
+
+  let animateFocusTransition = function () {
+    if (progress > animationDuration || animationCancelled) {
+      return
+    }
+
+    let x = progress / animationDuration
+    let y = 1 - Math.pow(x - 1, 2)
+
+    camera.position.set(mix(oldPosition, newPosition, y))
+    camera.lookAt(mix(oldAt, newAt, y))
+    
+    progress += 1
+    window.requestAnimationFrame(animateFocusTransition)
+  }
+
+  window.requestAnimationFrame(animateFocusTransition)
+}
+
   eventToDirection(event) {
-    const key = NavigableCameraUtils.alphabetFromEvent(event)
+    let key = NavigableCameraUtils.alphabetFromEvent(event)
+    if (!key)
+      key = NavigableCameraUtils.directionFromKeyboardArrow(event)
     switch (key) {
       case "W":
         return "forward"
+      case "LEFT":
       case "A":
         return "leftward"
       case "S":
         return "backward"
+      case "RIGHT":
       case "D":
         return "rightward"
+      case "UP":
+        return "upward"
+      case "DOWN":
+        return "downward"
       default:
-        return ""
+        return undefined
     }
   }
 
   get isMovementKeyPressed() {
-    for (var key in this.pressedKeys) if (this.pressedKeys[key]) return true;
+    for (var key in this.pressedKeys) if (!!key && this.pressedKeys[key]) return true;
     return false;
   }
 
   processCameraMovementKeyDown(event) {
     const direction = this.eventToDirection(event)
+    if (!direction) return
     this.pressedKeys[direction] = true
   }
 
   processCameraMovementKeyUp(event) {
     const direction = this.eventToDirection(event)
+    if (!direction) return
     this.pressedKeys[direction] = false
   }
 
+  updateWhileInFirstPersonViewMode() {
+    if (!app.isFirstPersonView) return
+    const { currentFirstPersonViewObject } = app;
+    let objectMatrix = currentFirstPersonViewObject.worldMatrix
+    let direction = [0.0, -2.0, 0.0, 1.0]
+    let matrix = [[0.0, -1.0, 0.0, 1.0], direction, direction, direction]
+  
+    let resultingMatrix = m4.multiply(objectMatrix, flatten(matrix))
+    let newAt = resultingMatrix.slice(4, 7)
+    at = newAt
+    
+    let newPosition = resultingMatrix.slice(0, 3)
+  
+    camera.position.set(newPosition)
+    camera.lookAt(newAt)  
+  }
+
   update(currentFrame) {
+    this.updateWhileInFirstPersonViewMode()
     if (!this.isMovementKeyPressed) return
     const util = NavigableCameraUtils
 
@@ -237,9 +343,15 @@ class NavigableCamera {
     if (this.pressedKeys.forward && !this.pressedKeys.backward) deltaY = -0.1;
     else if (this.pressedKeys.backward && !this.pressedKeys.forward) deltaY = 0.1;
 
+    let deltaZ = 0;
+    if (this.pressedKeys.upward && !this.pressedKeys.downward) deltaZ = 0.1;
+    else if (this.pressedKeys.downward && !this.pressedKeys.upward) deltaZ = -0.1;
+
     let deltaMovement = scale(deltaX, right)
     let deltaBack = scale(deltaY, back)
+    let deltaUp = scale(deltaZ, up)
     deltaMovement = add(deltaMovement, deltaBack)
+    deltaMovement = add(deltaMovement, deltaUp)
 
     at = add(at, deltaMovement)
     camera.position.set(add(camera.position.get(), deltaMovement))

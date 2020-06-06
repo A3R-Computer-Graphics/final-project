@@ -219,6 +219,7 @@ function connectLightPositionSliders() {
  */
 
 function updateCameraView() {
+  if (app.isFirstPersonView) return
   let r = cameraRadius;
 
   theta = (Math.sign(theta) || 1) * Math.max(Math.abs(theta), 0.1)
@@ -226,7 +227,7 @@ function updateCameraView() {
   let sin_t = Math.sin(theta);
   let sin_p = Math.sin(phi);
   let cos_t = Math.cos(theta);
-  let cos_p = Math.cos(phi);
+  let cos_p = Math.cos(phi); 
 
   let x = r * sin_t * cos_p;
   let y = r * sin_t * sin_p;
@@ -520,7 +521,6 @@ function initObjectsDataFromBlender() {
   objectNames.forEach(objectName => {
     let geometryName = objectName in objects_vertices ? objectName : objects_info[objectName].vertices
     let geometryDefinition = objects_vertices[geometryName]
-
     let vertices = geometryDefinition.vertices
     let indices = geometryDefinition.indices
     let uvCoordinates = geometryDefinition.uv_coordinates
@@ -541,6 +541,18 @@ function initObjectsDataFromBlender() {
     object.setGeometry(geometry)
   })
 
+}
+
+function toggleSelectedObjectVisibility() {
+  if (!app) return
+  const { selectedObject } = app
+  if (!selectedObject) return
+  
+  const dom = document.querySelector('#toggle-selected-object-visibility-button')
+  selectedObject.visible = !selectedObject.visible
+  const { visible } = selectedObject
+  dom.innerText = visible ? 'Hide' : 'Show'
+  dom.className = `btn ${visible ? 'btn-danger' : 'btn-primary'}`
 }
 
 window.addEventListener('load', async function init() {
@@ -623,8 +635,12 @@ window.addEventListener('load', async function init() {
 async function render(currentFrame) {
   const gl = renderer.gl
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-  navigableCamera.update(currentFrame)
+  
+  if (app.selectedObject) {
+    app.selectedObject.updateWorldMatrix()
+  }
 
+  navigableCamera.update(currentFrame)
   await renderer.render(scene, camera, app)
   
   // Switch between render every 1 seconds (for debugging purposes)

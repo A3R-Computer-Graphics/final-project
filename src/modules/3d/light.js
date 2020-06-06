@@ -31,6 +31,8 @@ class Light extends Object3D {
 
     this.intensity = 1.0
 
+    this.color = [1.0, 1.0, 1.0];
+
     Light.lightList.push(this)
   }
 
@@ -351,6 +353,7 @@ class SpotLight extends MatrixBasedLight {
     super(textureSize)
     this._fov = 40.0
     this.shadowMapIndex = 3
+    this.color = [1.0, 1.0, 0.0]
   }
 
   get fov() {

@@ -1,4 +1,5 @@
-var materials_definition = [{
+materials_definition = [
+  ...materials_definition, {
   "name": "Default",
   "ambient": [1.0, 0.0, 1.0, 1.0],
   "diffuse": [1.0, 0.8, 0.0, 1.0],

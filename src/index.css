@@ -347,6 +347,8 @@ div#speed-slider {
   user-select: none;
   margin-top: 5px;
   word-break: break-all;
+  display: flex;
+  justify-content: space-between;
 }
 
 .obj-name#root-node {
@@ -435,9 +437,9 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
 }
 
 #tree input[type="checkbox"] {
-  width: 100%;
+  width: calc(100% - 60px);
   height: 26px;
-  right: 0;
+  right: 60px;
   display: block;
   position: absolute;
   z-index: 1;
@@ -551,4 +553,12 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
 #scroll-detector>div>div {
   height: 200%;
   background: linear-gradient(black, white)
+}
+
+#selected-object-action-buttons {
+  margin-bottom: 0.5rem;
+}
+
+.toggle-visibility-button {
+  margin-bottom: 0.5rem;
 }

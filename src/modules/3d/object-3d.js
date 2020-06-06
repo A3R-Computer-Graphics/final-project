@@ -71,6 +71,11 @@ class Object3D {
     this.localMatrixNeedsUpdate = true
 
     this.visible = true
+
+    const additionalData = name in objectsAdditionalData ? objectsAdditionalData[name] : {}
+    Object.keys(additionalData).forEach((additionalDataKey) => {
+      this[additionalDataKey] = additionalData[additionalDataKey]
+    })
   }
 
   setParent(parentObject) {
@@ -205,5 +210,11 @@ class Object3D {
   get worldPosition() {
     let mat = this.worldMatrix
     return [mat[12], mat[13], mat[14]]
+  }
+
+  get eye() {
+    if (this.isEye) return this;
+    // TODO(albertusangga) -> Match object with closest eye 
+    return this;
   }
 }

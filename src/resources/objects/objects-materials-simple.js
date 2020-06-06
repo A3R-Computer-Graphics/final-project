@@ -1,4 +1,5 @@
-var materials_definition = [
+materials_definition = [
+  ...materials_definition,
   {
     "name": "Default",
     "ambient": [

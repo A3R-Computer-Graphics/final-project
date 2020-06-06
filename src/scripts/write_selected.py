@@ -91,8 +91,8 @@ def write_selected():
             objs_verts_data[obj.name]["uv_coordinates"] = uv_coordinates
     
     with open(OBJECTS_INFO_PATH, "w+") as outfile:
-        outfile.write("var objects_info = " + json.dumps(objs_info_data, sort_keys=True, indent=4))
+        outfile.write("objects_info = Object.assign(objects_info, " + json.dumps(objs_info_data, sort_keys=True, indent=4) + ")")
     with open(OBJECTS_VERTEX_FPATH, "w+") as outfile:
-        outfile.write("var objects_vertices = " + json.dumps(objs_verts_data))
+        outfile.write("objects_vertices = Object.assign(objects_vertices, " + json.dumps(objs_verts_data) + ")")
 
 write_selected()

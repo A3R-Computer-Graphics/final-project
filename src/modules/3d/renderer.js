@@ -236,7 +236,8 @@ class Renderer extends EventDispatcher {
             u_reverseLightDirection: light.lightDirection,
             u_textureMatrix_dir: textureMatrix,
             directionalLightIntensity: light.intensity || 0.0,
-            u_projectedTexture_dir: light.shadowMapTexture
+            u_projectedTexture_dir: light.shadowMapTexture,
+            u_directionalLightColor: light.color,
           })
 
         } else {
@@ -251,7 +252,8 @@ class Renderer extends EventDispatcher {
 
             spotlightIntensity: light.intensity || 0.0,
 
-            u_projectedTexture_spot: light.shadowMapTexture
+            u_projectedTexture_spot: light.shadowMapTexture,
+            u_spotLightColor: light.color,
           })
 
         }
@@ -400,7 +402,7 @@ class Renderer extends EventDispatcher {
    */
 
   renderObject(object, camera, app) {
-
+    if (!object.visible) return
     if (object.localMatrixNeedsUpdate) {
       object.updateLocalMatrix()
       object.updateShallowWorldMatrix()
@@ -514,7 +516,8 @@ class Renderer extends EventDispatcher {
   /** Render shadow 3D Object */
 
   renderShadowObject(object) {
-
+    if (!object.visible) return
+    
     // Update object matrix
 
     if (object.localMatrixNeedsUpdate) {

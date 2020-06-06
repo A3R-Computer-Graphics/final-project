@@ -8,6 +8,12 @@ class App {
         this.selectedObjectName = ''
 
         this.materials = {}
+        this.isFirstPersonView = false
+        this.currentFirstPersonViewObject = null
+        this.lastThirdPersonViewInformation = {
+            at: null,
+            position: null,
+        }
     }
 
     addObject(object) {
