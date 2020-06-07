@@ -260,6 +260,7 @@ class Renderer extends EventDispatcher {
     let lights = Light.lightList
 
     for (const light of lights) {
+      if (!light.visible) continue
 
       if (!light.shadowMapTextureInitialized) {
         light.initTexture(gl, programInfo)
@@ -287,7 +288,7 @@ class Renderer extends EventDispatcher {
 
         twgl.setUniforms(programInfo, {
           lightPosition: this.usedLightPosition,
-          pointLightIntensity: light.intensity || 0.0,
+          pointLightIntensity: light.intensity * light.visible || 0.0,
           pointLightShadowMap: light.shadowMapTexture
         })
 
@@ -303,7 +304,7 @@ class Renderer extends EventDispatcher {
           twgl.setUniforms(programInfo, {
             u_reverseLightDirection: light.lightDirection,
             u_textureMatrix_dir: textureMatrix,
-            directionalLightIntensity: light.intensity || 0.0,
+            directionalLightIntensity: light.intensity * light.visible || 0.0,
             u_projectedTexture_dir: light.shadowMapTexture,
             u_directionalLightColor: light.color,
           })
@@ -318,7 +319,7 @@ class Renderer extends EventDispatcher {
             u_outerLimit: Math.cos(degToRad(light._fov / 2)),
             u_lightDirection: scale(-1, light.lightDirection),
 
-            spotlightIntensity: light.intensity || 0.0,
+            spotlightIntensity: light.intensity * light.visible || 0.0,
 
             u_projectedTexture_spot: light.shadowMapTexture,
             u_spotLightColor: light.color,
@@ -400,6 +401,7 @@ class Renderer extends EventDispatcher {
       object.updateShallowWorldMatrix()
       object.children.forEach(child => child.localMatrixNeedsUpdate = true)
     }
+    if (!object.visible) return
 
     // Ignore if the object has no geometry
     if (!object.geometry || object.geometry.vertexStartIndex < 0) {
@@ -566,7 +568,6 @@ class Renderer extends EventDispatcher {
    */
 
   renderObject(object, camera, app) {
-    if (!object.visible) return
     if (object.localMatrixNeedsUpdate) {
       object.updateLocalMatrix()
       object.updateShallowWorldMatrix()
@@ -574,6 +575,7 @@ class Renderer extends EventDispatcher {
       // Trigger children to also update its matrices
       object.children.forEach(child => child.localMatrixNeedsUpdate = true)
     }
+    if (!object.visible) return
 
     // Ignore if geometry is none
 
@@ -692,6 +694,7 @@ class Renderer extends EventDispatcher {
       // Trigger children to also update its matrices
       object.children.forEach(child => child.localMatrixNeedsUpdate = true)
     }
+    if (!object.visible) return
 
     // Ignore if the object has no geometry
 
