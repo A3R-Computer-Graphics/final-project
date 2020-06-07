@@ -537,11 +537,18 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   top: 0;
   left: 0;
   opacity: 0.1;
-  cursor: grab;
 }
 
 #scroll-detector {
   overflow: hidden;
+}
+
+#scroll-detector.grabbing {
+  cursor: grab;
+}
+
+#scroll-detector.moving {
+  cursor: move;
 }
 
 #scroll-detector>div {

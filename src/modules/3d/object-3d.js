@@ -46,7 +46,7 @@ class Property3D {
 
 class Object3D {
   constructor(data) {
-    let { name, origin, position, rotation, scale, geometry, material } = data || {}
+    let { name, origin, position, rotation, scale, geometry, wireframeGeometry, material, matrixParentInverse } = data || {}
     this.name = name || ''
 
     origin = origin || [0, 0, 0]
@@ -63,12 +63,17 @@ class Object3D {
     this.worldMatrix = m4.identity()
 
     this.geometry = geometry || null
+    this.wireframeGeometry = wireframeGeometry || null
     this.material = material || null
 
     this.parent = null
     this.children = []
 
     this.localMatrixNeedsUpdate = true
+    if (matrixParentInverse) {
+      matrixParentInverse = flatten(matrixParentInverse)
+    }
+    this.matrixParentInverse = matrixParentInverse
 
     this.visible = true
 
@@ -168,10 +173,18 @@ class Object3D {
 
   updateShallowWorldMatrix() {
     if (this.parent) {
-      this.worldMatrix = m4.multiply(this.parent.worldMatrix, this.localMatrix)
+      this.__updateWorldMatrixFromParent()
     } else {
       this.worldMatrix = this.localMatrix
     }
+  }
+
+  __updateWorldMatrixFromParent() {
+    let worldMatrix = this.localMatrix
+    if (this.matrixParentInverse) {
+      worldMatrix = m4.multiply(this.matrixParentInverse, worldMatrix)
+    }
+    this.worldMatrix = m4.multiply(this.parent.worldMatrix, worldMatrix)
   }
 
   updateWorldMatrix() {
@@ -180,7 +193,7 @@ class Object3D {
     let parent = this.parent
     if (parent) {
       parent.updateWorldMatrix()
-      this.worldMatrix = m4.multiply(this.parent.worldMatrix, this.localMatrix)
+      this.__updateWorldMatrixFromParent()
     } else {
       this.worldMatrix = this.localMatrix
     }

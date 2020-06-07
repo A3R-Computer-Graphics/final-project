@@ -66,18 +66,18 @@ def write_selected():
         if len(obj_materials) > 0:
             obj_info["material_name"] =  obj_materials[0]
 
-        # If parent exists, make position relative to parent.
-        # NOTE: This only works if all rotation and scale are 1.
-        # Which makes the obj_info rotation and scale not usable.
-        #
-        # A better solution would be to write the inverse matrix transf of parent
-        # at parent initialization.
-        # But I don't think for this WS it would be necessary to compute that.
+        # If parent exists, write its parent inverse matrix which contains
+        # the inverse of parent's world matrix at the initialization of parent.
+
         if obj.parent:
             parent = obj.parent
-            for i in range(3):
-                obj_info["position"][i] -= parent.location[i]
             obj_info["parent"] = parent.name
+            
+            # I guess Blender uses row-major order. Since it's not compatible with OpenGL
+            # we need to transpose it.
+            
+            mat = obj.matrix_parent_inverse.transposed()
+            obj_info["matrix_parent_inverse"] = [list(vec) for vec in mat]
         
         for i in range(len(obj_info["position"])):
             obj_info["position"][i] = round(obj_info["position"][i], 3)

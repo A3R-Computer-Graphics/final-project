@@ -6,7 +6,8 @@ class Light extends Object3D {
   // This is done to avoid using different geometery and materials
   // since light doesn't need that.
 
-  static lightCubeGeometry = new Icosphere(true)
+  static lightWireframeMesh = new Icosphere(true)
+  static lightMesh = new Icosphere(false)
   static lightCubeMaterial = new EmissionMaterial()
   static lastShadowMapIndex = 1 // Added 1 because the 0 is used for material texture
 
@@ -14,7 +15,8 @@ class Light extends Object3D {
 
   constructor(textureSize) {
     super({
-      geometry: Light.lightCubeGeometry,
+      geometry: Light.lightMesh,
+      wireframeGeometry: Light.lightWireframeMesh,
       material: Light.lightCubeMaterial
     })
 
