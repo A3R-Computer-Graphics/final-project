@@ -77,6 +77,7 @@ class Renderer extends EventDispatcher {
     this.lastCanvasWidth = canvas.width
     this.lastCanvasHeight = canvas.height
 
+    this.softShadow = true
   }
 
 
@@ -94,12 +95,11 @@ class Renderer extends EventDispatcher {
     let gl = this.gl
 
     gl.enable(gl.BLEND)
-
     twgl.setUniforms(this.programInfos.main, twgl.createTextures(gl, {
       u_texture: { src: null, target: gl.TEXTURE_2D, width: 1, height: 1 },
       pointLightShadowMap: { src: null, target: gl.TEXTURE_CUBE_MAP, width: 1, height: 1 },
       u_projectedTexture_dir: { src: null, target: gl.TEXTURE_2D, width: 1, height: 1 },
-      u_projectedTexture_spot: { src: null, target: gl.TEXTURE_2D, width: 1, height: 1 }
+      u_projectedTexture_spot: { src: null, target: gl.TEXTURE_2D, width: 1, height: 1 },
     }))
 
     this.initShadowMapCameras()
@@ -336,7 +336,8 @@ class Renderer extends EventDispatcher {
       shadowClipNear: this.shadowClipNear,
       shadowClipFar: this.shadowClipFar,
 
-      time: this.time
+      time: this.time,
+      u_softShadow: this.softShadow
     })
 
 
