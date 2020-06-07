@@ -195,23 +195,26 @@ class NavigableCamera {
 
   eventToDirection(event) {
     let key = NavigableCameraUtils.alphabetFromEvent(event)
-    if (!key)
+    if (!key) {
       key = NavigableCameraUtils.directionFromKeyboardArrow(event)
+    }
     switch (key) {
       case "W":
         return "forward"
-      case "LEFT":
       case "A":
         return "leftward"
       case "S":
         return "backward"
-      case "RIGHT":
       case "D":
         return "rightward"
       case "UP":
         return "upward"
       case "DOWN":
         return "downward"
+      case "RIGHT":
+        return "rotateRight"
+      case "LEFT":
+        return "rotateLeft"
       default:
         return undefined
     }
@@ -243,7 +246,6 @@ class NavigableCamera {
   controlSelectedObject() {
     const selected = camera.currentFirstPersonViewObject.root
     window.selected = selected
-    console.log(selected)
     const util = NavigableCameraUtils
 
     let viewMatrix = camera.viewMatrix
@@ -273,17 +275,21 @@ class NavigableCamera {
     if (this.pressedKeys.forward && !this.pressedKeys.backward) deltaY = -0.1;
     else if (this.pressedKeys.backward && !this.pressedKeys.forward) deltaY = 0.1;
 
-    let deltaZ = 0;
-    if (this.pressedKeys.upward && !this.pressedKeys.downward) deltaZ = 0.1;
-    else if (this.pressedKeys.downward && !this.pressedKeys.upward) deltaZ = -0.1;
-
     let deltaMovement = scale(deltaX, right)
     let deltaBack = scale(deltaY, back)
-    let deltaUp = scale(deltaZ, up)
     deltaMovement = add(deltaMovement, deltaBack)
-    deltaMovement = add(deltaMovement, deltaUp)
+
+    let deltaXRotation = 0;
+    if (this.pressedKeys.upward && !this.pressedKeys.downward) deltaXRotation = -1;
+    else if (this.pressedKeys.downward && !this.pressedKeys.upward) deltaXRotation = 1;
+
+    let deltaZRotation = 0;
+    if (this.pressedKeys.rotateLeft && !this.pressedKeys.rotateRight) deltaZRotation = 1;
+    else if (this.pressedKeys.rotateRight && !this.pressedKeys.rotateLeft) deltaZRotation = -1;
 
     selected.position.set(add(selected.position.property, deltaMovement))
+    selected.rotation.setX((selected.rotation.property[0] + deltaXRotation) % 360)
+    selected.rotation.setZ((selected.rotation.property[2] + deltaZRotation) % 360)
     selected.localMatrixNeedUpdate = true
   }
 
