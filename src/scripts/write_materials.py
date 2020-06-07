@@ -72,4 +72,4 @@ for material in D.materials:
     
 
 with open(MATERIALS_DATA_PATH, "w+") as outfile:
-    outfile.write("var materials_definition = materials_definition.concat(" + json.dumps(materials, indent=2) + ")")
+    outfile.write("materials_definition = materials_definition.concat(" + json.dumps(materials, indent=2) + ")")
