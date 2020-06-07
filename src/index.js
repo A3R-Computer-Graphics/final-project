@@ -484,7 +484,8 @@ function initObjectsDataFromBlender() {
       origin: data.origin,
       position: data.position,
       rotation: data.rotation,
-      scale: data.scale
+      scale: data.scale,
+      matrixParentInverse: data.matrix_parent_inverse
     })
 
     app.addObject(object)

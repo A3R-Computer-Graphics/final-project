@@ -2,6 +2,7 @@ import bpy
 import json
 import os
 import shutil
+import uuid
 
 C = bpy.context
 D = bpy.data
@@ -58,15 +59,34 @@ for material in D.materials:
     if image_node is not None and image_node.image is not None:
         image = image_node.image
         image_path = os.path.normpath(image_node.image.filepath_from_user())
+        image_is_written = False
         
         # Assume filenames are unique
         fname = os.path.split(image_path)[1]
         target_path = os.path.join(IMAGE_COLLECT_DIR_PATH, fname)
+            
+        # Check whether the image is a packed file
+        packed_file = image.packed_file
         
-        if image_path != target_path:
-            shutil.copy(image_path, target_path)
+        # If it is, copy all of its bytes data
+        if packed_file:
+            material_id = str(uuid.uuid1()).split('-')[0]
+            format = image.file_format.lower()
+            fname = material.name + '.' + material_id + '.' + format
+            
+            target_path = os.path.join(IMAGE_COLLECT_DIR_PATH, fname)
+            
+            with open(target_path, mode='wb') as outfile:
+                outfile.write(packed_file.data)
+            image_is_written = True
+        else:
+            # Check if path exists
+            if os.path.exists(image_path) and image_path != target_path:
+                shutil.copy(image_path, target_path)
+                image_is_written = True
         
-        material_data['image'] = fname
+        if image_is_written:
+            material_data['image'] = fname
     
     materials.append(material_data)
     

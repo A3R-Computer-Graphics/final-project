@@ -9,7 +9,10 @@ rad_to_deg = 180 / math.pi
 
 C = bpy.context
 D = bpy.data
-ANIMATION_FPATH = os.join.path(DIR, '../src/resources/objects/objects-animations.js')
+
+DIR = os.path.join(bpy.path.abspath("//"), "../kode/src/resources/objects/")
+DIR = os.path.normpath(DIR)
+ANIMATION_FPATH = os.path.join(DIR, 'objects-animations.js')
 
 objs_animation_data = {}
 objs = C.selected_objects
@@ -50,14 +53,6 @@ for obj in objs:
         # Since we're animating a delta property, we need to add
         # the final value with initial value
         initial_value = getattr(obj, original_property)[axis_id]
-        
-        # For position, we need to subtract object's position with
-        # parent position.
-        
-        if "location" in original_property:
-            parent = obj.parent
-            if parent:
-                initial_value -= parent.location[axis_id]
         
         for keyframe in keyframes:
             framenum = int(keyframe.co[0])

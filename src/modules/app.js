@@ -6,8 +6,11 @@ class App {
 
         this.objects = {}
         this.selectedObjectName = ''
+        this.hoveredObjectName = ''
 
         this.materials = {}
+
+        this.requestForObjectPicking = false
     }
 
     addObject(object) {
@@ -20,6 +23,10 @@ class App {
 
     get selectedObject() {
         return this.objects[this.selectedObjectName]
+    }
+
+    get hoveredObject() {
+        return this.objects[this.hoveredObjectName]
     }
 
     getNextUniqueName(name) {
