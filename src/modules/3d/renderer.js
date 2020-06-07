@@ -251,7 +251,7 @@ class Renderer extends EventDispatcher {
     let programInfo = this.programInfos.shadowGen
     let program = programInfo.program
     gl.useProgram(program)
-    gl.enable(gl.CULL_FACE)
+    gl.disable(gl.CULL_FACE)
     twgl.setBuffersAndAttributes(gl, programInfo, this.bufferInfo)
 
     let setUniform = programInfo.uniformSetters
@@ -281,6 +281,7 @@ class Renderer extends EventDispatcher {
     gl.useProgram(program)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     gl.clearColor(0, 0, 0, 0)
+    gl.enable(gl.CULL_FACE)
 
     for (const light of lights) {
 
@@ -348,7 +349,6 @@ class Renderer extends EventDispatcher {
 
   renderPicking(scene, camera, mouseX, mouseY) {
     if (this.lastCanvasHeight !== this.canvas.height || this.lastCanvasWidth !== this.canvas.width) {
-      console.log('a')
       this.setFramebufferAttachmentSizes(canvas.width, canvas.height)
       this.updateLastCanvasSize()
     }

@@ -43,12 +43,12 @@ class EventDispatcher {
     }
   }
 
-  dispatchEvent(event, details) {
+  dispatchEvent(event, ...data) {
     // Check if event exists
     if (this.eventsListeners[event] === undefined) {
       // console.error(`Event ${event} does not exist`)
       return false
     }
-    this.eventsListeners[event].forEach(listener => listener(details))
+    this.eventsListeners[event].forEach(listener => listener.apply(this, data))
   }
 }

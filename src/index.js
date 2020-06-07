@@ -2,8 +2,12 @@
 
 let scene
 let camera
+
+// Modules
 let navigableCamera
 let objectPicking
+let selectedObjectFromTree
+
 let renderer
 
 let app
