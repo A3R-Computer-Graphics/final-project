@@ -1,4 +1,5 @@
-var objects_info = {
+objects_info = {
+    ...objects_info,
     "Batang": {
         "material_name": "Kayu.001",
         "position": [

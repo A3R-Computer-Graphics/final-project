@@ -169,44 +169,77 @@ class NavigableCamera {
   }
 
   setupNavigateUsingKeyboard() {
-    window.addEventListener('keydown', this._proxy(this.processCanvasArrowKeydown))
+    // window.addEventListener('keydown', this._proxy(this.processCanvasArrowKeydown))
     window.addEventListener('keydown', this._proxy(this.processCanvasFocusKeydown))
+    window.addEventListener('keydown', this._proxy(this.processCanvasPerspectiveKeyDown))
     window.addEventListener('keydown', this._proxy(this.processCameraMovementKeyDown))
     window.addEventListener('keyup', this._proxy(this.processCameraMovementKeyUp))
   }
 
-  eventToDirection(event) {
+  processCanvasPerspectiveKeyDown(event) {
     const key = NavigableCameraUtils.alphabetFromEvent(event)
+    const { selectedObject } = app
+
+    if (key !== 'P' || !selectedObject) {
+      return
+    }
+
+    if (camera.shouldSwitchBackToThirdPersonView) {
+      camera.switchToThirdPersonView()
+      return
+    }
+
+    camera.switchToFirstPersonView()
+  }
+
+  eventToDirection(event) {
+    let key = NavigableCameraUtils.alphabetFromEvent(event)
+    if (!key)
+      key = NavigableCameraUtils.directionFromKeyboardArrow(event)
     switch (key) {
       case "W":
         return "forward"
+      case "LEFT":
       case "A":
         return "leftward"
       case "S":
         return "backward"
+      case "RIGHT":
       case "D":
         return "rightward"
+      case "UP":
+        return "upward"
+      case "DOWN":
+        return "downward"
       default:
-        return ""
+        return undefined
     }
   }
 
   get isMovementKeyPressed() {
-    for (var key in this.pressedKeys) if (this.pressedKeys[key]) return true;
+    for (var key in this.pressedKeys) if (!!key && this.pressedKeys[key]) return true;
     return false;
   }
 
   processCameraMovementKeyDown(event) {
     const direction = this.eventToDirection(event)
+    if (!direction) return
     this.pressedKeys[direction] = true
   }
 
   processCameraMovementKeyUp(event) {
     const direction = this.eventToDirection(event)
+    if (!direction) return
     this.pressedKeys[direction] = false
   }
 
-  update(currentFrame) {
+  updateFirstPersonViewCamera() {
+    if (!camera.isFirstPersonView) return
+    const { currentFirstPersonViewObject } = camera;
+    camera.computeFirstPersonViewCamera(currentFirstPersonViewObject)
+  }
+
+  updateCameraMovement() {
     if (!this.isMovementKeyPressed) return
     const util = NavigableCameraUtils
 
@@ -237,13 +270,24 @@ class NavigableCamera {
     if (this.pressedKeys.forward && !this.pressedKeys.backward) deltaY = -0.1;
     else if (this.pressedKeys.backward && !this.pressedKeys.forward) deltaY = 0.1;
 
+    let deltaZ = 0;
+    if (this.pressedKeys.upward && !this.pressedKeys.downward) deltaZ = 0.1;
+    else if (this.pressedKeys.downward && !this.pressedKeys.upward) deltaZ = -0.1;
+
     let deltaMovement = scale(deltaX, right)
     let deltaBack = scale(deltaY, back)
+    let deltaUp = scale(deltaZ, up)
     deltaMovement = add(deltaMovement, deltaBack)
+    deltaMovement = add(deltaMovement, deltaUp)
 
     at = add(at, deltaMovement)
     camera.position.set(add(camera.position.get(), deltaMovement))
     updateCameraView()
+  }
+
+  update(currentFrame) {
+    this.updateFirstPersonViewCamera()
+    this.updateCameraMovement()
   }
 
   /**

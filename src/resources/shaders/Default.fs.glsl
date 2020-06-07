@@ -60,7 +60,9 @@ const float pointLightShadowBias = 0.003;
 const float directionalLightShadowBias = -0.003;
 const vec4 selectedObjectColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
 
-
+// Color Picker
+uniform vec3 u_directionalLightColor;
+uniform vec3 u_spotLightColor;
 
 float pointLightShadowValue() {
     vec3 fromLightToFragment = (v_pos - lightPosition);
@@ -113,8 +115,8 @@ vec4 defaultShader() {
     // constants
     float plastic = 0.1;
 
-    vec3 spotlightColor = vec3(1.0, 1.0, 0.0); // red + green = yellow;
-    vec3 directionalLightColor = vec3(1.0, 0.4, 0.8); // a little bit violet
+    vec3 spotlightColor = u_spotLightColor; // red + green = yellow;
+    vec3 directionalLightColor = u_directionalLightColor; // a little bit violet
 
 
     vec4 baseColor = mix(vec4(1.0), texture2D(u_texture, v_texcoord), textureMix);

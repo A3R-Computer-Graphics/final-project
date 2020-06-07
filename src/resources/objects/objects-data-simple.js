@@ -1,4 +1,5 @@
-var objects_info = {
+objects_info = {
+    ...objects_info,
     "Cube": {
         "position": [
             0.0,

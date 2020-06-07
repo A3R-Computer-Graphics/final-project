@@ -1,4 +1,5 @@
-var objects_info = {
+objects_info = {
+  ...objects_info,
   "head": {
       "position": [-0.001, -0.0, 0.645],
       "rotation": [0.0, 0.0, 0.0],

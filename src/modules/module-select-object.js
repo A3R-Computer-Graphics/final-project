@@ -106,7 +106,24 @@ function displayTree() {
 
     let displayElement = document.createElement('div')
     displayElement.classList.add('obj-name')
-    displayElement.innerText = name
+    // displayElement.innerText = name
+
+    let spanElement = document.createElement('span')
+    spanElement.innerText = name
+
+    let buttonElement = document.createElement('button')
+    buttonElement.innerText = 'Hide'
+    buttonElement.onclick = function() {
+      object.visible = !object.visible
+      if (object.visible)
+        buttonElement.innerText = 'Hide'
+      else
+        buttonElement.innerText = 'Show'
+    }
+
+    displayElement.appendChild(spanElement)
+    displayElement.appendChild(buttonElement)
+    
     nodeElement.appendChild(displayElement);
 
     [collapsedCheckElement, displayElement].forEach(element => {

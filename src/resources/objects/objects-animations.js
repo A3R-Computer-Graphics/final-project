@@ -1,4 +1,5 @@
-var animations_definition = {
+animations_definition = {
+  ...animations_definition,
   "head.rotation.z": "0F 0.0 9F 0.0 13F 52.05 15F 53.63 17F 48.67 18F 42.48 20F 45.69 23F 47.89 86F 47.89 102F 0.0 120F 0.0",
   "eye.scale.z": "0F 1.0 11F 1.0 15F 0.15 16F 0.15 18F 1.0 50F 1.0 54F 0.15 55F 0.15 57F 1.0 120F 1.0",
   "eye.position.x": "0F -0.0 15F -0.0 16F -0.07 17F 0.17 18F 0.09 96F 0.09 97F 0.14 98F -0.1 99F -0.0 120F -0.0",

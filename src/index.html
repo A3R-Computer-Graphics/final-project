@@ -43,12 +43,15 @@
 <script type="text/javascript" src="modules/app.js"></script>
 <script type="text/javascript" src="modules/animation-manager.js"></script>
 
-<!-- <script type="comment">Simple scene objects data</script>
+<script type="comment">Object Resources Variable Declaration</script>
+<script type="text/javascript" src="resources/objects/objects.js"></script>
+
+<!-- 
+<script type="comment">Simple scene objects data</script>
 <script type="text/javascript" src="resources/objects/objects-materials-simple.js"></script>
 <script type="text/javascript" src="resources/objects/objects-data-simple.js"></script>
 <script type="text/javascript" src="resources/objects/objects-vertices-simple.js"></script> -->
-
-
+<!-- <script type="text/javascript" src="resources/objects/custom-objects.js"></script> -->
 
 <script type="comment">Use new scene</script>
 <script type="text/javascript" src="resources/objects/objects-materials-tree-scene.js"></script>
@@ -56,16 +59,13 @@
 <script type="text/javascript" src="resources/objects/objects-vertices-tree-scene.js"></script>
 
 
-<!-- <script type="text/javascript" src="resources/objects/custom-objects.js"></script> -->
-
-<!--
 <script type="comment">Final scene objects data</script>
 <script type="text/javascript" src="resources/objects/objects-materials.js"></script>
 <script type="text/javascript" src="resources/objects/objects-data.js"></script>
 <script type="text/javascript" src="resources/objects/objects-vertices.js"></script>
 <script type="text/javascript" src="resources/objects/objects-animations.js"></script>
--->
 
+<script type="text/javascript" src="resources/objects/objects-additional-data.js"></script>
 <script type="text/javascript" src="modules/camera-coordinates.js"></script>
 
 <script type="text/javascript" src="modules/module-navigable-camera.js"></script>
@@ -123,6 +123,9 @@
       <div class="submenu no-selection" id="selected-object-menu">
         <h3 class="submenu-title">Pengaturan Objek yang Dipilih</h3>
         <div class="property-section">
+          <div id="selected-object-action-buttons">
+            <button class="btn btn-danger" id="toggle-selected-object-visibility-button" onclick="toggleSelectedObjectVisibility()">Hide</button>
+          </div>
           <h4>Translasi</h4>
           <div class="submenu-section">
             <div class="slider-container">

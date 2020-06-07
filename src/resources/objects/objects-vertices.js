@@ -1,4 +1,5 @@
-var objects_vertices = {
+objects_vertices = {
+    ...objects_vertices,
     "head": {
         "vertices": [
             [-1.042, -0.903, 0.079],
