@@ -181,7 +181,6 @@ class NavigableCamera {
     const { selectedObject } = app
 
     if (key !== 'P' || !selectedObject) {
-      console.log('Trying to switch perspective without selecting an object...')
       return
     }
 
