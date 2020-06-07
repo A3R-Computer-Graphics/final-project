@@ -3,6 +3,7 @@
 let scene
 let camera
 let navigableCamera
+let objectPicking
 let renderer
 
 let app
@@ -625,6 +626,10 @@ window.addEventListener('load', async function init() {
     navigableCamera = new NavigableCamera()
   }
 
+  if (typeof ObjectPicking !== 'undefined') {
+    objectPicking = new ObjectPicking()
+  }
+
   // Set focus to canvas from the start
   canvas.focus()
 
@@ -641,6 +646,7 @@ async function render(currentFrame) {
   }
 
   navigableCamera.update(currentFrame)
+  objectPicking.update()
   await renderer.render(scene, camera, app)
   
   // Switch between render every 1 seconds (for debugging purposes)

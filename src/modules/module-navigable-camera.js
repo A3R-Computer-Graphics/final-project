@@ -134,6 +134,8 @@ class NavigableCamera {
       downward: false,
     }
 
+    this.shouldUpdateClassList = true
+
     this.cancelCurrentFocusAnimation = function () { }
 
     this.setup()
@@ -159,13 +161,15 @@ class NavigableCamera {
   }
 
   setupTrackball() {
-    this.scrollDetector.parentElement.addEventListener('mousedown', this._proxy(this.onMouseDown))
-    document.addEventListener('mousemove', this._proxy(this.onMouseMove))
-    document.addEventListener('mouseup', this._proxy(this.onMouseUp))
+    let doc = $(document)
+    let canvasCaptureArea = $(this.scrollDetector.parentElement)
+    canvasCaptureArea.on('mousedown', this._proxy(this.onMouseDown))
+    doc.on('mousemove', this._proxy(this.onMouseMove))
+    doc.on('mouseup', this._proxy(this.onMouseUp))
 
-    this.scrollDetector.parentElement.addEventListener('touchstart', this._proxy(this.startTrackballOnDevice))
-    document.addEventListener('touchmove', this._proxy(this.processTrackballOnDevice))
-    document.addEventListener('touchend', this._proxy(this.stopTrackballOnDevice))
+    canvasCaptureArea.on('touchstart', this._proxy(this.startTrackballOnDevice))
+    doc.on('touchmove', this._proxy(this.processTrackballOnDevice))
+    doc.on('touchend', this._proxy(this.stopTrackballOnDevice))
   }
 
   setupNavigateUsingKeyboard() {
@@ -606,6 +610,7 @@ class NavigableCamera {
       this.clickMode = this.CLICK_FOR_TRACKBALL
       this.startTrackball(event)
     }
+    this.shouldUpdateClassList = true
   }
 
   onMouseUp(event) {
@@ -614,11 +619,33 @@ class NavigableCamera {
     } else {
       this.stopCameraMovement(event)
     }
+    this.updateClassList()
+    this.shouldUpdateClassList = false
+  }
+
+  updateClassList() {
+    let classList = this.scrollDetector.parentElement.classList
+    let className = this.clickMode === this.CLICK_FOR_TRACKBALL ? 'grabbing' : 'moving'
+    if (this.isClicking) {
+      classList.add(className)
+    } else {
+      classList.remove(className)
+    }
   }
 
   onMouseMove(event) {
     if (!this.isClicking) {
       return
+    }
+
+    const LEFT_CLICK_EVENT = 1
+    if (event.which !== LEFT_CLICK_EVENT) {
+      return
+    }
+
+    if (this.shouldUpdateClassList && this.posXInit !== event.screenX && this.posYInit !== event.screenY) {
+      this.updateClassList()
+      this.shouldUpdateClassList = false
     }
 
     if (this.clickMode === this.CLICK_FOR_TRACKBALL) {

@@ -46,7 +46,7 @@ class Property3D {
 
 class Object3D {
   constructor(data) {
-    let { name, origin, position, rotation, scale, geometry, material } = data || {}
+    let { name, origin, position, rotation, scale, geometry, wireframeGeometry, material } = data || {}
     this.name = name || ''
 
     origin = origin || [0, 0, 0]
@@ -63,6 +63,7 @@ class Object3D {
     this.worldMatrix = m4.identity()
 
     this.geometry = geometry || null
+    this.wireframeGeometry = wireframeGeometry || null
     this.material = material || null
 
     this.parent = null

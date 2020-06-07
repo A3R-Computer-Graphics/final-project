@@ -60,7 +60,8 @@ class Renderer extends EventDispatcher {
     this.SHADER_DIR = '/resources/shaders/'
     this.shaders = [
       'Default.fs.glsl', 'Default.vs.glsl',
-      'ShadowGen.fs.glsl', 'ShadowGen.vs.glsl']
+      'ShadowGen.fs.glsl', 'ShadowGen.vs.glsl',
+      'ObjectPicking.fs.glsl', 'ObjectPicking.vs.glsl']
     this.shadersCodes = {}
 
     this.shadowMapTextureSize = 512
@@ -73,12 +74,22 @@ class Renderer extends EventDispatcher {
     this.init()
     this.time = 0
 
+    this.lastCanvasWidth = canvas.width
+    this.lastCanvasHeight = canvas.height
+
+  }
+
+
+  updateLastCanvasSize() {
+    this.lastCanvasHeight = canvas.height
+    this.lastCanvasWidth = canvas.width
   }
 
 
   async init() {
     await this.initCanvasAndGL()
     this.initBuffers()
+    this.setupBuffersForPickingProgram()
 
     let gl = this.gl
 
@@ -130,6 +141,7 @@ class Renderer extends EventDispatcher {
     let progInfos = this.programInfos
     progInfos.main = twgl.createProgramInfo(gl, [shaders['Default.vs.glsl'], shaders['Default.fs.glsl']])
     progInfos.shadowGen = twgl.createProgramInfo(gl, [shaders['ShadowGen.vs.glsl'], shaders['ShadowGen.fs.glsl']])
+    progInfos.objectPick = twgl.createProgramInfo(gl, [shaders['ObjectPicking.vs.glsl'], shaders['ObjectPicking.fs.glsl']])
 
     gl.useProgram(this.programInfos.main.program)
   }
@@ -145,6 +157,61 @@ class Renderer extends EventDispatcher {
     }
 
     this.bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays)
+  }
+
+  setFramebufferAttachmentSizes(width, height) {
+    let gl = this.gl
+
+    gl.bindTexture(gl.TEXTURE_2D, this.targetTexture)
+    
+    const level = 0
+    const internalFormat = gl.RGBA
+    const border = 0
+    const format = gl.RGBA
+    const type = gl.UNSIGNED_BYTE
+    const data = null
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
+                  width, height, border,
+                  format, type, data)
+
+    gl.bindRenderbuffer(gl.RENDERBUFFER, this.depthBuffer)
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height)
+  }
+
+
+  // Source: https://webglfundamentals.org/webgl/lessons/webgl-picking.html
+
+  setupBuffersForPickingProgram() {
+    let gl = this.gl
+
+    // Create a texture to render to
+    const targetTexture = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, targetTexture)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+    // create a depth renderbuffer
+    const depthBuffer = gl.createRenderbuffer()
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer)
+
+    // Create and bind the framebuffer
+    const fb = gl.createFramebuffer()
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb)
+
+    // attach the texture as the first color attachment
+    const attachmentPoint = gl.COLOR_ATTACHMENT0
+    const level = 0
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level)
+
+    // make a depth buffer and the same size as the targetTexture
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer)
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+    this.fb = fb
+    this.depthBuffer = depthBuffer
+    this.targetTexture = targetTexture
   }
 
 
@@ -184,6 +251,7 @@ class Renderer extends EventDispatcher {
     let programInfo = this.programInfos.shadowGen
     let program = programInfo.program
     gl.useProgram(program)
+    gl.enable(gl.CULL_FACE)
     twgl.setBuffersAndAttributes(gl, programInfo, this.bufferInfo)
 
     let setUniform = programInfo.uniformSetters
@@ -211,7 +279,7 @@ class Renderer extends EventDispatcher {
 
     gl.useProgram(program)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
-    gl.clearColor(0.2, 0.2, 0.2, 1.0)
+    gl.clearColor(0, 0, 0, 0)
 
     for (const light of lights) {
 
@@ -277,6 +345,90 @@ class Renderer extends EventDispatcher {
   }
 
 
+  renderPicking(scene, camera, mouseX, mouseY) {
+    if (this.lastCanvasHeight !== this.canvas.height || this.lastCanvasWidth !== this.canvas.width) {
+      console.log('a')
+      this.setFramebufferAttachmentSizes(canvas.width, canvas.height)
+      this.updateLastCanvasSize()
+    }
+
+    let objectNames = []
+
+    let gl = this.gl
+    let programInfo = this.programInfos.objectPick
+    gl.useProgram(programInfo.program)
+
+    gl.clearColor(1.0, 1.0, 1.0, 1.0)
+
+    // ------ Draw the objects to the texture --------
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb)
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+
+    gl.enable(gl.CULL_FACE)
+
+    twgl.setUniforms(programInfo, {
+      u_matrix: m4.multiply(camera.projectionMatrix, camera.viewMatrix),
+    })
+
+    // Clear the canvas AND the depth buffer.
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    this.renderPickingTree(scene, objectNames)
+
+    const pixelX = mouseX * gl.canvas.width / gl.canvas.clientWidth;
+    const pixelY = gl.canvas.height - mouseY * gl.canvas.height / gl.canvas.clientHeight - 1;
+
+    const data = new Uint8Array(4)
+    gl.readPixels(
+        pixelX,            // x
+        pixelY,            // y
+        1,                 // width
+        1,                 // height
+        gl.RGBA,           // format
+        gl.UNSIGNED_BYTE,  // type
+        data);             // typed array to hold result
+    const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24)
+    return objectNames[id]
+  }
+
+
+  renderPickingObject(object, id) {
+
+    // Update object matrix
+    if (object.localMatrixNeedsUpdate) {
+      object.updateLocalMatrix()
+      object.updateShallowWorldMatrix()
+      object.children.forEach(child => child.localMatrixNeedsUpdate = true)
+    }
+
+    // Ignore if the object has no geometry
+    if (!object.geometry || object.geometry.vertexStartIndex < 0) {
+      return
+    }
+
+    let gl = this.gl
+    let programInfo = this.programInfos.objectPick
+
+    const colorId = 
+    [((id >>  0) & 0xFF) / 0xFF,
+    ((id >>  8) & 0xFF) / 0xFF,
+    ((id >> 16) & 0xFF) / 0xFF,
+    ((id >> 24) & 0xFF) / 0xFF]
+
+    twgl.setUniforms(programInfo, {
+      isTreeLeaf: object.name === 'Daun',
+      isGrass: object.name === 'rumput',
+      u_world: object.worldMatrix,
+      u_id: colorId,
+    })
+
+    let geometry = object.geometry
+    geometry.bindBufferRendererToThis(gl, this, programInfo)
+    gl.drawArrays(gl.TRIANGLES, 0, geometry.triangleVerticesCount)
+    return id++
+  }
+
+
   /**
    * Render this object and all of its children recursively
    * while performing operations.
@@ -302,6 +454,18 @@ class Renderer extends EventDispatcher {
       let child = object.children[i]
       self.renderShadowObjectTree(child, app)
     }
+  }
+
+
+  renderPickingTree(object, objectNames) {
+    const self = this
+    let id = objectNames.length
+    self.renderPickingObject(object, id)
+    objectNames.push(object.name)
+
+    object.children.forEach(child => {
+      self.renderPickingTree(child, objectNames)
+    })
   }
 
 
@@ -459,12 +623,12 @@ class Renderer extends EventDispatcher {
       }
     }
 
-    if (object instanceof Light) {
-      textureMix = 0.0;
-    }
-
     let geometry = object.geometry
-    geometry.bindBufferRendererToThis(gl, this, programInfo)
+
+    if (object instanceof Light) {
+      textureMix = 0.0
+      geometry = object.wireframeGeometry
+    }
 
     twgl.setUniforms(programInfo, {
 
@@ -478,7 +642,8 @@ class Renderer extends EventDispatcher {
       isTreeLeaf: object.name === 'Daun',
       isGrass: object.name === 'rumput'
     })
-
+    
+    geometry.bindBufferRendererToThis(gl, this, programInfo)
     if (geometry.wireframeMode) {
       gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
     } else {
