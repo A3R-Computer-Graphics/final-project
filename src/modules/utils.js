@@ -73,7 +73,7 @@ function translateThenScaleTileCoordinates(points, posX, posY, scale) {
  * @param {String} stringPropertyName 
  */
 function parsePropertyString(stringPropertyName) {
-  const matches = stringPropertyName.match(/^([a-zA-Z_.]+)\.(position|rotation|scale)\.(x|y|z)$/);
+  const matches = stringPropertyName.match(/^([a-zA-Z_.0-9]+)\.(position|rotation|scale)\.(x|y|z)$/);
   if (!matches) {
     return
   }
