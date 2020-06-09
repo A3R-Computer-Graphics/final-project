@@ -1,12 +1,13 @@
-class App {
+class App extends EventDispatcher {
     constructor({ scene, renderer, animationManager }) {
+        super()
+
         this.scene = scene
         this.renderer = renderer
         this.animationManager = animationManager
 
         this.objects = {}
-        this.selectedObjectName = ''
-        this.hoveredObjectName = ''
+        this.__selectedObjectName = ''
 
         this.materials = {}
 
@@ -21,12 +22,21 @@ class App {
         this.materials[material.name] = material
     }
 
-    get selectedObject() {
-        return this.objects[this.selectedObjectName]
+    get selectedObjectName() {
+        return this.__selectedObjectName
     }
 
-    get hoveredObject() {
-        return this.objects[this.hoveredObjectName]
+    set selectedObjectName(val) {
+        val = val || ''
+        if (this.__selectedObjectName || '' !== val) {
+            let oldVal = this.__selectedObjectName
+            this.__selectedObjectName = val
+            this.dispatchEvent('update-selection', val, oldVal)
+        }
+    }
+
+    get selectedObject() {
+        return this.objects[this.__selectedObjectName]
     }
 
     getNextUniqueName(name) {

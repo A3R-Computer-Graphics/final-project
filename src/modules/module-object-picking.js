@@ -30,7 +30,7 @@ class ObjectPicking {
       let clickedObjectName = renderer.renderPicking(scene, camera, this.mouseX, this.mouseY)
       if (clickedObjectName === app.selectedObjectName) {
         // deselect
-        app.selectedObjectName = undefined
+        app.selectedObjectName = ''
       } else {
         app.selectedObjectName = clickedObjectName
       }

@@ -2,8 +2,12 @@
 
 let scene
 let camera
+
+// Modules
 let navigableCamera
 let objectPicking
+let selectedObjectFromTree
+
 let renderer
 
 let app
@@ -403,10 +407,13 @@ function createCubeLight() {
   
   window.mushroomLight = new SpotLight()
   mushroomLight.name = app.getNextUniqueName('mushroom-light')
-  mushroomLight.scale.set(0.2, 0.2, 0.2);
+  mushroomLight.position.set(0, -2.5, 6.0)
+  mushroomLight.rotation.setX(30)
+  mushroomLight.scale.set(0.2, 0.2, 0.2)
+  mushroomLight.direction = [0.0, 0.0, -1.0, 1.0]
 
   // If there's a cone object, attach this light to it. Otherwise, just use the scene.
-  (app.objects['Cone'] || scene).add(mushroomLight)
+  ;(app.objects['Cone'] || scene).add(mushroomLight)
   app.addObject(mushroomLight)
 
   light = window.sun
@@ -619,8 +626,8 @@ window.addEventListener('load', async function init() {
     attachListenerOnAnimationUpdate()
   }
 
-  if (typeof initObjectSelectionMechanism !== 'undefined') {
-    initObjectSelectionMechanism()
+  if (typeof SelectObjectFromTree !== 'undefined') {
+    selectedObjectFromTree = new SelectObjectFromTree()
   }
 
   if (typeof NavigableCameraUtils !== 'undefined') {

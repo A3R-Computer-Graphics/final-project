@@ -189,6 +189,7 @@ class NavigableCamera {
     }
 
     if (camera.shouldSwitchBackToThirdPersonView) {
+      console.log('switch back')
       camera.switchToThirdPersonView()
       return
     }
@@ -324,8 +325,8 @@ class NavigableCamera {
     right = normalize(right)
 
     let deltaX = 0;
-    if (this.pressedKeys.rightward && !this.pressedKeys.leftward) deltaX = 0.1;
-    else if (this.pressedKeys.leftward && !this.pressedKeys.rightward) deltaX = -0.1;
+    if ((this.pressedKeys.rightward && !this.pressedKeys.leftward) || (!this.pressedKeys.rotateLeft && this.pressedKeys.rotateRight)) deltaX = 0.1;
+    else if ((this.pressedKeys.leftward && !this.pressedKeys.rightward) || (!this.pressedKeys.rotateRight && this.pressedKeys.rotateLeft)) deltaX = -0.1;
 
     let deltaY = 0;
     if (this.pressedKeys.forward && !this.pressedKeys.backward) deltaY = -0.1;

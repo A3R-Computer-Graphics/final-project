@@ -77,6 +77,7 @@ class Renderer extends EventDispatcher {
     this.lastCanvasWidth = canvas.width
     this.lastCanvasHeight = canvas.height
 
+    this.softShadow = true
   }
 
 
@@ -94,12 +95,11 @@ class Renderer extends EventDispatcher {
     let gl = this.gl
 
     gl.enable(gl.BLEND)
-
     twgl.setUniforms(this.programInfos.main, twgl.createTextures(gl, {
       u_texture: { src: null, target: gl.TEXTURE_2D, width: 1, height: 1 },
       pointLightShadowMap: { src: null, target: gl.TEXTURE_CUBE_MAP, width: 1, height: 1 },
       u_projectedTexture_dir: { src: null, target: gl.TEXTURE_2D, width: 1, height: 1 },
-      u_projectedTexture_spot: { src: null, target: gl.TEXTURE_2D, width: 1, height: 1 }
+      u_projectedTexture_spot: { src: null, target: gl.TEXTURE_2D, width: 1, height: 1 },
     }))
 
     this.initShadowMapCameras()
@@ -251,7 +251,7 @@ class Renderer extends EventDispatcher {
     let programInfo = this.programInfos.shadowGen
     let program = programInfo.program
     gl.useProgram(program)
-    gl.enable(gl.CULL_FACE)
+    gl.disable(gl.CULL_FACE)
     twgl.setBuffersAndAttributes(gl, programInfo, this.bufferInfo)
 
     let setUniform = programInfo.uniformSetters
@@ -281,6 +281,7 @@ class Renderer extends EventDispatcher {
     gl.useProgram(program)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     gl.clearColor(0, 0, 0, 0)
+    gl.enable(gl.CULL_FACE)
 
     for (const light of lights) {
 
@@ -335,7 +336,8 @@ class Renderer extends EventDispatcher {
       shadowClipNear: this.shadowClipNear,
       shadowClipFar: this.shadowClipFar,
 
-      time: this.time
+      time: this.time,
+      u_softShadow: this.softShadow
     })
 
 
@@ -348,7 +350,6 @@ class Renderer extends EventDispatcher {
 
   renderPicking(scene, camera, mouseX, mouseY) {
     if (this.lastCanvasHeight !== this.canvas.height || this.lastCanvasWidth !== this.canvas.width) {
-      console.log('a')
       this.setFramebufferAttachmentSizes(canvas.width, canvas.height)
       this.updateLastCanvasSize()
     }
