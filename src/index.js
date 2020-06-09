@@ -557,8 +557,10 @@ function initObjectsDataFromBlender() {
 }
 
 function toggleWireframeAndShadingMode() {
-  scene.toggleWireframeAndShadingModeRecursively()
-  document.querySelector('#toggle-wireframe-button').innerText = scene.wireframeMode ? 'Ubah ke Mode Shading' : 'Ubah ke Mode Wireframe'
+  scene.toggleWireframeAndShadingModeRecursively();
+  const dom = document.querySelector('#toggle-wireframe-button');
+  dom.innerText = scene.wireframeMode ? 'Ubah ke Mode Shading' : 'Ubah ke Mode Wireframe';
+  dom.className = "btn btn-" + (scene.wireframeMode ? 'primary' : 'danger');
 }
 
 function toggleSelectedObjectVisibility() {
