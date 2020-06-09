@@ -188,13 +188,15 @@ class NavigableCamera {
       return
     }
 
+    const viewingModeStatusDOM = document.querySelector('#viewing-mode-status');
     if (camera.shouldSwitchBackToThirdPersonView) {
-      console.log('switch back')
       camera.switchToThirdPersonView()
+      viewingModeStatusDOM.innerText = 'Umum (3rd Person)'
       return
     }
 
     camera.switchToFirstPersonView()
+    viewingModeStatusDOM.innerHTML = 'Perspektif (1st Person) dari <b>' + selectedObject.name + '</b>'
   }
 
   eventToDirection(event) {

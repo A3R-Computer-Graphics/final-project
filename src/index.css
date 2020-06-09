@@ -502,6 +502,10 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   line-height: 1.2;
 }
 
+#viewing-mode-status {
+  color: orange;
+}
+
 /* Selected object hierarchy */
 
 #selobj-hierarchy > * {
