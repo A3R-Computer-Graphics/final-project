@@ -51,13 +51,51 @@ class CameraPrototype extends Object3D {
   }
 
   switchToThirdPersonView() {
-      const { position, at: lastAt } = this.lastThirdPersonViewInformation
-      this.position.set(position)
-      this.lookAt(lastAt)
-
-      at = lastAt
       this.isFirstPersonView = false
       this.currentFirstPersonViewObject = null
+
+      const { position: newPosition, at: newAt } = this.lastThirdPersonViewInformation
+
+      const resetPositionAndAt = () => {
+        this.position.set(newPosition)
+        at = newAt
+      }
+
+      this.cancelSwitchCameraAnimation()
+    
+      let progress = 0
+      let animationCancelled = false
+      this.cancelSwitchCameraAnimation = () => {
+        animationCancelled = true
+        // resetPositionAndAt()
+      }
+      let animationDuration = NavigableCamera.MAX_FOCUS_PROGRESS_FRAME_DURATION * 2
+
+      const [oldPosition, oldAt] = [[...this.position.property], [...at]];
+      let animateFocusTransition = () => {
+        if (progress > animationDuration || animationCancelled) {
+          this.animationStillRunning = false
+          this.pendingFunctions = []
+          return
+        }
+        this.animationStillRunning = true
+
+        let x = progress / animationDuration
+        let y = 1 - Math.pow(x - 1, 2)
+
+        const interpolatePos = mix(oldPosition, newPosition, y)
+        const interpolateAt = mix(oldAt, newAt, y)
+
+        this.position.set(interpolatePos)
+        this.lookAt(interpolateAt)
+        
+        progress += 1
+        window.requestAnimationFrame(animateFocusTransition)
+      }
+
+      window.requestAnimationFrame(animateFocusTransition)      
+      resetPositionAndAt()
+
       return
   }
 

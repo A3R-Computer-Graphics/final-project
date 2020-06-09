@@ -189,6 +189,7 @@ class NavigableCamera {
     }
 
     if (camera.shouldSwitchBackToThirdPersonView) {
+      console.log('switch back')
       camera.switchToThirdPersonView()
       return
     }
@@ -198,23 +199,26 @@ class NavigableCamera {
 
   eventToDirection(event) {
     let key = NavigableCameraUtils.alphabetFromEvent(event)
-    if (!key)
+    if (!key) {
       key = NavigableCameraUtils.directionFromKeyboardArrow(event)
+    }
     switch (key) {
       case "W":
         return "forward"
-      case "LEFT":
       case "A":
         return "leftward"
       case "S":
         return "backward"
-      case "RIGHT":
       case "D":
         return "rightward"
       case "UP":
         return "upward"
       case "DOWN":
         return "downward"
+      case "RIGHT":
+        return "rotateRight"
+      case "LEFT":
+        return "rotateLeft"
       default:
         return undefined
     }
@@ -243,8 +247,9 @@ class NavigableCamera {
     camera.computeFirstPersonViewCamera(currentFirstPersonViewObject)
   }
 
-  updateCameraMovement() {
-    if (!this.isMovementKeyPressed) return
+  controlSelectedObject() {
+    const selected = camera.currentFirstPersonViewObject.root
+    window.selected = selected
     const util = NavigableCameraUtils
 
     let viewMatrix = camera.viewMatrix
@@ -269,6 +274,59 @@ class NavigableCamera {
     let deltaX = 0;
     if (this.pressedKeys.rightward && !this.pressedKeys.leftward) deltaX = 0.1;
     else if (this.pressedKeys.leftward && !this.pressedKeys.rightward) deltaX = -0.1;
+
+    let deltaY = 0;
+    if (this.pressedKeys.forward && !this.pressedKeys.backward) deltaY = -0.1;
+    else if (this.pressedKeys.backward && !this.pressedKeys.forward) deltaY = 0.1;
+
+    let deltaMovement = scale(deltaX, right)
+    let deltaBack = scale(deltaY, back)
+    deltaMovement = add(deltaMovement, deltaBack)
+
+    let deltaXRotation = 0;
+    if (this.pressedKeys.upward && !this.pressedKeys.downward) deltaXRotation = -1;
+    else if (this.pressedKeys.downward && !this.pressedKeys.upward) deltaXRotation = 1;
+
+    let deltaZRotation = 0;
+    if (this.pressedKeys.rotateLeft && !this.pressedKeys.rotateRight) deltaZRotation = 1;
+    else if (this.pressedKeys.rotateRight && !this.pressedKeys.rotateLeft) deltaZRotation = -1;
+
+    selected.position.set(add(selected.position.property, deltaMovement))
+    selected.rotation.setX((selected.rotation.property[0] + deltaXRotation) % 360)
+    selected.rotation.setZ((selected.rotation.property[2] + deltaZRotation) % 360)
+    selected.localMatrixNeedUpdate = true
+  }
+
+  updateCameraMovement() {
+    if (!this.isMovementKeyPressed) return
+    if (camera.isFirstPersonView) {
+      this.controlSelectedObject()
+      return
+    }
+    const util = NavigableCameraUtils
+
+    let viewMatrix = camera.viewMatrix
+    viewMatrix = m4.inverse(viewMatrix)
+    viewMatrix = util.mat4As2D(viewMatrix)
+
+    let axis = util.multiplyUsingReduce(this.axisCoordinates, viewMatrix)
+
+    let base = axis[this.AXIS_BASE_ID]
+    let up = axis[this.AXIS_UP_ID]
+    let back = axis[this.AXIS_BACK_ID]
+    
+    up = subtract(up, base).splice(0, 3)
+    up = normalize(up)
+    
+    back = subtract(back, base).splice(0, 3)
+    back = normalize(back)
+
+    let right = cross(up, back)
+    right = normalize(right)
+
+    let deltaX = 0;
+    if ((this.pressedKeys.rightward && !this.pressedKeys.leftward) || (!this.pressedKeys.rotateLeft && this.pressedKeys.rotateRight)) deltaX = 0.1;
+    else if ((this.pressedKeys.leftward && !this.pressedKeys.rightward) || (!this.pressedKeys.rotateRight && this.pressedKeys.rotateLeft)) deltaX = -0.1;
 
     let deltaY = 0;
     if (this.pressedKeys.forward && !this.pressedKeys.backward) deltaY = -0.1;
