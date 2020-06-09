@@ -76,7 +76,8 @@ class Object3D {
     this.matrixParentInverse = matrixParentInverse
 
     this.visible = true
-
+    this.wireframeMode = false
+  
     const additionalData = name in objectsAdditionalData ? objectsAdditionalData[name] : {}
     Object.keys(additionalData).forEach((additionalDataKey) => {
       this[additionalDataKey] = additionalData[additionalDataKey]
@@ -137,6 +138,10 @@ class Object3D {
 
   setGeometry(geometry) {
     this.geometry = geometry
+  }
+
+  setWireframeGeometry(geometry) {
+    this.wireframeGeometry = geometry
   }
 
   setMaterial(material) {
@@ -232,5 +237,18 @@ class Object3D {
     }
     this.rootObject = this.parent.root
     return this.rootObject
+  }
+
+  toggleWireframeAndShadingMode() {
+    this.wireframeMode = !this.wireframeMode
+
+    const temp = this.geometry;
+    this.geometry = this.wireframeGeometry;
+    this.wireframeGeometry = temp;
+  }
+  
+  toggleWireframeAndShadingModeRecursively() {
+    this.toggleWireframeAndShadingMode()
+    this.children.forEach((child) => child.toggleWireframeAndShadingModeRecursively())
   }
 }
