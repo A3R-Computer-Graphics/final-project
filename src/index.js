@@ -413,7 +413,7 @@ function createCubeLight() {
   mushroomLight.direction = [0.0, 0.0, -1.0, 1.0]
 
   // If there's a cone object, attach this light to it. Otherwise, just use the scene.
-  (app.objects['Cone'] || scene).add(mushroomLight)
+  ;(app.objects['Cone'] || scene).add(mushroomLight)
   app.addObject(mushroomLight)
 
   light = window.sun
@@ -626,8 +626,8 @@ window.addEventListener('load', async function init() {
     attachListenerOnAnimationUpdate()
   }
 
-  if (typeof initObjectSelectionMechanism !== 'undefined') {
-    initObjectSelectionMechanism()
+  if (typeof SelectObjectFromTree !== 'undefined') {
+    selectedObjectFromTree = new SelectObjectFromTree()
   }
 
   if (typeof NavigableCameraUtils !== 'undefined') {
