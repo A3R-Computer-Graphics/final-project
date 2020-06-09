@@ -419,6 +419,15 @@ class Geometry {
     }   
 
     this.geometryBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays, renderer.bufferInfo)
+
+    if (this.normalStartIndex < 0) { 
+      delete this.geometryBufferInfo.attribs.a_norm
+    }
+
+    if (this.uvStartIndex < 0) { 
+      delete this.geometryBufferInfo.attribs.a_texcoord
+    }
+
     this.geometryBufferInfo.numElements = this.triangleVerticesCount
   }
 
