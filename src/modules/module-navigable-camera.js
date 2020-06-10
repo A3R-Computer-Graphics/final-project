@@ -542,7 +542,14 @@ class NavigableCamera {
     if (key !== 'F' || !selectedObject) {
       return
     }
+    this.focus(selectedObject)
+  }
 
+  focus(selectedObject) {
+    if (camera.isFirstPersonView) {
+      camera.switchToThirdPersonView()
+    }
+    
     let objectMatrix = mat4(selectedObject.worldMatrix)
     let objectWorldPosition = objectMatrix[3].slice(0, 3)
 
@@ -581,7 +588,6 @@ class NavigableCamera {
     }
 
     window.requestAnimationFrame(animateFocusTransition)
-
   }
 
 

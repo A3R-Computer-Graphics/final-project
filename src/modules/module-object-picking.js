@@ -28,12 +28,19 @@ class ObjectPicking {
     if (this.requestForObjectPicking && Date.now() - this.startTime > this.TIMEOUT) {
       this.startTime = Date.now()
       let clickedObjectName = renderer.renderPicking(scene, camera, this.mouseX, this.mouseY)
+      
+      const oldSelectedTreeElement = document.querySelector(`li[data-model-name="${app.selectedObjectName}"]`)
       if (clickedObjectName === app.selectedObjectName) {
         // deselect
         app.selectedObjectName = ''
       } else {
         app.selectedObjectName = clickedObjectName
       }
+      const newSelectedTreeElement = document.querySelector(`li[data-model-name="${app.selectedObjectName}"]`)
+
+      if (oldSelectedTreeElement) oldSelectedTreeElement.classList.remove('selected')
+      if (newSelectedTreeElement) newSelectedTreeElement.classList.add('selected')
+
       this.requestForObjectPicking = false
     }
   }

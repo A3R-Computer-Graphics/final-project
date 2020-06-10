@@ -102,12 +102,12 @@
         <div id="help-content">
           Tekan kanvas terlebih dahulu untuk melakukan perintah berikut.
           <ul>
-            <li>Gerak maju-mundur kiri-kanan dengan menahan & menggerakkan mouse dan <strong>menekan Shift</strong>.</li>
-            <li>Gerak atas-bawah kiri-kanan dengan menahan & menggerakkan mouse dan <strong>menekan Ctrl</strong>.</li>
-            <li>Tekan <strong>panah keyboard</strong> untuk memindahkan posisi kamera.</li>
+            <li>Gerak maju-mundur kiri-kanan dengan <strong>menahan & menggerakkan mouse dan menekan Shift</strong> ATAU <strong>tombol W-A-S-D</strong>.</li>
+            <li>Gerak atas-bawah kiri-kanan dengan <strong>menahan & menggerakkan mouse dan menekan Ctrl</strong> ATAU <strong>tombol panah</strong>.</li>
             <li>Tekan <strong>spasi</strong> untuk memulai/menghentikan animasi.</li>
             <li>Tekan dan <strong>tahan kanvas</strong> untuk memutar kamera.</li>
             <li>Tekan <strong>F</strong> untuk fokus pada model yang <strong>dipilih</strong>.</li>
+            <li>Tekan <strong>P</strong> untuk mengubah kamera dari perspektif model yang <strong>dipilih</strong>.</li>
             <li><strong><i>Scroll</i></strong> untuk zoom in/out.</li>
           </ul>
         </div>
@@ -117,7 +117,12 @@
         <label class="note">Bantuan: untuk memilih objek, <strong>klik kanan</strong> (pada desktop)
           atau <strong>tekan dan tahan</strong> yang lama (pada mobile)</label>
         <div id="tree">
-          <div class="obj-name" id="root-node">Root</div>
+          <div class="obj-name" id="root-node">
+            <span>Root</span>
+            <div>
+            <button class="btn btn-info" onclick="switchToThirdPersonViewingMode()">3rd Person Viewing Mode</button>
+            </div>
+          </div>
           <ul>
           </ul>
         </div>

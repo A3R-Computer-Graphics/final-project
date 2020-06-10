@@ -585,6 +585,11 @@ function toggleSelectedObjectVisibility() {
   dom.className = `btn ${visible ? 'btn-danger' : 'btn-primary'}`
 }
 
+function switchToThirdPersonViewingMode() {
+  if (camera.isFirstPersonView)
+    camera.switchToThirdPersonView();
+}
+
 window.addEventListener('load', async function init() {
 
   // Set up scene, camera, and renderer

@@ -74,6 +74,15 @@ class SelectObjectFromTree {
   }
 
 
+  select(modelName) {
+    let newSelectedElement = document.querySelector(`li[data-model-name="${modelName}"]`)
+    if (newSelectedElement) {
+      newSelectedElement.classList.add('selected')
+      app.selectedObjectName = modelName
+      this.updateSliderOnObjectSelected()
+    }
+  }
+
   deselect(modelName) {
     let selectedElement = document.querySelector(`li[data-model-name="${modelName}"]`)
 
@@ -91,14 +100,7 @@ class SelectObjectFromTree {
       app.selectedObjectName = ''
 
     } else {
-
-      let newSelectedElement = document.querySelector(`li[data-model-name="${newSelection}"]`)
-      if (newSelectedElement) {
-        newSelectedElement.classList.add('selected')
-        app.selectedObjectName = newSelection
-        this.updateSliderOnObjectSelected()
-      }
-
+      this.select(newSelection)
     }
     this.updateSelectionView()
   }
@@ -187,18 +189,47 @@ class SelectObjectFromTree {
       let spanElement = document.createElement('span')
       spanElement.innerText = name
 
-      let buttonElement = document.createElement('button')
-      buttonElement.innerText = 'Hide'
-      buttonElement.onclick = function () {
+      const actionButtonsElement = document.createElement('div')
+      actionButtonsElement.className = 'obj-action-buttons'
+
+      const toggleButtonElement = document.createElement('button')
+      toggleButtonElement.className = 'btn btn-danger'
+      toggleButtonElement.innerText = 'Hide'
+      toggleButtonElement.onclick = function () {
         object.visible = !object.visible
-        if (object.visible)
-          buttonElement.innerText = 'Hide'
-        else
-          buttonElement.innerText = 'Show'
+        if (object.visible) {
+          toggleButtonElement.innerText = 'Hide'
+          toggleButtonElement.classList.remove('btn-success')
+          toggleButtonElement.classList.add('btn-danger')
+        } else {
+          toggleButtonElement.innerText = 'Show'
+          toggleButtonElement.classList.remove('btn-danger')
+          toggleButtonElement.classList.add('btn-success')
+        }
       }
 
+      const triggerPerspectiveElement = document.createElement('button')
+      triggerPerspectiveElement.className = 'btn btn-secondary'
+      triggerPerspectiveElement.innerText = 'Perspective'
+      triggerPerspectiveElement.onclick = function() {
+        self.select(name)
+        camera.switchToFirstPersonView()
+      }
+
+      const triggerFocusElement = document.createElement('button')
+      triggerFocusElement.className = 'btn btn-primary'
+      triggerFocusElement.innerText = 'Focus'
+      triggerFocusElement.onclick = function() {
+        triggerFocusElement.focus = !triggerFocusElement.focus
+        self.select(name)
+        navigableCamera.focus(object)
+      }
+
+      actionButtonsElement.appendChild(triggerFocusElement)
+      actionButtonsElement.appendChild(triggerPerspectiveElement)
+      actionButtonsElement.appendChild(toggleButtonElement)
       displayElement.appendChild(spanElement)
-      displayElement.appendChild(buttonElement)
+      displayElement.appendChild(actionButtonsElement)
 
       nodeElement.appendChild(displayElement);
 
