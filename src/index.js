@@ -407,8 +407,6 @@ function createCubeLight() {
   
   window.mushroomLight = new SpotLight()
   mushroomLight.name = app.getNextUniqueName('mushroom-light')
-  mushroomLight.position.set(0, -2.5, 6.0)
-  mushroomLight.rotation.setX(30)
   mushroomLight.scale.set(0.2, 0.2, 0.2)
   mushroomLight.direction = [0.0, 0.0, -1.0, 1.0]
 
@@ -528,12 +526,12 @@ function initObjectsDataFromBlender() {
   // is the same as in `objects_info`
 
   objectNames.forEach(objectName => {
-    let geometryName = objectName in objects_vertices ? objectName : objects_info[objectName].vertices
-    let geometryDefinition = objects_vertices[geometryName]
-    let vertices = geometryDefinition.vertices
-    let indices = geometryDefinition.indices
-    let uvCoordinates = geometryDefinition.uv_coordinates
-    let normals = geometryDefinition.normals
+    const geometryName = objectName in objects_vertices ? objectName : objects_info[objectName].vertices
+    const geometryDefinition = objects_vertices[geometryName]
+    const vertices = geometryDefinition.vertices
+    const indices = geometryDefinition.indices
+    const uvCoordinates = geometryDefinition.uv_coordinates
+    const normals = geometryDefinition.normals
 
     // Ignore init complex geometry, just so you can debug
     // the whole code using scene with simple and few objects
@@ -542,14 +540,25 @@ function initObjectsDataFromBlender() {
     //   return
     // }
 
-    let geometry = new Geometry({
+    const geometry = new Geometry({
       vertices, indices, uvCoordinates, normals
     }, true, false)
+    const wireframeGeometry = new Geometry({
+      vertices, indices, uvCoordinates, normals
+    }, true, true)
 
-    let object = app.objects[objectName]
+    const object = app.objects[objectName]
     object.setGeometry(geometry)
+    object.setWireframeGeometry(wireframeGeometry)
   })
 
+}
+
+function toggleWireframeAndShadingMode() {
+  app.wireframeMode = !app.wireframeMode
+  const dom = document.querySelector('#toggle-wireframe-button');
+  dom.innerText = app.wireframeMode ? 'Ubah ke Mode Shading' : 'Ubah ke Mode Wireframe';
+  dom.className = "btn btn-" + (app.wireframeMode ? 'primary' : 'danger');
 }
 
 function toggleSelectedObjectVisibility() {

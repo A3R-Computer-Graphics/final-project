@@ -628,9 +628,15 @@ class Renderer extends EventDispatcher {
 
     let geometry = object.geometry
 
+    // Always force Light object to use Wireframe
     if (object instanceof Light) {
       textureMix = 0.0
       geometry = object.wireframeGeometry
+    } else {
+      // Switch to wireframeGeometry
+      if (app.wireframeMode) {
+        geometry = object.wireframeGeometry
+      }
     }
 
     twgl.setUniforms(programInfo, {
