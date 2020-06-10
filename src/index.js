@@ -423,15 +423,27 @@ function toggleLight() {
   const lightBtn = document.getElementById('btn-toggle-light');
   if (lightIsOn) {
     lightIsOn = false;
-    light.diffuse = vec4(0.0, 0.0, 0.0, 0.0);
-    light.specular = vec4(0.0, 0.0, 0.0, 0.0);
+
+    lamp.tempIntensity = lamp.intensity;
+    mushroomLight.tempIntensity = mushroomLight.intensity;
+    sun.tempIntensity = sun.intensity;
+
+    lamp.intensity = 0;
+    sun.intensity = 0;
+    mushroomLight.intensity = 0;
+
     lightBtn.innerText = 'Hidupkan Cahaya';
     lightBtn.classList.remove('btn-danger');
     lightBtn.classList.add('btn-primary');
   } else {
     lightIsOn = true;
-    light.diffuse = vec4(1.0, 1.0, 1.0, 1.0);
-    light.specular = vec4(1.0, 1.0, 1.0, 1.0);
+
+    console.log(lamp.tempIntensity, mushroomLight.tempIntensity, sun.tempIntensity)
+    
+    lamp.intensity = lamp.tempIntensity || 1.0;
+    mushroomLight.intensity = mushroomLight.tempIntensity || 1.0;
+    sun.intensity = sun.tempIntensity || 1.0;
+
     lightBtn.innerText = 'Matikan Cahaya';
     lightBtn.classList.remove('btn-primary');
     lightBtn.classList.add('btn-danger');
