@@ -225,31 +225,50 @@
           </div>
           <div class="slider-container" id="resolution-slider">
             <label>Resolusi<b>
-                <div class="slider-value">100%</div>
+                <div class="slider-value">50%</div>
               </b></label>
-            <input type="range" step="1" name="resolution" value="100" min="1" max="100" class="custom-range">
+            <input type="range" step="1" name="resolution" value="50" min="1" max="100" class="custom-range">
           </div>
         </div>
         <div class="submenu">
-          <h3 class="submenu-title">Lokasi Cahaya</h3>
+          <h3 class="submenu-title">Kontrol Cahaya</h3>
           <button type="button" class="btn btn-danger" id="btn-toggle-light">Matikan Cahaya</button>
           <div class="slider-container">
-            <label>X<b>
-                <div class="slider-value">0</div>
-              </b></label>
-            <input type="range" step="0.01" name="light-position-x" value="0" min="-10" max="10" class="custom-range">
+            <label><b>Sun</b></label>
           </div>
           <div class="slider-container">
-            <label>Y<b>
-                <div class="slider-value">0</div>
+            <label>Warna<b>
+                <div class="colorpicker-value"><input type="color" id="lightcolor-sun" name="lightcolor-sun" value="#ffffff"></div>
               </b></label>
-            <input type="range" step="0.01" name="light-position-y" value="0" min="-10" max="10" class="custom-range">
+          </div>
+          <div class="slider-container" id="lightintensity-slider-sun">
+            <label>Intensitas<b>
+              <div class="slider-value">0.3</div>
+            </b></label>
+            <input type="range" step="0.01" name="lightintensity-slider-sun" value="0.3" min="0" max="2" class="custom-range">
           </div>
           <div class="slider-container">
-            <label>Z<b>
-                <div class="slider-value">0</div>
+            <label><b>Mushroom-light</b></label>
+          </div>
+          <div class="slider-container">
+            <label>Warna<b>
+                <div class="colorpicker-value"><input type="color" id="lightcolor-mushroom-light" name="lightcolor-mushroom-light" value="#ffffff"></div>
               </b></label>
-            <input type="range" step="0.01" name="light-position-z" value="0" min="-10" max="10" class="custom-range">
+          </div>
+          <div class="slider-container" id="lightintensity-slider-mushroom-light">
+            <label>Intensitas<b>
+              <div class="slider-value">1</div>
+            </b></label>
+            <input type="range" step="0.01" name="lightintensity-slider-mushroom-light" value="1" min="0" max="2" class="custom-range">
+          </div>
+          <div class="slider-container">
+            <label><b>lamp</b></label>
+          </div>
+          <div class="slider-container" id="lightintensity-slider-lamp">
+            <label>Intensitas<b>
+                <div class="slider-value">1</div>
+              </b></label>
+            <input type="range" step="0.01" name="lightintensity-slider-lamp" value="1" min="0" max="2" class="custom-range">
           </div>
         </div>
       </div>

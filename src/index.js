@@ -218,6 +218,28 @@ function connectLightPositionSliders() {
 
 
 
+function connectLightColorPicker() {
+  document.querySelectorAll('input[name^=lightcolor-]').forEach(colorPicker => {
+
+    const name = colorPicker.getAttribute('name');
+    const lightName = name.slice(name.indexOf('-') + 1);
+    const object = app.objects[lightName];
+    
+    colorPicker.addEventListener('input', () => {
+      const hexCol = colorPicker.value
+      // Convert to rgb
+      let r = 0, g = 0, b = 0;
+      r = ("0x" + hexCol[1] + hexCol[2]) / 255;
+      g = ("0x" + hexCol[3] + hexCol[4]) / 255;
+      b = ("0x" + hexCol[5] + hexCol[6]) / 255;
+      object.color = [r,g,b]
+    });
+
+  });
+}
+
+
+
 /**
  * Update eye coordinate calculation from global
  * variables `radius`, `theta`, and `phi`.
@@ -646,6 +668,7 @@ window.addEventListener('load', async function init() {
 
   connectSlidersToModelData()
   connectLightPositionSliders()
+  connectLightColorPicker()
 
   if (USE_ANIMATION) {
     connectSpeedSlider()

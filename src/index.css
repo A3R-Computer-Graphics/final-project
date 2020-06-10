@@ -149,6 +149,13 @@ canvas {
   text-align: right;
 }
 
+.colorpicker-value {
+  position: absolute;
+  top: 0;
+  left: 50px;
+  text-align: center;
+}
+
 label {
   margin-bottom: 0;
   display: block;
