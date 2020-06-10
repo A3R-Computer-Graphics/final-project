@@ -273,7 +273,14 @@ class Renderer extends EventDispatcher {
         if (light instanceof PointLight) {
           this.generatePointLightShadowMap(light, app)
         } else {
+          light.recomputeMapMatrix()
           this.generateDirectionalLightShadowMap(light, app)
+        }
+      }
+    } else {
+      for (const light of lights) {
+        if (light instanceof MatrixBasedLight) {
+          light.recomputeMapMatrix()
         }
       }
     }
@@ -494,8 +501,6 @@ class Renderer extends EventDispatcher {
     gl.bindFramebuffer(gl.FRAMEBUFFER, light.framebuffer)
     gl.viewport(0, 0, texSize, texSize)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-    light.recomputeMapMatrix()
 
     twgl.setUniforms(programInfo, {
       u_proj: light.lightProjectionMatrix,
