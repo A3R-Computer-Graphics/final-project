@@ -248,32 +248,37 @@ class Renderer extends EventDispatcher {
     ImageTextureMaterial.initMaterialsToRenderer(this)
     Geometry.updateBuffersToRenderer(this)
 
-    let programInfo = this.programInfos.shadowGen
-    let program = programInfo.program
-    gl.useProgram(program)
-    gl.disable(gl.CULL_FACE)
-    twgl.setBuffersAndAttributes(gl, programInfo, this.bufferInfo)
-
-    let setUniform = programInfo.uniformSetters
-    setUniform.time(this.time)
-
+    let programInfo, program
     let lights = Light.lightList
 
-    for (const light of lights) {
-      if (!light.visible) continue
+    // Render shadow only if the app is not in wireframe mode
 
-      if (!light.shadowMapTextureInitialized) {
-        light.initTexture(gl, programInfo)
-      }
-
-      setUniform.isPointLight(light instanceof PointLight)
-
-      if (light instanceof PointLight) {
-        this.generatePointLightShadowMap(light, app)
-      } else {
-        this.generateDirectionalLightShadowMap(light, app)
+    if (!app.wireframeMode) {
+      programInfo = this.programInfos.shadowGen
+      program = programInfo.program
+      gl.useProgram(program)
+  
+      let setUniform = programInfo.uniformSetters
+      setUniform.time(this.time)
+  
+      for (const light of lights) {
+        if (!light.visible) continue
+  
+        if (!light.shadowMapTextureInitialized) {
+          light.initTexture(gl, programInfo)
+        }
+  
+        setUniform.isPointLight(light instanceof PointLight)
+  
+        if (light instanceof PointLight) {
+          this.generatePointLightShadowMap(light, app)
+        } else {
+          this.generateDirectionalLightShadowMap(light, app)
+        }
       }
     }
+
+
 
     programInfo = this.programInfos.main
     program = programInfo.program
@@ -283,51 +288,57 @@ class Renderer extends EventDispatcher {
     gl.clearColor(0, 0, 0, 0)
     gl.enable(gl.CULL_FACE)
 
-    for (const light of lights) {
+    // Set light setup uniforms only in non-wireframe mode
 
-      if (light instanceof PointLight) {
+    if (!app.wireframeMode) {
 
-        twgl.setUniforms(programInfo, {
-          lightPosition: this.usedLightPosition,
-          pointLightIntensity: light.intensity * light.visible || 0.0,
-          pointLightShadowMap: light.shadowMapTexture
-        })
+      for (const light of lights) {
 
-      } else if (light instanceof MatrixBasedLight) {
-
-        let textureMatrix = m4.translation(0.5, 0.5, 0.5)
-        textureMatrix = m4.scale(textureMatrix, 0.5, 0.5, 0.5)
-        textureMatrix = m4.multiply(textureMatrix, light.lightProjectionMatrix)
-        textureMatrix = m4.multiply(textureMatrix, light.lightWorldMatrix)
-
-        if (light instanceof DirectionalLight) {
+        if (light instanceof PointLight) {
 
           twgl.setUniforms(programInfo, {
-            u_reverseLightDirection: light.lightDirection,
-            u_textureMatrix_dir: textureMatrix,
-            directionalLightIntensity: light.intensity * light.visible || 0.0,
-            u_projectedTexture_dir: light.shadowMapTexture,
-            u_directionalLightColor: light.color,
+            lightPosition: this.usedLightPosition,
+            pointLightIntensity: light.intensity * light.visible || 0.0,
+            pointLightShadowMap: light.shadowMapTexture
           })
 
-        } else {
+        } else if (light instanceof MatrixBasedLight) {
 
-          twgl.setUniforms(programInfo, {
-            u_textureMatrix_spot: textureMatrix,
-            lightPosition_spot: light.worldPosition,
+          let textureMatrix = m4.translation(0.5, 0.5, 0.5)
+          textureMatrix = m4.scale(textureMatrix, 0.5, 0.5, 0.5)
+          textureMatrix = m4.multiply(textureMatrix, light.lightProjectionMatrix)
+          textureMatrix = m4.multiply(textureMatrix, light.lightWorldMatrix)
 
-            u_innerLimit: Math.cos(degToRad(light._fov / 2 - 10)),
-            u_outerLimit: Math.cos(degToRad(light._fov / 2)),
-            u_lightDirection: scale(-1, light.lightDirection),
+          if (light instanceof DirectionalLight) {
 
-            spotlightIntensity: light.intensity * light.visible || 0.0,
+            twgl.setUniforms(programInfo, {
+              u_reverseLightDirection: light.lightDirection,
+              u_textureMatrix_dir: textureMatrix,
+              directionalLightIntensity: light.intensity * light.visible || 0.0,
+              u_projectedTexture_dir: light.shadowMapTexture,
+              u_directionalLightColor: light.color,
+            })
 
-            u_projectedTexture_spot: light.shadowMapTexture,
-            u_spotLightColor: light.color,
-          })
+          } else {
 
+            twgl.setUniforms(programInfo, {
+              u_textureMatrix_spot: textureMatrix,
+              lightPosition_spot: light.worldPosition,
+
+              u_innerLimit: Math.cos(degToRad(light._fov / 2 - 10)),
+              u_outerLimit: Math.cos(degToRad(light._fov / 2)),
+              u_lightDirection: scale(-1, light.lightDirection),
+
+              spotlightIntensity: light.intensity * light.visible || 0.0,
+
+              u_projectedTexture_spot: light.shadowMapTexture,
+              u_spotLightColor: light.color,
+            })
+
+          }
         }
       }
+
     }
 
     twgl.setUniforms(programInfo, {
@@ -390,6 +401,8 @@ class Renderer extends EventDispatcher {
         gl.UNSIGNED_BYTE,  // type
         data);             // typed array to hold result
     const id = data[0] + (data[1] << 8) + (data[2] << 16) + (data[3] << 24)
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     return objectNames[id]
   }
 
@@ -690,7 +703,6 @@ class Renderer extends EventDispatcher {
   /** Render shadow 3D Object */
 
   renderShadowObject(object) {
-    if (!object.visible) return
     
     // Update object matrix
 
