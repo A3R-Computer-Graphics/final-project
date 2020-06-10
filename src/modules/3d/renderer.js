@@ -672,6 +672,8 @@ class Renderer extends EventDispatcher {
     
     geometry.bindBufferRendererToThis(gl, this, programInfo)
     if (geometry.wireframeMode) {
+      // For Overlay Mode (Light)
+      if (object instanceof Light) if (!app.lightOverlayMode) return
       gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
     } else {
       gl.drawArrays(gl.TRIANGLES, 0, geometry.triangleVerticesCount)

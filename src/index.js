@@ -184,7 +184,6 @@ function connectLightIntensitySliders() {
 
     const name = slider.getAttribute('name');
     const lightName = name.slice(22);
-    console.log(lightName)
     const lightObj = app.objects[lightName];
 
     let value = lightObj.intensity
@@ -575,6 +574,13 @@ function toggleWireframeAndShadingMode() {
   const dom = document.querySelector('#toggle-wireframe-button');
   dom.innerText = app.wireframeMode ? 'Ubah ke Mode Shading' : 'Ubah ke Mode Wireframe';
   dom.className = "btn btn-" + (app.wireframeMode ? 'primary' : 'danger');
+}
+
+function toggleOverlayMode() {
+  app.overlayMode = !app.overlayMode
+  const dom = document.querySelector('#toggle-overlay-button');
+  dom.innerText = app.overlayMode ? 'Sembunyikan Overlay' : 'Tampilkan Overlay';
+  dom.className = "btn btn-" + (app.overlayMode ? 'warning' : 'light');
 }
 
 function toggleSelectedObjectFocus() {
