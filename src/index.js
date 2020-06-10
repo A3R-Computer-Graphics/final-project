@@ -179,40 +179,24 @@ function connectSpeedSlider() {
 
 
 
-function connectLightPositionSliders() {
-  document.querySelectorAll('input[name^=light-position]').forEach(slider => {
+function connectLightIntensitySliders() {
+  document.querySelectorAll('input[name^=lightintensity-slider]').forEach(slider => {
 
     const name = slider.getAttribute('name');
-    const axisName = name.match(/light-position-(x|y|z)$/)[1];
-    const axisId = ['x', 'y', 'z'].indexOf(axisName);
+    const lightName = name.slice(22);
+    console.log(lightName)
+    const lightObj = app.objects[lightName];
 
-    let value = light.position.get()[axisId];
+    let value = lightObj.intensity
     updateSliderValueAndDisplay(slider, value)
 
     slider.addEventListener('input', () => {
-      let value = parseFloat(slider.value);
-
-      light.position.setOnAxisId(axisId, value);
+      let newValue = parseFloat(slider.value);
+      lightObj.intensity = newValue
 
       updateSliderDisplay(slider, value);
 
-      // Update selected slider as well
-
-      if (app.selectedObjectName === 'cube-lighting') {
-        updateSliderValueAndDisplay(`selected-object-position-${axisName}`, value)
-      }
     });
-
-    // Hook selected object slider
-
-    let selectedSlider = document.querySelector(`input[name="selected-object-position-${axisName}"]`)
-    if (selectedSlider) {
-      selectedSlider.addEventListener('input', function () {
-        if (app.selectedObjectName === 'cube-lighting') {
-          updateSliderValueAndDisplay(slider, parseFloat(selectedSlider.value))
-        }
-      })
-    }
   });
 }
 
@@ -223,7 +207,7 @@ function connectLightColorPicker() {
 
     const name = colorPicker.getAttribute('name');
     const lightName = name.slice(name.indexOf('-') + 1);
-    const object = app.objects[lightName];
+    const lightObj = app.objects[lightName];
     
     colorPicker.addEventListener('input', () => {
       const hexCol = colorPicker.value
@@ -232,7 +216,7 @@ function connectLightColorPicker() {
       r = ("0x" + hexCol[1] + hexCol[2]) / 255;
       g = ("0x" + hexCol[3] + hexCol[4]) / 255;
       b = ("0x" + hexCol[5] + hexCol[6]) / 255;
-      object.color = [r,g,b]
+      lightObj.color = [r,g,b]
     });
 
   });
@@ -667,7 +651,7 @@ window.addEventListener('load', async function init() {
   document.querySelector('#btn-toggle-light').addEventListener('click', toggleLight)
 
   connectSlidersToModelData()
-  connectLightPositionSliders()
+  connectLightIntensitySliders()
   connectLightColorPicker()
 
   if (USE_ANIMATION) {
