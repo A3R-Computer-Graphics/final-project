@@ -51,6 +51,7 @@ class CameraPrototype extends Object3D {
   }
 
   switchToThirdPersonView() {
+      document.querySelector('#third-person-camera-button').hidden = true
       this.isFirstPersonView = false
       this.currentFirstPersonViewObject = null
 
@@ -174,6 +175,7 @@ class CameraPrototype extends Object3D {
   }
 
   switchToFirstPersonView() {
+    document.querySelector('#third-person-camera-button').hidden = false
     const [oldAt, oldPosition] = [[...at], [...camera.position.property]]
     const { selectedObject } = app
     if (!this.isFirstPersonView) this.cacheThirdPersonViewCamera(oldAt, oldPosition)
