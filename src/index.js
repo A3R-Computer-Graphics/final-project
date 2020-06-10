@@ -193,9 +193,7 @@ function connectLightIntensitySliders() {
     slider.addEventListener('input', () => {
       let newValue = parseFloat(slider.value);
       lightObj.intensity = newValue
-
-      updateSliderDisplay(slider, value);
-
+      updateSliderDisplay(slider, newValue);
     });
   });
 }
