@@ -39,7 +39,7 @@ class SelectObjectFromTree {
         }
 
         selectedObject[propertyName].setOnAxisId(axisId, value)
-      }, 50)
+      }, 25)
   }
 
 
