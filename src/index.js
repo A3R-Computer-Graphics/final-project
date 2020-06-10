@@ -577,16 +577,20 @@ function toggleWireframeAndShadingMode() {
   dom.className = "btn btn-" + (app.wireframeMode ? 'primary' : 'danger');
 }
 
-function toggleSelectedObjectVisibility() {
+function toggleSelectedObjectFocus() {
   if (!app) return
   const { selectedObject } = app
   if (!selectedObject) return
   
-  const dom = document.querySelector('#toggle-selected-object-visibility-button')
-  selectedObject.visible = !selectedObject.visible
-  const { visible } = selectedObject
-  dom.innerText = visible ? 'Hide' : 'Show'
-  dom.className = `btn ${visible ? 'btn-danger' : 'btn-primary'}`
+  navigableCamera.focus(selectedObject)
+}
+
+function toggleSelectedObjectPerspective() {
+  if (!app) return
+  const { selectedObject } = app
+  if (!selectedObject) return
+  
+  camera.switchToFirstPersonView()
 }
 
 function switchToThirdPersonViewingMode() {
