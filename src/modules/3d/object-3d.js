@@ -238,17 +238,4 @@ class Object3D {
     this.rootObject = this.parent.root
     return this.rootObject
   }
-
-  toggleWireframeAndShadingMode() {
-    this.wireframeMode = !this.wireframeMode
-
-    const temp = this.geometry;
-    this.geometry = this.wireframeGeometry;
-    this.wireframeGeometry = temp;
-  }
-  
-  toggleWireframeAndShadingModeRecursively() {
-    this.toggleWireframeAndShadingMode()
-    this.children.forEach((child) => child.toggleWireframeAndShadingModeRecursively())
-  }
 }

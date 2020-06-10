@@ -407,8 +407,6 @@ function createCubeLight() {
   
   window.mushroomLight = new SpotLight()
   mushroomLight.name = app.getNextUniqueName('mushroom-light')
-  mushroomLight.position.set(0, -2.5, 6.0)
-  mushroomLight.rotation.setX(30)
   mushroomLight.scale.set(0.2, 0.2, 0.2)
   mushroomLight.direction = [0.0, 0.0, -1.0, 1.0]
 
@@ -557,10 +555,10 @@ function initObjectsDataFromBlender() {
 }
 
 function toggleWireframeAndShadingMode() {
-  scene.toggleWireframeAndShadingModeRecursively();
+  app.wireframeMode = !app.wireframeMode
   const dom = document.querySelector('#toggle-wireframe-button');
-  dom.innerText = scene.wireframeMode ? 'Ubah ke Mode Shading' : 'Ubah ke Mode Wireframe';
-  dom.className = "btn btn-" + (scene.wireframeMode ? 'primary' : 'danger');
+  dom.innerText = app.wireframeMode ? 'Ubah ke Mode Shading' : 'Ubah ke Mode Wireframe';
+  dom.className = "btn btn-" + (app.wireframeMode ? 'primary' : 'danger');
 }
 
 function toggleSelectedObjectVisibility() {

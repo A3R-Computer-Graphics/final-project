@@ -11,7 +11,7 @@ class App extends EventDispatcher {
 
         this.materials = {}
 
-        this.requestForObjectPicking = false
+        this.wireframeMode = false
     }
 
     addObject(object) {
