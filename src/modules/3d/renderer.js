@@ -306,7 +306,9 @@ class Renderer extends EventDispatcher {
           twgl.setUniforms(programInfo, {
             lightPosition: this.usedLightPosition,
             pointLightIntensity: light.intensity * light.visible || 0.0,
-            pointLightShadowMap: light.shadowMapTexture
+            pointLightShadowMap: light.shadowMapTexture,
+            pointLightDiffuseColor: light.diffuseColor,
+            pointLightSpecularColor: light.specularColor
           })
 
         } else if (light instanceof MatrixBasedLight) {
@@ -621,10 +623,13 @@ class Renderer extends EventDispatcher {
 
     if (!selected) {
       if (material instanceof PhongMaterial) {
-        let { diffuse, specular, shininess, emissive } = material
+        let { color, diffuse, specular, shininess, emissive } = material
 
         let uniforms = {}
 
+        if (emissive & color) {
+          uniforms.emissiveColor = color
+        }
         if (diffuse) {
           uniforms.materialDiffuseColor = diffuse
         }

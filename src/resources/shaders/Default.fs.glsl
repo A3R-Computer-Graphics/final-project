@@ -69,6 +69,7 @@ uniform vec3 u_spotLightColor;
 uniform bool u_softShadow;
 
 uniform bool emissive;
+uniform vec4 emissiveColor;
 
 
 
@@ -225,12 +226,12 @@ vec4 defaultShader() {
     if (emissive) {
         return baseColor;
     }
-    
+
     vec4 color = vec4((ambientColor *  baseColor).rgb, 1.0);
     vec3 normal = normalize(v_worldNorm);
 
     // This is based on personal observation, not some empirical source
-    vec4 plasticColor = mix(baseColor, vec4(1.0), plastic);
+    vec4 plasticColor = mix(baseColor, emissiveColor, plastic);
 
     // Calculate point light
     
@@ -259,10 +260,10 @@ vec4 defaultShader() {
     shadowMix = pointLightShadowValue();
 
     vec4 diffuseColor = mix(materialDiffuseColor, texture2D(u_texture, v_texcoord), textureMix);
-    diffuseColor *= lambertian * pointLightIntensity;
+    diffuseColor *= lambertian * pointLightDiffuseColor * pointLightIntensity;
 
     vec4 specularColor = mix(materialSpecularColor, texture2D(u_texture, v_texcoord), textureMix);
-    specularColor *= specular * pointLightIntensity;
+    specularColor *= specular * pointLightSpecularColor * pointLightIntensity;
 
     color += (diffuseColor + specularColor) * shadowMix * power;
 

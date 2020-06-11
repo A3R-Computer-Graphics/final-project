@@ -390,15 +390,16 @@ function createCubeLight() {
   sun.name = app.getNextUniqueName('sun')
   sun.position.set(0, -8.2, 6.25)
   sun.scale.set(0.6)
-  sun.far = 80
-  sun.projWidth *= 2
-  sun.projHeight *= 2
+  sun.far = 200
+  sun.projWidth = 90
+  sun.projHeight = 90
   sun.color = [0.9, 0.7, 0.0]
 
-  sun.intensity = 0.3
+  sun.intensity = 2.5
 
   // Make it tilt
-  sun.rotation.setX(76.4)
+  sun.rotation.setX(-80)
+  sun.rotation.setZ(-20)
   
   scene.add(sun)
   app.addObject(sun)
@@ -406,7 +407,7 @@ function createCubeLight() {
   
   window.lamp = new PointLight()
   lamp.name = app.getNextUniqueName('lamp')
-  lamp.position.set(1.0, -1.0, 2.0)
+  lamp.position.set(0.0, 0.0, 0.8)
   lamp.scale.set(0.2, 0.2, 0.2)
 
   scene.add(lamp)
@@ -414,11 +415,13 @@ function createCubeLight() {
   
   window.mushroomLight = new SpotLight()
   mushroomLight.name = app.getNextUniqueName('mushroom-light')
+  mushroomLight.position.setZ(-0.7)
   mushroomLight.scale.set(0.2, 0.2, 0.2)
   mushroomLight.direction = [0.0, 0.0, -1.0, 1.0]
+  mushroomLight.intensity = 4.5
 
   // If there's a cone object, attach this light to it. Otherwise, just use the scene.
-  ;(app.objects['Cone'] || scene).add(mushroomLight)
+  ;(app.objects['spotlight-cone'] || scene).add(mushroomLight)
   app.addObject(mushroomLight)
 
   light = window.sun
@@ -467,6 +470,7 @@ function initMaterialsFromBlender() {
     let isImage = !!materialData.image
 
     let phongData = {
+      color: materialData.color,
       ambient: materialData.ambient,
       diffuse: materialData.diffuse,
       specular: materialData.specular,

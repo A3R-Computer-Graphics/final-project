@@ -47,6 +47,12 @@ class Light extends Object3D {
 
 class PointLight extends Light {
 
+  constructor() {
+    super(...arguments)
+    this.diffuseColor = vec4(1.0, 1.0, 1.0, 1.0)
+    this.specularColor = vec4(1.0, 1.0, 1.0, 1.0)
+  }
+
   initTexture(gl) {
     this.shadowMapTexture = gl.createTexture()
 
