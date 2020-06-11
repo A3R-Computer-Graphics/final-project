@@ -12,6 +12,7 @@ class App extends EventDispatcher {
         this.materials = {}
 
         this.wireframeMode = false
+        this.overlayMode = true
     }
 
     addObject(object) {

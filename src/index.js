@@ -184,7 +184,6 @@ function connectLightIntensitySliders() {
 
     const name = slider.getAttribute('name');
     const lightName = name.slice(22);
-    console.log(lightName)
     const lightObj = app.objects[lightName];
 
     let value = lightObj.intensity
@@ -193,9 +192,7 @@ function connectLightIntensitySliders() {
     slider.addEventListener('input', () => {
       let newValue = parseFloat(slider.value);
       lightObj.intensity = newValue
-
-      updateSliderDisplay(slider, value);
-
+      updateSliderDisplay(slider, newValue);
     });
   });
 }
@@ -598,16 +595,27 @@ function toggleWireframeAndShadingMode() {
   dom.className = "btn btn-" + (app.wireframeMode ? 'primary' : 'danger');
 }
 
-function toggleSelectedObjectVisibility() {
+function toggleOverlayMode() {
+  app.overlayMode = !app.overlayMode
+  const dom = document.querySelector('#toggle-overlay-button');
+  dom.innerText = app.overlayMode ? 'Sembunyikan Overlay' : 'Tampilkan Overlay';
+  dom.className = "btn btn-" + (app.overlayMode ? 'warning' : 'light');
+}
+
+function toggleSelectedObjectFocus() {
   if (!app) return
   const { selectedObject } = app
   if (!selectedObject) return
   
-  const dom = document.querySelector('#toggle-selected-object-visibility-button')
-  selectedObject.visible = !selectedObject.visible
-  const { visible } = selectedObject
-  dom.innerText = visible ? 'Hide' : 'Show'
-  dom.className = `btn ${visible ? 'btn-danger' : 'btn-primary'}`
+  navigableCamera.focus(selectedObject)
+}
+
+function toggleSelectedObjectPerspective() {
+  if (!app) return
+  const { selectedObject } = app
+  if (!selectedObject) return
+  
+  camera.switchToFirstPersonView()
 }
 
 function switchToThirdPersonViewingMode() {

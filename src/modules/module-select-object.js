@@ -192,42 +192,18 @@ class SelectObjectFromTree {
       const actionButtonsElement = document.createElement('div')
       actionButtonsElement.className = 'obj-action-buttons'
 
-      const toggleButtonElement = document.createElement('button')
-      toggleButtonElement.className = 'btn btn-danger'
-      toggleButtonElement.innerText = 'Hide'
-      toggleButtonElement.onclick = function () {
+      const toggleVisibilityElement = document.createElement('img')
+      toggleVisibilityElement.src = 'resources/images/visibility-show.svg'
+      toggleVisibilityElement.onclick = function () {
         object.visible = !object.visible
         if (object.visible) {
-          toggleButtonElement.innerText = 'Hide'
-          toggleButtonElement.classList.remove('btn-success')
-          toggleButtonElement.classList.add('btn-danger')
+          toggleVisibilityElement.src = 'resources/images/visibility-show.svg'
         } else {
-          toggleButtonElement.innerText = 'Show'
-          toggleButtonElement.classList.remove('btn-danger')
-          toggleButtonElement.classList.add('btn-success')
+          toggleVisibilityElement.src = 'resources/images/visibility-hide.svg'
         }
       }
 
-      const triggerPerspectiveElement = document.createElement('button')
-      triggerPerspectiveElement.className = 'btn btn-secondary'
-      triggerPerspectiveElement.innerText = 'Perspective'
-      triggerPerspectiveElement.onclick = function() {
-        self.select(name)
-        camera.switchToFirstPersonView()
-      }
-
-      const triggerFocusElement = document.createElement('button')
-      triggerFocusElement.className = 'btn btn-primary'
-      triggerFocusElement.innerText = 'Focus'
-      triggerFocusElement.onclick = function() {
-        triggerFocusElement.focus = !triggerFocusElement.focus
-        self.select(name)
-        navigableCamera.focus(object)
-      }
-
-      actionButtonsElement.appendChild(triggerFocusElement)
-      actionButtonsElement.appendChild(triggerPerspectiveElement)
-      actionButtonsElement.appendChild(toggleButtonElement)
+      actionButtonsElement.appendChild(toggleVisibilityElement)
       displayElement.appendChild(spanElement)
       displayElement.appendChild(actionButtonsElement)
 

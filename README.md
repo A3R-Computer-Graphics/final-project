@@ -8,5 +8,4 @@ Oleh A3R:
 
 ## Deployment
 - [Netlify](https://a3r-final.netlify.app/)
-- [Heroku](http://a3r-final.herokuapp.com/)
 

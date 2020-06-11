@@ -129,7 +129,8 @@
         <h3 class="submenu-title">Pengaturan Objek yang Dipilih</h3>
         <div class="property-section">
           <div id="selected-object-action-buttons">
-            <button class="btn btn-danger" id="toggle-selected-object-visibility-button" onclick="toggleSelectedObjectVisibility()">Hide</button>
+            <button class="btn btn-primary" id="toggle-selected-object-focus-button" onclick="toggleSelectedObjectFocus()">Focus Camera</button>
+            <button class="btn btn-secondary" id="toggle-selected-object-perspective-button" onclick="toggleSelectedObjectPerspective()">Perspective View</button>
           </div>
           <h4>Translasi</h4>
           <div class="submenu-section">
@@ -210,8 +211,9 @@
         </div>
       </div>
       <div class="submenu">
-        <h3 class="submenu-title">Wireframe Mode</h3>
+        <h3 class="submenu-title">Kontrol Mode</h3>
         <button id="toggle-wireframe-button" class="btn btn-danger" onclick="toggleWireframeAndShadingMode()">Ubah ke Mode Wireframe</button>
+        <button id="toggle-overlay-button" class="btn btn-warning" onclick="toggleOverlayMode()">Sembunyikan Overlay</button>
       </div>
       <div class="submenu-two-list-container">
         <div class="submenu">
@@ -252,7 +254,7 @@
           </div>
           <div class="slider-container">
             <label>Warna<b>
-                <div class="colorpicker-value"><input type="color" id="lightcolor-mushroom-light" name="lightcolor-mushroom-light" value="#ffffff"></div>
+                <div class="colorpicker-value"><input type="color" id="lightcolor-mushroom-light" name="lightcolor-mushroom-light" value="#ffff00"></div>
               </b></label>
           </div>
           <div class="slider-container" id="lightintensity-slider-mushroom-light">
