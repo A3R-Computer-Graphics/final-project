@@ -8,7 +8,7 @@ from pathlib import Path
 C = bpy.context
 D = bpy.data
 
-USE_TEMP_IMAGE_DIR = True
+USE_TEMP_IMAGE_DIR = False
 DIR = "../kode/src/resources/objects/"
 
 DIR = os.path.join(bpy.path.abspath("//"), DIR)
