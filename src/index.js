@@ -388,13 +388,17 @@ let light
 function createCubeLight() {
   window.sun = new DirectionalLight()
   sun.name = app.getNextUniqueName('sun')
-  sun.position.set(-1.4, -1.65, 1.45)
+  sun.position.set(0, -8.2, 6.25)
   sun.scale.set(0.6)
+  sun.far = 80
+  sun.projWidth *= 2
+  sun.projHeight *= 2
+  sun.color = [0.9, 0.7, 0.0]
 
   sun.intensity = 0.3
 
   // Make it tilt
-  sun.rotation.setX(50.0)
+  sun.rotation.setX(76.4)
   
   scene.add(sun)
   app.addObject(sun)
@@ -498,6 +502,7 @@ function initObjectsDataFromBlender() {
   objectNames.forEach(objectName => {
 
     let data = objects_info[objectName]
+    data.type = data.type || 'MESH' // Assume to be MESH by default.
     let object
 
     if (data.type === 'MESH') {
