@@ -25,7 +25,7 @@ let at = vec3(0.6, -1.0, 2.5)
 
 let canvas
 let gl
-let resolution = 50
+let resolution = 80
 
 // Interaction variables
 
