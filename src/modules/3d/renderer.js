@@ -672,7 +672,7 @@ class Renderer extends EventDispatcher {
     geometry.bindBufferRendererToThis(gl, this, programInfo)
     if (geometry.wireframeMode) {
       // For Overlay Mode (Light)
-      if (object instanceof Light) if (!app.overlayMode) return
+      if (object instanceof Light || object instanceof Empty) if (!app.overlayMode) return
       gl.drawArrays(gl.LINES, 0, geometry.triangleVerticesCount)
     } else {
       gl.drawArrays(gl.TRIANGLES, 0, geometry.triangleVerticesCount)
@@ -720,6 +720,9 @@ class Renderer extends EventDispatcher {
       object.children.forEach(child => child.localMatrixNeedsUpdate = true)
     }
     if (!object.visible) return
+    if (object instanceof Empty) {
+      return
+    }
 
     // Ignore if the object has no geometry
 
