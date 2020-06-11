@@ -162,3 +162,34 @@ class Icosphere extends Geometry {
     this.moveToBufferData()
   }
 }
+
+
+class LineAxesGeometry extends Geometry {
+
+  constructor() {
+    let moveImmediately = false
+    let wireframeMode = true
+    
+    super({}, moveImmediately, wireframeMode)
+
+    const MESH_DATA = {
+      "vertices": [
+        [-1.0, 0.0, 0.0],
+        [1.0, 0.0, 0.0],
+        [0.0, 0.0, -1.0],
+        [0.0, 0.0, 1.0],
+        [0.0, -1.0, 0.0],
+        [0.0, 1.0, 0.0],
+      ],
+      "indices": [
+        [0, 1],
+        [2, 3],
+        [4, 5]
+      ]
+    }
+    
+    this.vertices = MESH_DATA.vertices
+    this.indices = MESH_DATA.indices
+    this.moveToBufferData()
+  }
+}

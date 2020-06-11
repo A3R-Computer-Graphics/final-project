@@ -501,15 +501,28 @@ function initObjectsDataFromBlender() {
   objectNames.forEach(objectName => {
 
     let data = objects_info[objectName]
+    let object
 
-    let object = new Object3D({
-      name: objectName,
-      origin: data.origin,
-      position: data.position,
-      rotation: data.rotation,
-      scale: data.scale,
-      matrixParentInverse: data.matrix_parent_inverse
-    })
+    if (data.type === 'MESH') {
+      object = new Object3D({
+        name: objectName,
+        origin: data.origin,
+        position: data.position,
+        rotation: data.rotation,
+        scale: data.scale,
+        matrixParentInverse: data.matrix_parent_inverse
+      })
+    } else {
+      object = new Empty({
+        name: objectName,
+        origin: data.origin,
+        position: data.position,
+        rotation: data.rotation,
+        scale: data.scale,
+        matrixParentInverse: data.matrix_parent_inverse
+      })
+    }
+
 
     app.addObject(object)
 
@@ -544,6 +557,12 @@ function initObjectsDataFromBlender() {
   // is the same as in `objects_info`
 
   objectNames.forEach(objectName => {
+
+    // Ignore if object is empty
+    if (objects_info[objectName].type === 'EMPTY') {
+      return
+    }
+
     const geometryName = objectName in objects_vertices ? objectName : objects_info[objectName].vertices
     const geometryDefinition = objects_vertices[geometryName]
     const vertices = geometryDefinition.vertices

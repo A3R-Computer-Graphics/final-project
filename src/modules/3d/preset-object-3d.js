@@ -1,4 +1,3 @@
-"use strict"
 
 class Scene extends Object3D {
   constructor() {
@@ -12,7 +11,8 @@ class Scene extends Object3D {
 
 class Empty extends Object3D {
   constructor() {
-    super.call(arguments)
+    super(...arguments)
+    this.geometry = new LineAxesGeometry()
   }
 
   setGeometry() { }

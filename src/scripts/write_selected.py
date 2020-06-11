@@ -22,32 +22,44 @@ def write_selected():
     objs_info_data = {}
 
     for obj in objs:
-        if obj.data is None or not hasattr(obj.data, 'polygons'):
+        
+        # Write mesh data
+        
+        if obj.data is not None and hasattr(obj.data, 'polygons'):
+            vertices = []
+            indices = []
+            uv_coordinates = []
+            
+            for idx, vertex in enumerate(obj.data.vertices):
+                vertices.append(list(map(lambda i: round(i, 3), vertex.co[0:3])))
+            
+            for i in range(len(obj.data.polygons)):
+                indices.append(list(obj.data.polygons[i].vertices))
+            
+            uv_maps = obj.data.uv_layers
+            uv_map_exists = len(uv_maps) >= 1
+            
+            if uv_map_exists:
+                first_uv_map_key = uv_maps.keys()[0]
+                uv_map = uv_maps[first_uv_map_key]
+                coords = uv_map.data
+                
+                # Assume the UV map coords corresponds to information in indices
+                
+                for i in range(len(coords)):
+                    coord = list(map(lambda i: round(i, 3), coords[i].uv))
+                    uv_coordinates.append(coord)
+            
+            objs_verts_data[obj.name] = {
+                "vertices": vertices,
+                "indices": indices
+            }
+            if len(uv_coordinates) > 0:
+                objs_verts_data[obj.name]["uv_coordinates"] = uv_coordinates
+        
+        # Only accept Empty and Mesh object
+        if obj.type != 'EMPTY' and obj.type != 'MESH':
             continue
-        
-        vertices = []
-        indices = []
-        uv_coordinates = []
-        
-        for idx, vertex in enumerate(obj.data.vertices):
-            vertices.append(list(map(lambda i: round(i, 3), vertex.co[0:3])))
-        
-        for i in range(len(obj.data.polygons)):
-            indices.append(list(obj.data.polygons[i].vertices))
-        
-        uv_maps = obj.data.uv_layers
-        uv_map_exists = len(uv_maps) >= 1
-        
-        if uv_map_exists:
-            first_uv_map_key = uv_maps.keys()[0]
-            uv_map = uv_maps[first_uv_map_key]
-            coords = uv_map.data
-            
-            # Assume the UV map coords corresponds to information in indices
-            
-            for i in range(len(coords)):
-                coord = list(map(lambda i: round(i, 3), coords[i].uv))
-                uv_coordinates.append(coord)
 
         # Print object loc rot scale
         obj_info = {}
@@ -79,16 +91,12 @@ def write_selected():
             mat = obj.matrix_parent_inverse.transposed()
             obj_info["matrix_parent_inverse"] = [list(vec) for vec in mat]
         
+        obj_info['type'] = obj.type
+        
         for i in range(len(obj_info["position"])):
             obj_info["position"][i] = round(obj_info["position"][i], 3)
         
         objs_info_data[obj.name] = obj_info
-        objs_verts_data[obj.name] = {
-            "vertices": vertices,
-            "indices": indices
-        }
-        if len(uv_coordinates) > 0:
-            objs_verts_data[obj.name]["uv_coordinates"] = uv_coordinates
     
     with open(OBJECTS_INFO_PATH, "w+") as outfile:
         outfile.write("objects_info = Object.assign(objects_info, " + json.dumps(objs_info_data, sort_keys=True, indent=4) + ")")

@@ -76,7 +76,6 @@ class Object3D {
     this.matrixParentInverse = matrixParentInverse
 
     this.visible = true
-    this.wireframeMode = false
   
     const additionalData = name in objectsAdditionalData ? objectsAdditionalData[name] : {}
     Object.keys(additionalData).forEach((additionalDataKey) => {

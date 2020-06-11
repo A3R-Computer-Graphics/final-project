@@ -651,8 +651,7 @@ class Renderer extends EventDispatcher {
       textureMix = 0.0
       geometry = object.wireframeGeometry
     } else {
-      // Switch to wireframeGeometry
-      if (app.wireframeMode) {
+      if (app.wireframeMode && object.wireframeGeometry) {
         geometry = object.wireframeGeometry
       }
     }
