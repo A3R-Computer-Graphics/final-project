@@ -443,8 +443,8 @@ class Renderer extends EventDispatcher {
     ((id >> 24) & 0xFF) / 0xFF]
 
     twgl.setUniforms(programInfo, {
-      isTreeLeaf: object.name === 'Daun',
-      isGrass: object.name === 'rumput',
+      isTreeLeaf: object.name === 'tree.leaf',
+      isGrass: object.name === 'grasses',
       u_world: object.worldMatrix,
       u_id: colorId,
     })
@@ -673,8 +673,8 @@ class Renderer extends EventDispatcher {
       isRenderingWireframe: geometry.wireframeMode,
       textureMix: textureMix,
 
-      isTreeLeaf: object.name === 'Daun',
-      isGrass: object.name === 'rumput'
+      isTreeLeaf: object.name === 'tree.leaf',
+      isGrass: object.name === 'grasses'
     })
     
     geometry.bindBufferRendererToThis(gl, this, programInfo)
@@ -748,8 +748,8 @@ class Renderer extends EventDispatcher {
     let programInfo = this.programInfos.shadowGen
 
     twgl.setUniforms(programInfo, {
-      isTreeLeaf: object.name === 'Daun',
-      isGrass: object.name === 'rumput',
+      isTreeLeaf: object.name === 'tree.leaf',
+      isGrass: object.name === 'grasses',
       u_world: flatten(object.worldMatrix)
     })
 
