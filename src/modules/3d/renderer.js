@@ -293,7 +293,7 @@ class Renderer extends EventDispatcher {
     gl.useProgram(program)
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     gl.clearColor(0, 0, 0, 0)
-    gl.enable(gl.CULL_FACE)
+    // gl.enable(gl.CULL_FACE)
 
     // Set light setup uniforms only in non-wireframe mode
 
@@ -389,7 +389,7 @@ class Renderer extends EventDispatcher {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb)
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 
-    gl.enable(gl.CULL_FACE)
+    // gl.enable(gl.CULL_FACE)
 
     twgl.setUniforms(programInfo, {
       u_matrix: m4.multiply(camera.projectionMatrix, camera.viewMatrix),
