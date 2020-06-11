@@ -3,16 +3,24 @@ import json
 import os
 import shutil
 import uuid
+from pathlib import Path
 
 C = bpy.context
 D = bpy.data
 
+USE_TEMP_IMAGE_DIR = True
+DIR = "../kode/src/resources/objects/"
 
-DIR = os.path.join(bpy.path.abspath("//"), "../kode/src/resources/objects/")
+DIR = os.path.join(bpy.path.abspath("//"), DIR)
 DIR = os.path.normpath(DIR)
 
 MATERIALS_DATA_PATH = os.path.join(DIR, 'objects-materials-simple.js')
+
 IMAGE_COLLECT_DIR_PATH = os.path.join(DIR, 'material_resources')
+
+if USE_TEMP_IMAGE_DIR:
+    IMAGE_COLLECT_DIR_PATH = os.path.join(DIR, 'material_resources/temp')
+    Path(IMAGE_COLLECT_DIR_PATH).mkdir()
 
 default_material = {
       "name": "Default",
@@ -42,7 +50,10 @@ for material in D.materials:
     material_data['ambient'] = material_color
     material_data['diffuse'] = material_color
     material_data['specular'] = material_color
-    material_data['shininess'] = 20
+    
+    # This is some rough experimentation of converting roughness to specular
+    material_data['shininess'] = 2 ** ((1 - node.inputs['Roughness'].default_value) * 6)
+    material_data['shininess'] *= 10
     
     # Find color socket that's connected to this BSDF node
     # Then, accept only image shader
@@ -86,7 +97,10 @@ for material in D.materials:
                 image_is_written = True
         
         if image_is_written:
-            material_data['image'] = fname
+            fpath = fname
+            if USE_TEMP_IMAGE_DIR:
+                fpath = 'temp/' + fname
+            material_data['image'] = fpath
     
     materials.append(material_data)
     
