@@ -25,12 +25,14 @@ class EmissionMaterial extends Material {
 }
 
 class PhongMaterial extends Material {
-  constructor(name, { ambient, diffuse, specular, shininess }) {
+  constructor(name, { color, ambient, diffuse, specular, shininess, emissive }) {
     super(name)
-    this.ambient = ambient || vec4(1.0, 0.0, 1.0, 1.0)
-    this.diffuse = diffuse || vec4(1.0, 0.8, 0.0, 1.0)
-    this.specular = specular || vec4(1.0, 0.8, 0.0, 1.0)
+    this.color = color
+    this.ambient = ambient
+    this.diffuse = diffuse
+    this.specular = specular
     this.shininess = shininess !== undefined ? shininess : 60.0
+    this.emissive = emissive !== undefined ? emissive : false
   }
 }
 

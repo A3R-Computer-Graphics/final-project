@@ -470,7 +470,8 @@ function initMaterialsFromBlender() {
       ambient: materialData.ambient,
       diffuse: materialData.diffuse,
       specular: materialData.specular,
-      shininess: materialData.shininess
+      shininess: materialData.shininess,
+      emissive: materialData.emissive,
     }
 
     let material

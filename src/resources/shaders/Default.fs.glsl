@@ -14,7 +14,8 @@ varying vec3 v_camLightPos;  // Light position, interpolated
 varying vec3 v_pos;
 varying vec3 v_worldNorm;
 
-uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+uniform vec4 ambientColor, pointLightDiffuseColor, pointLightSpecularColor;
+uniform vec4 materialDiffuseColor, materialSpecularColor;
 uniform float shininess;
 
 // Flag to indicate if object is selected or not
@@ -66,6 +67,8 @@ uniform vec3 u_directionalLightColor;
 uniform vec3 u_spotLightColor;
 
 uniform bool u_softShadow;
+
+uniform bool emissive;
 
 
 
@@ -217,8 +220,13 @@ vec4 defaultShader() {
     vec3 directionalLightColor = u_directionalLightColor; // a little bit violet
 
 
-    vec4 baseColor = mix(vec4(1.0), texture2D(u_texture, v_texcoord), textureMix);
-    vec4 color = ambientProduct *  baseColor;
+    vec4 baseColor = mix(materialDiffuseColor, texture2D(u_texture, v_texcoord), textureMix);
+
+    if (emissive) {
+        return baseColor;
+    }
+    
+    vec4 color = vec4((ambientColor *  baseColor).rgb, 1.0);
     vec3 normal = normalize(v_worldNorm);
 
     // This is based on personal observation, not some empirical source
@@ -249,9 +257,14 @@ vec4 defaultShader() {
     float power = 1.0 / length(v_pos - lightPosition);
 
     shadowMix = pointLightShadowValue();
-    vec4 pointLightColor = vec4(lambertian * diffuseProduct + specular * vec4(1.0, 1.0, 1.0, 1.0));
-    pointLightColor = plasticColor * pointLightColor * pointLightIntensity;
-    color += pointLightColor * shadowMix * power;
+
+    vec4 diffuseColor = mix(materialDiffuseColor, texture2D(u_texture, v_texcoord), textureMix);
+    diffuseColor *= lambertian * pointLightIntensity;
+
+    vec4 specularColor = mix(materialSpecularColor, texture2D(u_texture, v_texcoord), textureMix);
+    specularColor *= specular * pointLightIntensity;
+
+    color += (diffuseColor + specularColor) * shadowMix * power;
 
     float light = 0.0;
 

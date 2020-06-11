@@ -355,7 +355,9 @@ class Renderer extends EventDispatcher {
       shadowClipFar: this.shadowClipFar,
 
       time: this.time,
-      u_softShadow: this.softShadow
+      u_softShadow: this.softShadow,
+
+      ambientColor: scene.ambientColor
     })
 
 
@@ -619,21 +621,22 @@ class Renderer extends EventDispatcher {
 
     if (!selected) {
       if (material instanceof PhongMaterial) {
-        let { ambient, diffuse, specular, shininess } = material
+        let { diffuse, specular, shininess, emissive } = material
 
-        let light = Light.lightList[0]
-        if (light) {
-          ambient = flatten(mult(light.ambient, ambient))
-          diffuse = flatten(mult(light.diffuse, diffuse))
-          specular = flatten(mult(light.specular, specular))
+        let uniforms = {}
+
+        if (diffuse) {
+          uniforms.materialDiffuseColor = diffuse
         }
+        if (specular) {
+          uniforms.materialSpecularColor = specular
+        }
+        if (shininess) {
+          uniforms.shininess = shininess
+        }
+        uniforms.emissive = emissive || false
 
-        twgl.setUniforms(programInfo, {
-          ambientProduct: ambient,
-          diffuseProduct: diffuse,
-          specularProduct: specular,
-          shininess: shininess
-        })
+        twgl.setUniforms(programInfo, uniforms)
       }
 
       if (material instanceof ImageTextureMaterial) {
