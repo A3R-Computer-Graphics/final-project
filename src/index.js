@@ -390,7 +390,7 @@ function createCubeLight() {
   sun.name = app.getNextUniqueName('sun')
   sun.position.set(0, -8.2, 6.25)
   sun.scale.set(0.6)
-  sun.far = 200
+  sun.far = 120
   sun.projWidth = 90
   sun.projHeight = 90
   sun.color = [0.9, 0.7, 0.0]
@@ -649,7 +649,7 @@ window.addEventListener('load', async function init() {
 
   camera = new PerspectiveCamera({
     near: 0.05,
-    far: 200.0,
+    far: 1000.0,
     fovy: 55.0,
     aspect: 1.0,
   })
