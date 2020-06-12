@@ -635,7 +635,10 @@ function switchToThirdPersonViewingMode() {
 
 window.addEventListener('load', async function init() {
 
-  new RSlider('input[name="speed"]', {clamp: true})
+  let rslider = new RSlider('input[name="speed"]', {clamp: true})
+  rslider.on('change', function(value) {
+    console.log('the value is:', value)
+  })
 
   return
 

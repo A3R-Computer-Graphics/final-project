@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="lib/css/bootstrap.min.css">
 <link rel="stylesheet" href="index.css">
 <link rel="stylesheet" href="index-new.css">
+<link href="lib/fontawesome/css/all.css" rel="stylesheet">
 <!-- <link rel="stylesheet" href="index-mobile.css"> -->
 
 
@@ -100,7 +101,7 @@
       <h4>Section Title</h4>
       <div class="content">
         <div class="r-slider-container">
-          <label>Slider Name<label>
+          <label>Slider Name</label>
           <div class="r-slider-display" data-slider-name="slidername">0</div>
           <input class="r-slider" type="range" step="0.01" name="slidername" value="0" min="0.05" max="4">
         </div>
@@ -108,18 +109,22 @@
 
     </div>
 
-    <div class="section">
+    <div class="section" id="animation-section">
       <h4>Animasi</h4>
       <div class="content">
 
-        <!-- Left side -->
-        <button title="Mulai"><i class="material-icons">start</i></button>
-        <button title="Hentikan"><i class="material-icons">stop</i></button>
+        <div class="left-side" style="width:100px">
+          <label>Playback</label>
+          <!-- <button class="btn btn-primary r-btn-icon" title="Mulai"><i class="fas fa-play"></i></button> -->
+          <button id="toggle-anim" class="btn btn-primary" title="Hentikan">
+            <i class="fas fa-stop"></i> Hentikan
+          </button>
+        </div>
+        <div class="right-side">
+          <label>Kecepatan</label>
+          <input class="r-slider" type="range" step="0.01" name="speed" value="0.5" min="0.05" max="4" data-clamp="true">
+        </div>
 
-        <!-- Right side -->
-        
-        <label>Kecepatan<label>
-        <input class="r-slider" type="range" step="0.01" name="speed" value="0" min="0.05" max="4">
       </div>
     </div>
 
@@ -129,12 +134,12 @@
       <div class="content">
         <label>Mode</label>
         <ul id="shading-mode-choices">
-          <li class="selected"><button><img src="shading-icon.svg"/></button>Mode Shading</li>
-          <li><button><img src="wireframe-icon.svg"/></button>Mode Wireframe</li>
+          <li class="selected"><button><img src="shading-icon.svg" /></button>Mode Shading</li>
+          <li><button><img src="wireframe-icon.svg" /></button>Mode Wireframe</li>
         </ul>
-      
+
         <div class="r-slider-container">
-          <label>Resolusi<label>
+          <label>Resolusi</label>
           <div class="r-slider-display">100%</div>
           <input class="r-slider" type="range" step="0.01" name="resolution" value="0" min="1" max="100">
         </div>
@@ -152,11 +157,11 @@
         </div>
 
         <div id="tree">
-          
+
         </div>
       </div>
     </div>
-    
+
 
     <div class="section">
       <h4>Objek Dipilih</h4>
@@ -183,11 +188,11 @@
 
         <h5>Cahaya Titik</h5>
         <button class="r-btn">Pilih objek</button>
-      
+
         <div class="r-slider-container">
           <label>Intensitas<label>
-          <div class="r-slider-display">1</div>
-          <input class="r-slider" type="range" step="0.01" name="pointlight-intensity" value="1" min="0" max="5">
+              <div class="r-slider-display">1</div>
+              <input class="r-slider" type="range" step="0.01" name="pointlight-intensity" value="1" min="0" max="5">
         </div>
 
         <label>Warna Diffuse</label>
@@ -203,11 +208,11 @@
 
         <h5>Cahaya Sorot</h5>
         <button class="r-btn">Pilih objek</button>
-      
+
         <div class="r-slider-container">
           <label>Intensitas<label>
-          <div class="r-slider-display">1</div>
-          <input class="r-slider" type="range" step="0.01" name="spotlight-intensity" value="1" min="0" max="5">
+              <div class="r-slider-display">1</div>
+              <input class="r-slider" type="range" step="0.01" name="spotlight-intensity" value="1" min="0" max="5">
         </div>
 
         <label>Warna Diffuse</label>
@@ -224,11 +229,11 @@
 
         <h5>Cahaya Matahari</h5>
         <button class="r-btn">Pilih objek</button>
-      
+
         <div class="r-slider-container">
           <label>Intensitas<label>
-          <div class="r-slider-display">11</div>
-          <input class="r-slider" type="range" step="0.01" name="sunlight-intensity" value="1" min="0" max="5">
+              <div class="r-slider-display">11</div>
+              <input class="r-slider" type="range" step="0.01" name="sunlight-intensity" value="1" min="0" max="5">
         </div>
 
         <label>Warna</label>

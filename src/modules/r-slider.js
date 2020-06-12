@@ -1,3 +1,20 @@
+const RSliderUtil = {
+  getNonNull() {
+    for (let i = 0; i < arguments.length; i++) {
+      if (arguments[i] !== undefined && arguments[i] !== null) {
+        return arguments[i]
+      }
+    }
+    return undefined
+  },
+  getFiniteOrOriginal(numVal) {
+    if (isFinite(parseFloat(numVal))) {
+      return parseFloat(numVal)
+    }
+    return numVal
+  }
+}
+
 class RSlider extends EventDispatcher {
 
   constructor(elem, config) {
@@ -22,40 +39,56 @@ class RSlider extends EventDispatcher {
 
     super()
 
-    this.max = config.max !== undefined ? config.max : elem.max
-    this.min = config.min !== undefined ? config.min : elem.min
-    this.step = config.step !== undefined ? config.step : elem.step
-    this.value = config.value !== undefined ? config.value : elem.value
-    this.clamp = config.clamp !== undefined ? config.clamp : false
+    const getNormalizedValue = function() {
+      let val = RSliderUtil.getNonNull.apply(RSliderUtil, arguments)
+      return RSliderUtil.getFiniteOrOriginal(val)
+    }
 
+    this.max = getNormalizedValue(config.max, elem.max)
+    this.min = getNormalizedValue(config.min, elem.min)
+    this.step = getNormalizedValue(config.step, elem.step)
+    this.value = getNormalizedValue(config.value, elem.value)
+    this.clamp = RSliderUtil.getNonNull(config.clamp, elem.getAttribute('data-clamp'), false)
+    
     this.displayFunction = (val) => parseInt(val * 100) / 100
 
-    this.containerElement = document.createElement('div')
-    this.containerElement.className = 'r-slider-container'
+    this.elements = {}
 
-    this.inputElement = document.createElement('input')
-    this.inputElement.type = 'number'
+    let html = `
+    <div class="r-slider-progress"></div>
+    <input type="number">
+    <div class="r-slider-obstructor"></div>
+    <button class="r-slider-prev"><i class="fas fa-angle-left"></i></button>
+    <button class="r-slider-next"><i class="fas fa-angle-right"></i></button>`
 
-    this.progressElement = document.createElement('div')
-    this.progressElement.className = 'r-slider-progress'
+    let container = document.createElement('div')
+    container.innerHTML = html
+    container.className = 'r-slider-container'
 
-    this.obstructorElement = document.createElement('div')
-    this.obstructorElement.style.width = '100%'
-    this.obstructorElement.style.cursor = 'w-resize'
+    let input = container.querySelector('input')
+    let progress = container.querySelector('.r-slider-progress')
+    let obstructor = container.querySelector('.r-slider-obstructor')
 
-    this.containerElement.appendChild(this.progressElement)
-    this.containerElement.appendChild(this.inputElement)
-    this.containerElement.appendChild(this.obstructorElement)
+    let next = container.querySelector('.r-slider-next')
+    let prev = container.querySelector('.r-slider-prev')
 
-    elem.parentElement.replaceChild(this.containerElement, elem)
+    elem.parentElement.replaceChild(container, elem)
+
+    this.elements = {
+      container: container,
+      input: input,
+      progress: progress,
+      obstructor: obstructor,
+      next: next,
+      prev: prev
+    }
 
     if (value === undefined) {
       this.value = elem.value
     }
 
     if (this.value !== undefined) {
-      // this.displayElement.innerText = this.value
-      this.inputElement.value = this.value
+      this.elements.input.value = this.value
     }
 
     this.clicking = false
@@ -65,7 +98,7 @@ class RSlider extends EventDispatcher {
     this.name = elem.name || config.name
 
     if (this.name) {
-      this.containerElement.setAttribute('data-name', this.name)
+      this.elements.container.setAttribute('data-name', this.name)
     }
     this.updateDisplay()
     this.initListeners()
@@ -83,37 +116,30 @@ class RSlider extends EventDispatcher {
 
     event.preventDefault()
 
-    // Clear selection
-    // Taken from: https://stackoverflow.com/a/3169849/10159381
-
-
-    if (window.getSelection) {
-      if (window.getSelection().empty) {
-        window.getSelection().empty()
-      } else if (window.getSelection().removeAllRanges) {
-        window.getSelection().removeAllRanges()
-      }
-    } else if (document.selection) {
-      document.selection.empty()
-    }
+    let shiftPressed = event.shiftKey
+    let ctrlPressed = event.ctrlKey
 
     let range = this.max || 0 - this.min || 0
 
     let percentage = (event.screenX - xInit) / width * range
+    if (ctrlPressed) {
+      percentage *= 10
+    } else if (shiftPressed) {
+      percentage /= 10
+    }
     this.value = valueInit + percentage
     this.updateDisplay()
   }
 
+  // Clear selection
+  // Taken from: https://stackoverflow.com/a/3169849/10159381
+
   clearSelection() {
     if (window.getSelection) {
       if (window.getSelection().empty) {
-        console.log('not empty')
         window.getSelection().empty()
       } else if (window.getSelection().removeAllRanges) {
         window.getSelection().removeAllRanges()
-      } else {
-
-        console.log('is empty')
       }
     } else if (document.selection) {
       document.selection.empty()
@@ -128,13 +154,14 @@ class RSlider extends EventDispatcher {
     event.preventDefault()
     this.clicking = false
     this.grabbing = false
-    this.containerElement.classList.remove('grabbing')
+    this.elements.container.classList.remove('grabbing')
+    document.body.style.removeProperty('cursor')
 
     const self = this
 
     window.requestAnimationFrame(() => {
-      self.inputElement.blur()
-      self.containerElement.focus()
+      self.elements.input.blur()
+      self.elements.container.focus()
       self.clearSelection()
     })
   }
@@ -157,15 +184,17 @@ class RSlider extends EventDispatcher {
       document.removeEventListener('mouseup', handlers.documentMouseUp)
     }
 
-    this.containerElement.addEventListener('mousedown', function (e) {
+    let {obstructor, container, input, prev, next} = this.elements
+
+    obstructor.addEventListener('mousedown', function (e) {
       initState.x = e.screenX
       initState.y = e.screenY
-      initState.width = self.containerElement.clientWidth
+      initState.width = container.clientWidth
       initState.valueInit = parseFloat(self.value) || 0
       self.onMouseDown(e)
     })
 
-    this.containerElement.addEventListener('mousemove', function (e) {
+    container.addEventListener('mousemove', function (e) {
       if (!self.clicking || self.grabbing || self.editingText) {
         return
       }
@@ -179,38 +208,55 @@ class RSlider extends EventDispatcher {
       document.addEventListener('mousemove', handlers.documentMouseMove)
       document.addEventListener('mouseup', handlers.documentMouseUp)
       self.grabbing = true
-      self.containerElement.classList.add('grabbing')
+      self.elements.container.classList.add('grabbing')
+      document.body.style.setProperty('cursor', 'w-resize', 'important')
     })
 
-    this.containerElement.addEventListener('mouseup', function (e) {
+    container.addEventListener('mouseup', function (e) {
       if (self.clicking) {
         if (!self.grabbing && !self.editingText) {
           self.editingText = true
-          self.obstructorElement.hidden = true
-          self.inputElement.focus()
+          self.elements.obstructor.hidden = true
+          self.elements.input.focus()
         } else {
           console.log('yes.')
         }
       }
     })
 
-    this.inputElement.addEventListener('blur', function (e) {
+    input.addEventListener('blur', function (e) {
       self.clicking = false
       self.grabbing = false
       self.editingText = false
-      self.obstructorElement.hidden = false
+      self.elements.obstructor.hidden = false
     })
 
-    this.inputElement.addEventListener('change', function (e) {
+    input.addEventListener('change', function (e) {
       self.value = e.target.value
+      self.updateDisplay()
+    })
+
+    prev.addEventListener('click', function() {
+      self.value -= (self.step || 0.1)
+      self.updateDisplay()
+    })
+
+    next.addEventListener('click', function() {
+      self.value += (self.step || 0.1)
       self.updateDisplay()
     })
   }
 
   limitValue() {
     if (this.clamp) {
-      if (isFinite(this.min) && isFinite(this.max) && isFinite(this.value)) {
-        this.value = Math.min(this.max, Math.max(this.min, this.value))
+      let minExists = isFinite(this.min)
+      let maxExists = isFinite(this.max)
+
+      if (minExists) {
+        this.value = Math.max(this.min, this.value)
+      }
+      if (maxExists) {
+        this.value = Math.min(this.max, this.value)
       }
     }
   }
@@ -224,14 +270,16 @@ class RSlider extends EventDispatcher {
     let val = this.value || 0
 
     if (this.value) {
-      this.inputElement.value = this.displayFunction(this.value)
+      this.elements.input.value = this.displayFunction(this.value)
     }
+
+    this.dispatchEvent('change', this.value)
 
     let progress = (val - min) / (max - min)
     progress = Math.max(Math.min(progress, 1), 0)
     progress *= 100
 
-    this.progressElement.style.width = progress + '%'
+    this.elements.progress.style.width = progress + '%'
   }
 
   on() {

@@ -12,7 +12,7 @@
 
 .section > * {
   padding: 0 10px;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 }
 
 .section > h4 {
@@ -22,8 +22,37 @@
   font-weight: normal;
   padding-top: 3px;
   padding-bottom: 3px;
+  margin-bottom: 3px;
 }
 
+
+
+/* Animation section */
+
+#animation-section .content {
+  display: flex;
+}
+
+#animation-section .right-side {
+  flex-grow: 1;
+  margin-left: 10px;
+}
+
+#animation-section label {
+  margin-bottom: 5px;
+}
+
+
+/* Button */
+
+#toggle-anim {
+  padding: 2px 9px;
+  font-size: 12px;
+}
+
+#toggle-anim > i {
+  margin-right: 3px;
+}
 
 
 
@@ -47,13 +76,22 @@
 }
 
 .r-slider-progress {
-  width: 50%;
+  width: 100%;
   background-color: #717171;
 }
 
 .r-slider-container input:focus {
   background-color: #c6c6c6;
   color: black;
+}
+
+.r-slider-container > .r-slider-obstructor {
+  cursor: w-resize;
+  width: 100%;
+}
+
+.r-slider-container.grabbing > .r-slider-obstructor {
+  cursor: w-resize;
 }
 
 .r-slider-container.grabbing input {
@@ -79,4 +117,31 @@
 .r-slider-container input:focus {
   background-color: #676767;
   color: white;
+}
+
+
+
+.r-slider-container > .r-slider-prev,
+.r-slider-container > .r-slider-next {
+    display: none;
+    outline: none;
+    border: none;
+    color: #ffffffa6;
+    background: none;
+}
+
+/* Display next & prev step only if not typing text */
+
+.r-slider-container:not(.grabbing):hover > input:not(:focus) + * + .r-slider-prev,
+.r-slider-container:not(.grabbing):hover > input:not(:focus) + * + * +.r-slider-next {
+    display: block;
+}
+
+.r-slider-container > .r-slider-next {
+    right: 0;
+}
+
+.r-slider-container > .r-slider-prev:hover, .r-slider-container > .r-slider-next:hover {
+    color: white;
+    background-color: #ffffff36;
 }
