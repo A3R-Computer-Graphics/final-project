@@ -116,7 +116,7 @@
         <div class="left-side" style="width:100px">
           <label>Playback</label>
           <!-- <button class="btn btn-primary r-btn-icon" title="Mulai"><i class="fas fa-play"></i></button> -->
-          <button id="toggle-anim" class="btn btn-primary" title="Hentikan">
+          <button id="toggle-anim" class="btn r-btn btn-primary" title="Hentikan">
             <i class="fas fa-stop"></i> Hentikan
           </button>
         </div>
@@ -155,8 +155,7 @@
 
       <div class="content">
         <div class="help">
-          <img id="tree-help-rightclick" src="./resources/images/tree-help-righclick.svg" />
-          Pilih objek dengan <strong>klik kanan</strong> pada item.
+          Pilih objek dengan mengklik item.
         </div>
 
         <div id="tree">
@@ -166,11 +165,45 @@
     </div>
 
 
-    <div class="section">
+    <div class="section" id="selected-section">
       <h4>Objek Dipilih</h4>
 
       <div class="content">
-        <!-- Translasi, rotasi, skala -->
+
+        <div id="selected-utils">
+          <button title="Fokuskan pandangan kamera pada objek ini" class="btn r-btn btn-primary"><i class="fas fa-bullseye"></i>Fokus</button>
+          <button title="Lihat sudut pandang dari objek ini" class="btn r-btn btn-primary"><i class="fas fa-camera"></i>Lihat Sudut Pandang</button>
+        </div>
+
+        <div id="selected-transformational">
+          <div>
+            <label class="title-label">Translasi</label>
+            <label>X</label>
+            <input class="r-slider" type="range" step="0.05" name="selected-object-position-x" value="0" min="-10" max="10">
+            <label>Y</label>
+            <input class="r-slider" type="range" step="0.05" name="selected-object-position-y" value="0" min="-10" max="10">
+            <label>Z</label>
+            <input class="r-slider" type="range" step="0.05" name="selected-object-position-z" value="0" min="-10" max="10">
+          </div>
+          <div>
+            <label class="title-label">Rotasi</label>
+            <label>X</label>
+            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-x" value="0" min="0" max="360">
+            <label>Y</label>
+            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-y" value="0" min="0" max="360">
+            <label>Z</label>
+            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-z" value="0" min="0" max="360">
+          </div>
+          <div>
+            <label class="title-label">Skala</label>
+            <label>X</label>
+            <input class="r-slider" type="range" step="0.05" name="selected-object-scale-x" value="1" min="-5" max="5">
+            <label>Y</label>
+            <input class="r-slider" type="range" step="0.05" name="selected-object-scale-y" value="1" min="-5" max="5">
+            <label>Z</label>
+            <input class="r-slider" type="range" step="0.05" name="selected-object-scale-z" value="1" min="-5" max="5">
+          </div>
+        </div>
       </div>
     </div>
 
@@ -179,33 +212,43 @@
       <h4>Cahaya</h4>
 
       <div class="content">
-        <button class="r-btn"><i class="material-icons"></i>Padamkan semua</button>
-        <button class="r-btn"><i class="material-icons"></i>Nyalakan semua</button>
 
-
-        <label>Warna Ambient</label>
-        <div class="colorpicker-value">
-          <input type="color" name="ambientlight-color" value="#ffffff">
+        <div class="subsection">
+          <div class="left-panel">
+            <input type="checkbox">Nyalakan semua cahaya</input>
+          </div>
+  
+          <div class="right-panel">
+            <label>Warna Ambient</label>
+            <div class="colorpicker-value">
+              <input type="color" name="ambientlight-color" value="#ffffff">
+            </div>
+          </div>
         </div>
-
 
         <h5>Cahaya Titik</h5>
         <button class="r-btn">Pilih objek</button>
 
-        <div class="r-slider-container">
-          <label>Intensitas<label>
-              <div class="r-slider-display">1</div>
-              <input class="r-slider" type="range" step="0.01" name="pointlight-intensity" value="1" min="0" max="5">
-        </div>
-
-        <label>Warna Diffuse</label>
-        <div class="colorpicker-value">
-          <input type="color" name="pointlight-diffuse" value="#ffffff">
-        </div>
-
-        <label>Warna Specular</label>
-        <div class="colorpicker-value">
-          <input type="color" name="pointlight-specular" value="#ffffff">
+        <div class="subsection">
+          <div class="left-panel">
+            <label>Intensitas</label>
+            <input class="r-slider" type="range" step="0.05" name="pointlight-intensity" value="1" min="0" max="10">
+          </div>
+  
+          <div class="right-panel">
+            <label>Warna Ambient</label>
+            <div class="colorpicker-value">
+              <input type="color" name="ambientlight-color" value="#ffffff">
+            </div>
+            <label>Warna Diffuse</label>
+            <div class="colorpicker-value">
+              <input type="color" name="pointlight-diffuse" value="#ffffff">
+            </div>
+            <label>Warna Specular</label>
+            <div class="colorpicker-value">
+              <input type="color" name="pointlight-specular" value="#ffffff">
+            </div>
+          </div>
         </div>
 
 

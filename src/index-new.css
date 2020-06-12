@@ -15,6 +15,7 @@
 
 #right-panel {
   right: 0;
+  width: 330px;
 }
 
 .section > * {
@@ -51,12 +52,12 @@
 
 /* Button */
 
-#toggle-anim {
+.btn.r-btn {
   padding: 2px 9px;
   font-size: 12px;
 }
 
-#toggle-anim > i {
+.btn.r-btn > i {
   margin-right: 3px;
 }
 
@@ -114,6 +115,42 @@
 
 #shading-mode-choices > .selected:hover {
   background-color: #858585;
+}
+
+
+
+/* Selected object section */
+
+#selected-section {
+  overflow-x: hidden;
+}
+
+#selected-section > .content {
+  margin-top: 8px;
+}
+
+#selected-utils button {
+  margin-right: 8px;
+}
+
+#selected-transformational {
+  display: flex;
+  width: calc(100% + 12px);
+  margin-top: 8px;
+  margin-right: -12px;
+}
+
+#selected-transformational > * {
+  display: inline-grid;
+  margin-right: 12px;
+  grid-template-columns: 10px auto;
+  grid-row-gap: 2px;
+  grid-column-gap: 3px;
+  flex-basis: 33%;
+}
+
+#selected-transformational > * > .title-label {
+  grid-column: 1 / span 2;
 }
 
 

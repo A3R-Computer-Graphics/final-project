@@ -645,6 +645,55 @@ window.addEventListener('load', async function init() {
     console.log('the value is:', value)
   })
 
+  // mock
+  
+
+  let axis = ['x', 'y', 'z']
+  let properties = ['position', 'rotation', 'scale']
+
+  properties.forEach(propertyName => {
+    axis.forEach((axisName, index) => {
+
+      let axisId = index
+      let sliderName = `selected-object-${propertyName}-${axisName}`
+
+      let slider = document.querySelector(`input[name="${sliderName}"]`)
+      slider = new RSlider(slider)
+
+      console.log(axisId, propertyName)
+
+      slider.on('change',
+        (val) => {
+          console.log(val, axisId, propertyName)
+          // if (app.selectedObject) {
+          //   let value = parseFloat(slider.value)
+          //   self.updateSelectedProperty(propertyName, axisId, value)
+          //   updateSliderDisplay(slider, value)
+          // }
+        })
+
+    })
+  })
+
+
+  // document.querySelectorAll('input[type="range"]').forEach(elem => {
+  //   const sliderName = elem.getAttribute('name')
+  //   const propertyData = parsePropertyString(sliderName);
+  //   if (propertyData === undefined) {
+  //     return
+  //   }
+
+  //   const { modelName, propertyName, axisId } = propertyData;
+  //   // let object = app.objects[modelName][propertyName];
+    
+  //   let slider = new RSlider(elem);
+  //   slider.on('change', (val) => {
+  //     console.log('test')
+  //     let value = parseFloat(val);
+  //     // object.setOnAxisId(axisId, value);
+  //   })
+  // })
+
   return
 
   // Set up scene, camera, and renderer
