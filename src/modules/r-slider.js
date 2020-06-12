@@ -123,7 +123,7 @@ class RSlider extends EventDispatcher {
     let shiftPressed = event.shiftKey
     let ctrlPressed = event.ctrlKey
 
-    let range = this.max || 0 - this.min || 0
+    let range = (this.max || 0) - (this.min || 0)
 
     let percentage = (event.screenX - xInit) / width * range
     if (ctrlPressed) {
