@@ -1,0 +1,82 @@
+.side-panel {
+  position: absolute;
+  height: 100%;
+  overflow: scroll;
+  background-color: #262626;
+  font-size: 12px;
+}
+
+#right-panel {
+  right: 0;
+}
+
+.section > * {
+  padding: 0 10px;
+  margin-bottom: 12px;
+}
+
+.section > h4 {
+  background-color: #3c3c3c;
+  color: #e3e3e3;
+  font-size: 14px;
+  font-weight: normal;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+
+
+
+/* R Slider */
+
+.r-slider-container {
+  width: 100%;
+  background-color: #494949;
+  min-height: 23px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #262626;
+  border-radius: 4px;
+}
+
+.r-slider-container > * {
+  position: absolute;
+  height: 100%;
+  outline: none;
+  border: none;
+}
+
+.r-slider-progress {
+  width: 50%;
+  background-color: #717171;
+}
+
+.r-slider-container input:focus {
+  background-color: #c6c6c6;
+  color: black;
+}
+
+.r-slider-container.grabbing input {
+  user-select: none;
+}
+
+.r-slider-container input::-webkit-outer-spin-button,
+.r-slider-container input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+.r-slider-container input {
+    -moz-appearance:textfield; /* Firefox */
+    width: 100%;
+    text-align: center;
+    background-color: transparent;
+    border: none;
+    color: #efefef;
+}
+
+.r-slider-container input:focus {
+  background-color: #676767;
+  color: white;
+}

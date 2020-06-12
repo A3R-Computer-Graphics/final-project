@@ -635,6 +635,10 @@ function switchToThirdPersonViewingMode() {
 
 window.addEventListener('load', async function init() {
 
+  new RSlider('input[name="speed"]', {clamp: true})
+
+  return
+
   // Set up scene, camera, and renderer
 
   canvas = document.getElementById('gl-canvas')

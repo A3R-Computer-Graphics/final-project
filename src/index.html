@@ -4,7 +4,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="lib/css/bootstrap.min.css">
 <link rel="stylesheet" href="index.css">
-<link rel="stylesheet" href="index-mobile.css">
+<link rel="stylesheet" href="index-new.css">
+<!-- <link rel="stylesheet" href="index-mobile.css"> -->
 
 
 <script type="text/javascript" src="lib/js/jquery-3.4.1.min.js"></script>
@@ -56,6 +57,10 @@
 <script type="text/javascript" src="resources/objects/objects-additional-data.js"></script>
 <script type="text/javascript" src="modules/camera-coordinates.js"></script>
 
+
+
+<script type="text/javascript" src="modules/r-slider.js"></script>
+
 <script type="text/javascript" src="modules/module-object-picking.js"></script>
 <script type="text/javascript" src="modules/module-navigable-camera.js"></script>
 <script type="text/javascript" src="modules/module-select-object.js"></script>
@@ -74,12 +79,169 @@
       </div>
     </div>
   </div>
+
   <div id="screen-info">
     <p id="canvas-status">Canvas aktif dipilih</p>
     <div>Objek dipilih: <span id="selobj-hierarchy"></span></div>
     <p>Mode Titik Pandang: <span id="viewing-mode-status">Umum (3rd Person)</span></p>
   </div>
-  <div id="menu-toggler-wrapper" class="show-menu">
+
+  <div id="left-panel" class="side-panel">
+    <button>Tutup</button>
+    <h3>Bantuan</h3>
+  </div>
+
+  <div id="right-panel" class="side-panel">
+    <button>Tutup</button>
+    <h3>Menu</h3>
+
+    <div class="section" hidden>
+
+      <h4>Section Title</h4>
+      <div class="content">
+        <div class="r-slider-container">
+          <label>Slider Name<label>
+          <div class="r-slider-display" data-slider-name="slidername">0</div>
+          <input class="r-slider" type="range" step="0.01" name="slidername" value="0" min="0.05" max="4">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="section">
+      <h4>Animasi</h4>
+      <div class="content">
+
+        <!-- Left side -->
+        <button title="Mulai"><i class="material-icons">start</i></button>
+        <button title="Hentikan"><i class="material-icons">stop</i></button>
+
+        <!-- Right side -->
+        
+        <label>Kecepatan<label>
+        <input class="r-slider" type="range" step="0.01" name="speed" value="0" min="0.05" max="4">
+      </div>
+    </div>
+
+    <div class="section">
+      <h4>Tampilan</h4>
+
+      <div class="content">
+        <label>Mode</label>
+        <ul id="shading-mode-choices">
+          <li class="selected"><button><img src="shading-icon.svg"/></button>Mode Shading</li>
+          <li><button><img src="wireframe-icon.svg"/></button>Mode Wireframe</li>
+        </ul>
+      
+        <div class="r-slider-container">
+          <label>Resolusi<label>
+          <div class="r-slider-display">100%</div>
+          <input class="r-slider" type="range" step="0.01" name="resolution" value="0" min="1" max="100">
+        </div>
+      </div>
+    </div>
+
+
+    <div class="section">
+      <h4>Hirarki Scene</h4>
+
+      <div class="content">
+        <div class="help">
+          <img id="tree-help-rightclick" src="./resources/images/tree-help-righclick.svg" />
+          Pilih objek dengan <strong>klik kanan</strong> pada item.
+        </div>
+
+        <div id="tree">
+          
+        </div>
+      </div>
+    </div>
+    
+
+    <div class="section">
+      <h4>Objek Dipilih</h4>
+
+      <div class="content">
+        <!-- Translasi, rotasi, skala -->
+      </div>
+    </div>
+
+
+    <div class="section">
+      <h4>Cahaya</h4>
+
+      <div class="content">
+        <button class="r-btn"><i class="material-icons"></i>Padamkan semua</button>
+        <button class="r-btn"><i class="material-icons"></i>Nyalakan semua</button>
+
+
+        <label>Warna Ambient</label>
+        <div class="colorpicker-value">
+          <input type="color" name="ambientlight-color" value="#ffffff">
+        </div>
+
+
+        <h5>Cahaya Titik</h5>
+        <button class="r-btn">Pilih objek</button>
+      
+        <div class="r-slider-container">
+          <label>Intensitas<label>
+          <div class="r-slider-display">1</div>
+          <input class="r-slider" type="range" step="0.01" name="pointlight-intensity" value="1" min="0" max="5">
+        </div>
+
+        <label>Warna Diffuse</label>
+        <div class="colorpicker-value">
+          <input type="color" name="pointlight-diffuse" value="#ffffff">
+        </div>
+
+        <label>Warna Specular</label>
+        <div class="colorpicker-value">
+          <input type="color" name="pointlight-specular" value="#ffffff">
+        </div>
+
+
+        <h5>Cahaya Sorot</h5>
+        <button class="r-btn">Pilih objek</button>
+      
+        <div class="r-slider-container">
+          <label>Intensitas<label>
+          <div class="r-slider-display">1</div>
+          <input class="r-slider" type="range" step="0.01" name="spotlight-intensity" value="1" min="0" max="5">
+        </div>
+
+        <label>Warna Diffuse</label>
+        <div class="colorpicker-value">
+          <input type="color" name="spotlight-diffuse" value="#ffffff">
+        </div>
+
+        <label>Warna Specular</label>
+        <div class="colorpicker-value">
+          <input type="color" name="spotlight-specular" value="#ffffff">
+        </div>
+
+
+
+        <h5>Cahaya Matahari</h5>
+        <button class="r-btn">Pilih objek</button>
+      
+        <div class="r-slider-container">
+          <label>Intensitas<label>
+          <div class="r-slider-display">11</div>
+          <input class="r-slider" type="range" step="0.01" name="sunlight-intensity" value="1" min="0" max="5">
+        </div>
+
+        <label>Warna</label>
+        <div class="colorpicker-value">
+          <input type="color" name="sunlight-color" value="#ffffff">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!--div id="menu-toggler-wrapper" class="show-menu">
     <button type="button" class="btn btn-primary" id="menu-toggler-button">
       <span class="button-text">Tutup</span>
       <img class="arrow" src="resources/images/arrow.svg" />
@@ -263,8 +425,6 @@
         </div>
       </div>
 
-      <!--
-
       <div class="submenu-two-list-container">
         <div class="submenu" id="link-submenu">
           <h3 class="submenu-title">Gerakan Ksatria ("Link")</h3>
@@ -428,10 +588,8 @@
         </div>
       </div>
 
-    -->
-
     </div>
-  </div>
+  </div-->
 </body>
 
 </html>
