@@ -635,8 +635,13 @@ function switchToThirdPersonViewingMode() {
 
 window.addEventListener('load', async function init() {
 
-  let rslider = new RSlider('input[name="speed"]', {clamp: true})
-  rslider.on('change', function(value) {
+  let speedSlider = new RSlider('input[name="speed"]', {clamp: true})
+  speedSlider.on('change', function(value) {
+    console.log('the value is:', value)
+  })
+
+  let resolutionSlider = new RSlider('input[name="resolution"]', {}, val => parseInt(val) + '%')
+  resolutionSlider.on('change', function(value) {
     console.log('the value is:', value)
   })
 

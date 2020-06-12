@@ -122,26 +122,29 @@
         </div>
         <div class="right-side">
           <label>Kecepatan</label>
-          <input class="r-slider" type="range" step="0.01" name="speed" value="0.5" min="0.05" max="4" data-clamp="true">
+          <input class="r-slider" type="range" step="0.01" name="speed" value="0.5" min="0.05" max="4"
+            data-clamp="true">
         </div>
 
       </div>
     </div>
 
-    <div class="section">
+    <div class="section" id="view-section">
       <h4>Tampilan</h4>
 
       <div class="content">
-        <label>Mode</label>
-        <ul id="shading-mode-choices">
-          <li class="selected"><button><img src="shading-icon.svg" /></button>Mode Shading</li>
-          <li><button><img src="wireframe-icon.svg" /></button>Mode Wireframe</li>
-        </ul>
 
-        <div class="r-slider-container">
+        <div class="left-side">
+          <label>Mode</label>
+          <div id="shading-mode-choices">
+            <button class="selected"><img src="resources/images/shading-icon.svg" /><span>Shading</span></button>
+            <button><img src="resources/images/wireframe-icon.svg" /><span>Wireframe</span></button>
+          </div>
+        </div>
+
+        <div class="right-side">
           <label>Resolusi</label>
-          <div class="r-slider-display">100%</div>
-          <input class="r-slider" type="range" step="0.01" name="resolution" value="0" min="1" max="100">
+          <input class="r-slider" type="range" step="1" name="resolution" value="50" min="1" max="100" data-clamp="true">
         </div>
       </div>
     </div>

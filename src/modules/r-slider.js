@@ -17,7 +17,7 @@ const RSliderUtil = {
 
 class RSlider extends EventDispatcher {
 
-  constructor(elem, config) {
+  constructor(elem, config, displayFunction) {
     let value = undefined, min = undefined, max = undefined, step = undefined
     config = config || {}
     
@@ -50,13 +50,17 @@ class RSlider extends EventDispatcher {
     this.value = getNormalizedValue(config.value, elem.value)
     this.clamp = RSliderUtil.getNonNull(config.clamp, elem.getAttribute('data-clamp'), false)
     
-    this.displayFunction = (val) => parseInt(val * 100) / 100
+    if (typeof displayFunction !== 'undefined') {
+      this.displayFunction = displayFunction
+    } else {
+      this.displayFunction = (val) => parseInt(val * 100) / 100
+    }
 
     this.elements = {}
 
     let html = `
     <div class="r-slider-progress"></div>
-    <input type="number">
+    <input type="text">
     <div class="r-slider-obstructor"></div>
     <button class="r-slider-prev"><i class="fas fa-angle-left"></i></button>
     <button class="r-slider-next"><i class="fas fa-angle-right"></i></button>`

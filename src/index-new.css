@@ -1,3 +1,10 @@
+/* General */
+
+.section > .content .right-side,
+.section > .content .left-side {
+  flex-basis: 50%
+}
+
 .side-panel {
   position: absolute;
   height: 100%;
@@ -35,11 +42,10 @@
 
 #animation-section .right-side {
   flex-grow: 1;
-  margin-left: 10px;
 }
 
-#animation-section label {
-  margin-bottom: 5px;
+.section label {
+    margin-bottom: 5px;
 }
 
 
@@ -53,6 +59,68 @@
 #toggle-anim > i {
   margin-right: 3px;
 }
+
+
+
+/* View section */
+
+#view-section .content {
+  display: flex;
+}
+
+#view-section .content > * {
+  flex-basis: 50%;
+}
+
+#shading-mode-choices > * {
+  display: block;
+  width: 112px;
+  text-align: left;
+  border: 1px solid #464646;
+  background-color: #1d1d1d;
+  color: #b4b4b4;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  /* border-radius: 3px; */
+  transition: 0.2s all ease;
+}
+
+#shading-mode-choices > *:first-child {
+  border-bottom: none;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+
+#shading-mode-choices > * > img {
+  margin-right: 5px;
+}
+
+#shading-mode-choices > *:last-child {
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+#shading-mode-choices > *.selected {
+  background-color: #626262;
+  color: white;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+}
+
+#shading-mode-choices > *:hover {
+  background-color: #434343;
+}
+
+#shading-mode-choices > .selected:hover {
+  background-color: #858585;
+}
+
+
+
+
+
+
 
 
 
