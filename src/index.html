@@ -140,6 +140,11 @@
             <button class="selected"><img src="resources/images/shading-icon.svg" /><span>Shading</span></button>
             <button><img src="resources/images/wireframe-icon.svg" /><span>Wireframe</span></button>
           </div>
+
+          <div class="checkbox-wrapper" style="margin-top:8px" title="Tampilkan objek bantuan seperti arah cahaya dan ruang shadowmap">
+            <input type="checkbox" checked></input>
+            <label>Tampilkan overlay</label>
+          </div>
         </div>
 
         <div class="right-side">
@@ -215,7 +220,10 @@
 
         <div class="subsection">
           <div class="left-panel">
-            <input type="checkbox">Nyalakan semua cahaya</input>
+            <div class="checkbox-wrapper">
+              <input type="checkbox"></input>
+              <label>Nyalakan semua cahaya</label>
+            </div>
           </div>
   
           <div class="right-panel">
@@ -236,10 +244,6 @@
           </div>
   
           <div class="right-panel">
-            <label>Warna Ambient</label>
-            <div class="colorpicker-value">
-              <input type="color" name="ambientlight-color" value="#ffffff">
-            </div>
             <label>Warna Diffuse</label>
             <div class="colorpicker-value">
               <input type="color" name="pointlight-diffuse" value="#ffffff">

@@ -33,6 +33,20 @@
   margin-bottom: 3px;
 }
 
+/* General - checkbox wrapper */
+
+.checkbox-wrapper > input[type="checkbox"] {
+  margin-right: 4px;
+}
+
+.checkbox-wrapper > input[type="checkbox"] + label {
+  line-height: 1;
+}
+
+.checkbox-wrapper {
+  display: flex;
+}
+
 
 
 /* Animation section */
@@ -151,6 +165,26 @@
 
 #selected-transformational > * > .title-label {
   grid-column: 1 / span 2;
+}
+
+
+
+
+
+.subsection > .left-panel {
+  margin-right: 4px;
+}
+
+.subsection {
+  display: flex;
+}
+
+.subsection > * {
+  flex-basis: 50%;
+}
+
+.subsection > .right-panel {
+  margin-left: 4px;
 }
 
 
