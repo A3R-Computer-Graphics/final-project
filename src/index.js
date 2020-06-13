@@ -13,13 +13,13 @@ let renderer
 let app
 let animationManager
 
-let cameraRadius = 13
+let cameraRadius = 20
 let theta = 0
 let phi = 0
-let cameraPosIndex = 22
+let cameraPosIndex = 5
 let coordinateDirectionOrder = ['UP', 'LEFT', 'DOWN', 'RIGHT']
 
-let at = vec3(0.6, -1.0, 2.5)
+let at = vec3(0, 0, 5.0)
 
 // rendering engine variables variables
 
@@ -223,11 +223,6 @@ function connectSpeedSlider() {
       animationManager.speed = val;
     }
   })
-
-  // Init slider position from inverse of exponential (logarithm)
-  // let currentSpeed = animationManager.speed;
-  // let sliderInitValue = interpolateLogarithmatically(SPEED_MIN, SPEED_MAX, currentSpeed);
-  // updateSliderValueAndDisplay(slider, sliderInitValue);
 }
 
 
@@ -615,14 +610,7 @@ function initObjectsDataFromBlender() {
     const indices = geometryDefinition.indices
     const uvCoordinates = geometryDefinition.uv_coordinates
     const normals = geometryDefinition.normals
-
-    // Ignore init complex geometry, just so you can debug
-    // the whole code using scene with simple and few objects
-
-    // if (vertices.length > 100) {
-    //   return
-    // }
-
+    
     const geometry = new Geometry({
       vertices, indices, uvCoordinates, normals
     }, true, false)
@@ -816,9 +804,6 @@ async function render(currentFrame) {
   navigableCamera.update(currentFrame)
   objectPicking.update()
   await renderer.render(scene, camera, app)
-
-  // Switch between render every 1 seconds (for debugging purposes)
-  // and continuously
-  // setTimeout(() => window.requestAnimationFrame(render), 100)
+  
   window.requestAnimationFrame(render)
 }
