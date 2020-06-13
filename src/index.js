@@ -577,6 +577,32 @@ function initObjectsDataFromBlender() {
 
 }
 
+function initShadeModeToggle() {
+  const wrapper = document.querySelector('#shading-mode-choices');
+  const wireframeButton = wrapper.querySelector('[data-shade-mode="wireframe"]')
+  const shadingButton = wrapper.querySelector('[data-shade-mode="shading"]')
+
+  function updateView() {
+    if (app.wireframeMode) {
+      wireframeButton.classList.add('selected')
+      shadingButton.classList.remove('selected')
+    } else {
+      wireframeButton.classList.remove('selected')
+      shadingButton.classList.add('selected')
+    }
+  }
+
+  wireframeButton.addEventListener('click', () => {
+    app.wireframeMode = true
+    updateView()
+  })
+
+  shadingButton.addEventListener('click', () => {
+    app.wireframeMode = false
+    updateView()
+  })
+}
+
 function toggleWireframeAndShadingMode() {
   app.wireframeMode = !app.wireframeMode
   const dom = document.querySelector('#toggle-wireframe-button');
@@ -667,6 +693,8 @@ window.addEventListener('load', async function init() {
   document.querySelector('#toggle-anim').addEventListener('click', toggleAnimation)
   document.querySelector('#toggle-all-light').addEventListener('change', toggleLight)
   document.querySelector('#toggle-overlay').addEventListener('change', toggleOverlayMode)
+
+  initShadeModeToggle()
 
   connectSlidersToModelData()
   connectLightIntensitySliders()

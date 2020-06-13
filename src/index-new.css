@@ -119,8 +119,8 @@
   color: #b4b4b4;
   padding-top: 3px;
   padding-bottom: 3px;
-  /* border-radius: 3px; */
-  transition: 0.2s all ease;
+  transition: all 0.2s ease;
+  transition-property: color, background-color;
 }
 
 #shading-mode-choices > *:first-child {
