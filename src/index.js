@@ -667,6 +667,29 @@ function initShadeModeToggle() {
   updateView()
 }
 
+
+function initFocusToLightButton() {
+
+  document.querySelectorAll('.light-setup > button').forEach(button => {
+
+    let lightName = button.getAttribute('data-light-name')
+    let light = app.objects[lightName]
+
+    // Ignore setting up button if lamp name doesn't exist in app
+    if (!light) {
+      return
+    }
+
+    button.addEventListener('click', function() {
+      app.selectedObjectName = lightName
+      navigableCamera.focus(light)
+    })
+
+  })
+}
+
+
+
 function toggleWireframeAndShadingMode() {
   app.wireframeMode = !app.wireframeMode
   const dom = document.querySelector('#toggle-wireframe-button');
@@ -777,6 +800,7 @@ window.addEventListener('load', async function init() {
 
   initShadeModeToggle()
   initAnimationToggle()
+  initFocusToLightButton()
 
   connectSlidersToModelData()
   connectLightIntensitySliders()
