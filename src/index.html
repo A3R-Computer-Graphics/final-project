@@ -117,7 +117,7 @@
           <label>Playback</label>
           <!-- <button class="btn btn-primary r-btn-icon" title="Mulai"><i class="fas fa-play"></i></button> -->
           <button id="toggle-anim" class="btn r-btn btn-primary" title="Hentikan">
-            <i class="fas fa-stop"></i> Hentikan
+            <i class="fas fa-stop"></i><span>Hentikan</span>
           </button>
         </div>
         <div class="right-side">
@@ -141,7 +141,8 @@
             <button><img src="resources/images/wireframe-icon.svg" /><span>Wireframe</span></button>
           </div>
 
-          <div class="checkbox-wrapper" style="margin-top:8px" title="Tampilkan objek bantuan seperti arah cahaya dan ruang shadowmap">
+          <div class="checkbox-wrapper" style="margin-top:16px"
+            title="Tampilkan objek bantuan seperti arah cahaya dan ruang shadowmap">
             <input type="checkbox" checked></input>
             <label>Tampilkan overlay</label>
           </div>
@@ -149,7 +150,16 @@
 
         <div class="right-side">
           <label>Resolusi</label>
-          <input class="r-slider" type="range" step="1" name="resolution" value="50" min="1" max="100" data-clamp="true">
+          <input class="r-slider" type="range" step="1" name="resolution" value="50" min="1" max="100"
+            data-clamp="true">
+
+          <div id="object-perspective-menu">
+            <label>Sudut Pandang Objek</label>
+            <button id="third-person-camera-button" class="btn r-btn btn-primary"
+              title="Lepaskan kamera dari sudut pandang objek sehingga kamera dapat bergerak bebas."
+              onclick="//switchToThirdPersonViewingMode()">Lepaskan</button>
+          </div>
+
         </div>
       </div>
     </div>
@@ -176,28 +186,36 @@
       <div class="content">
 
         <div id="selected-utils">
-          <button title="Fokuskan pandangan kamera pada objek ini" class="btn r-btn btn-primary"><i class="fas fa-bullseye"></i>Fokus</button>
-          <button title="Lihat sudut pandang dari objek ini" class="btn r-btn btn-primary"><i class="fas fa-camera"></i>Lihat Sudut Pandang</button>
+          <button title="Fokuskan pandangan kamera pada objek ini" class="btn r-btn btn-primary"><i
+              class="fas fa-bullseye"></i>Fokus</button>
+          <button title="Lihat sudut pandang dari objek ini" class="btn r-btn btn-primary"><i
+              class="fas fa-camera"></i>Lihat Sudut Pandang</button>
         </div>
 
         <div id="selected-transformational">
           <div>
             <label class="title-label">Translasi</label>
             <label>X</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-position-x" value="0" min="-10" max="10">
+            <input class="r-slider" type="range" step="0.05" name="selected-object-position-x" value="0" min="-10"
+              max="10">
             <label>Y</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-position-y" value="0" min="-10" max="10">
+            <input class="r-slider" type="range" step="0.05" name="selected-object-position-y" value="0" min="-10"
+              max="10">
             <label>Z</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-position-z" value="0" min="-10" max="10">
+            <input class="r-slider" type="range" step="0.05" name="selected-object-position-z" value="0" min="-10"
+              max="10">
           </div>
           <div>
             <label class="title-label">Rotasi</label>
             <label>X</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-x" value="0" min="0" max="360">
+            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-x" value="0" min="0"
+              max="360">
             <label>Y</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-y" value="0" min="0" max="360">
+            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-y" value="0" min="0"
+              max="360">
             <label>Z</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-z" value="0" min="0" max="360">
+            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-z" value="0" min="0"
+              max="360">
           </div>
           <div>
             <label class="title-label">Skala</label>
@@ -213,20 +231,20 @@
     </div>
 
 
-    <div class="section">
+    <div class="section" id="light-section">
       <h4>Cahaya</h4>
 
       <div class="content">
 
-        <div class="subsection">
+        <div class="subsection flex">
           <div class="left-panel">
             <div class="checkbox-wrapper">
               <input type="checkbox"></input>
               <label>Nyalakan semua cahaya</label>
             </div>
           </div>
-  
-          <div class="right-panel">
+
+          <div class="right-panel color-picker-field-wrapper">
             <label>Warna Ambient</label>
             <div class="colorpicker-value">
               <input type="color" name="ambientlight-color" value="#ffffff">
@@ -234,61 +252,83 @@
           </div>
         </div>
 
-        <h5>Cahaya Titik</h5>
-        <button class="r-btn">Pilih objek</button>
+        <div class="subsection light-setup">
 
-        <div class="subsection">
-          <div class="left-panel">
-            <label>Intensitas</label>
-            <input class="r-slider" type="range" step="0.05" name="pointlight-intensity" value="1" min="0" max="10">
-          </div>
-  
-          <div class="right-panel">
-            <label>Warna Diffuse</label>
-            <div class="colorpicker-value">
-              <input type="color" name="pointlight-diffuse" value="#ffffff">
+          <h5><i class="fas fa-lightbulb"></i> Cahaya Titik</h5>
+          <button class="btn r-btn btn-secondary">Pilih objek</button>
+
+          <div class="two-panel-wrapper">
+            <div class="left-panel">
+              <label>Intensitas</label>
+              <input class="r-slider" type="range" step="0.05" name="pointlight-intensity" value="1" min="0" max="10">
             </div>
-            <label>Warna Specular</label>
-            <div class="colorpicker-value">
-              <input type="color" name="pointlight-specular" value="#ffffff">
+
+            <div class="right-panel">
+              <div class="color-picker-field-wrapper">
+                <label>Warna Diffuse</label>
+                <div class="colorpicker-value">
+                  <input type="color" name="pointlight-diffuse" value="#ffffff">
+                </div>
+              </div>
+              <div class="color-picker-field-wrapper">
+                <label>Warna Specular</label>
+                <div class="colorpicker-value">
+                  <input type="color" name="pointlight-specular" value="#ffffff">
+                </div>
+              </div>
             </div>
           </div>
+
         </div>
 
-
-        <h5>Cahaya Sorot</h5>
-        <button class="r-btn">Pilih objek</button>
-
-        <div class="r-slider-container">
-          <label>Intensitas<label>
-              <div class="r-slider-display">1</div>
+        <div class="subsection light-setup">
+          <h5><i class="fas fa-lightbulb"></i> Cahaya Sorot</h5>
+          <button class="btn r-btn btn-secondary">Pilih objek</button>
+          <div class="two-panel-wrapper">
+            <div class="left-panel">
+              <label>Intensitas</label>
               <input class="r-slider" type="range" step="0.01" name="spotlight-intensity" value="1" min="0" max="5">
+            </div>
+
+            <div class="right-panel">
+              <div class="color-picker-field-wrapper">
+                <label>Warna Diffuse</label>
+                <div class="colorpicker-value">
+                  <input type="color" name="spotlight-diffuse" value="#ffffff">
+                </div>
+
+              </div>
+              <div class="color-picker-field-wrapper">
+                <label>Warna Specular</label>
+                <div class="colorpicker-value">
+                  <input type="color" name="spotlight-specular" value="#ffffff">
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
 
-        <label>Warna Diffuse</label>
-        <div class="colorpicker-value">
-          <input type="color" name="spotlight-diffuse" value="#ffffff">
-        </div>
 
-        <label>Warna Specular</label>
-        <div class="colorpicker-value">
-          <input type="color" name="spotlight-specular" value="#ffffff">
-        </div>
+        <div class="subsection light-setup">
+          <h5><i class="fas fa-sun"></i> Cahaya Matahari</h5>
+          <button class="btn r-btn btn-secondary">Pilih objek</button>
 
-
-
-        <h5>Cahaya Matahari</h5>
-        <button class="r-btn">Pilih objek</button>
-
-        <div class="r-slider-container">
-          <label>Intensitas<label>
-              <div class="r-slider-display">11</div>
+          <div class="two-panel-wrapper">
+            <div class="left-panel">
+              <label>Intensitas</label>
               <input class="r-slider" type="range" step="0.01" name="sunlight-intensity" value="1" min="0" max="5">
-        </div>
+            </div>
 
-        <label>Warna</label>
-        <div class="colorpicker-value">
-          <input type="color" name="sunlight-color" value="#ffffff">
+            <div class="right-panel">
+              <div class="color-picker-field-wrapper">
+                <label>Warna</label>
+                <div class="colorpicker-value">
+                  <input type="color" name="sunlight-color" value="#ffffff">
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

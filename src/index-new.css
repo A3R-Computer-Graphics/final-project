@@ -8,7 +8,7 @@
 .side-panel {
   position: absolute;
   height: 100%;
-  overflow: scroll;
+  overflow-y: scroll;
   background-color: #262626;
   font-size: 12px;
 }
@@ -19,7 +19,7 @@
 }
 
 .section > * {
-  padding: 0 10px;
+  padding: 8px 10px 0;
   margin-bottom: 20px;
 }
 
@@ -28,9 +28,9 @@
   color: #e3e3e3;
   font-size: 14px;
   font-weight: normal;
-  padding-top: 3px;
-  padding-bottom: 3px;
-  margin-bottom: 3px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 0;
 }
 
 /* General - checkbox wrapper */
@@ -40,11 +40,34 @@
 }
 
 .checkbox-wrapper > input[type="checkbox"] + label {
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .checkbox-wrapper {
   display: flex;
+}
+
+/* General - color picker */
+
+.color-picker-field-wrapper > label {
+  flex-basis: 30%;
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+
+.color-picker-field-wrapper {
+  display: flex;
+}
+
+.color-picker-field-wrapper > label +* {
+  flex-basis: 70%;
+}
+
+.color-picker-field-wrapper > label +* > * {
+  width: calc(100% - 6px);
+  border: none;
+  outline: none;
+  margin-left: 6px;
 }
 
 
@@ -72,7 +95,7 @@
 }
 
 .btn.r-btn > i {
-  margin-right: 3px;
+  margin-right: 8px;
 }
 
 
@@ -131,6 +154,14 @@
   background-color: #858585;
 }
 
+#object-perspective-menu {
+  margin-top: 8px;
+}
+
+#object-perspective-menu > label {
+  margin-bottom: 0;
+}
+
 
 
 /* Selected object section */
@@ -140,7 +171,7 @@
 }
 
 #selected-section > .content {
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 #selected-utils button {
@@ -169,22 +200,53 @@
 
 
 
+/** Light setup */
 
-
-.subsection > .left-panel {
+#light-section .subsection > .left-panel {
   margin-right: 4px;
 }
 
-.subsection {
+#light-section .subsection.flex {
   display: flex;
 }
 
-.subsection > * {
+#light-section .subsection.flex > * {
   flex-basis: 50%;
 }
 
-.subsection > .right-panel {
+#light-section .subsection > .right-panel {
   margin-left: 4px;
+}
+
+#light-section .light-setup > h5 {
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+#light-section > .content > .subsection:first-child {
+  border-top: none;
+}
+
+#light-section > .content > .subsection {
+  border-top: 1px solid #ffffff36;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  position: relative;
+}
+
+.subsection.light-setup > button {
+  position: absolute;
+  right: 0;
+  top: 6px;
+}
+
+.two-panel-wrapper {
+  display: flex;
+  padding-top: 7px;
+}
+
+.two-panel-wrapper > * {
+  flex-basis: 50%;
 }
 
 
