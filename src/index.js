@@ -814,6 +814,10 @@ async function render(currentFrame) {
     app.selectedObject.updateWorldMatrix()
   }
 
+  if (animationManager.isAnimating) {
+    renderer.time += 0.04
+  }
+
   navigableCamera.update(currentFrame)
   objectPicking.update()
   await renderer.render(scene, camera, app)

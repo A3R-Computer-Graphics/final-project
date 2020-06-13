@@ -366,8 +366,6 @@ class Renderer extends EventDispatcher {
 
     camera.updateCameraToRenderer(this.programInfos.main)
     this.renderObjectTree(scene, camera, app)
-
-    this.time += 0.04
   }
 
 
