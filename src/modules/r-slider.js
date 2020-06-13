@@ -27,7 +27,10 @@ class RSlider extends EventDispatcher {
       if (isFinite(id)) {
         return this.instances[id]
       }
-    } else if (typeof id === 'string') {
+      return
+    }
+
+    if (typeof id === 'string') {
       let selector = id
       let elem = document.querySelector(selector)
       if (!elem) return
@@ -35,12 +38,21 @@ class RSlider extends EventDispatcher {
       if (isFinite(id)) {
         return this.instances[id]
       }
-    } else {
-      let object = id
-      let elem = this.instances.indexOf(object)
-      if (elem >= 0) {
-        return elem
+      return
+    }
+
+    let object = id
+    if (object instanceof HTMLDivElement) {
+      id = parseInt(object.getAttribute('data-r-slider-id'))
+      if (isFinite(id)) {
+        return this.instances[id]
       }
+      return
+    }
+
+    let elem = this.instances.indexOf(object)
+    if (elem >= 0) {
+      return elem
     }
   }
 
