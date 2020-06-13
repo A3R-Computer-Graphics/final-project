@@ -584,11 +584,9 @@ function toggleWireframeAndShadingMode() {
   dom.className = "btn btn-" + (app.wireframeMode ? 'primary' : 'danger');
 }
 
-function toggleOverlayMode() {
-  app.overlayMode = !app.overlayMode
-  const dom = document.querySelector('#toggle-overlay-button');
-  dom.innerText = app.overlayMode ? 'Sembunyikan Overlay' : 'Tampilkan Overlay';
-  dom.className = "btn btn-" + (app.overlayMode ? 'warning' : 'light');
+function toggleOverlayMode(event) {
+  const showOverlay = event.target.checked;
+  app.overlayMode = showOverlay;
 }
 
 function toggleSelectedObjectFocus() {
@@ -667,7 +665,8 @@ window.addEventListener('load', async function init() {
   resolution = resolutionSlider.value
 
   document.querySelector('#toggle-anim').addEventListener('click', toggleAnimation)
-  document.querySelector('#toggle-all-light').addEventListener('click', toggleLight)
+  document.querySelector('#toggle-all-light').addEventListener('change', toggleLight)
+  document.querySelector('#toggle-overlay').addEventListener('change', toggleOverlayMode)
 
   connectSlidersToModelData()
   connectLightIntensitySliders()
