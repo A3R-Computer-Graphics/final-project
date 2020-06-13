@@ -17,6 +17,33 @@ const RSliderUtil = {
 
 class RSlider extends EventDispatcher {
 
+  static instances = []
+
+  /** Get RSlider instance from its id or query string. */
+
+  static get(id) {
+    if (typeof id === 'number') {
+      id = parseInt(id)
+      if (isFinite(id)) {
+        return this.instances[id]
+      }
+    } else if (typeof id === 'string') {
+      let selector = id
+      let elem = document.querySelector(selector)
+      if (!elem) return
+      id = parseInt(elem.getAttribute('data-r-slider-id'))
+      if (isFinite(id)) {
+        return this.instances[id]
+      }
+    } else {
+      let object = id
+      let elem = this.instances.indexOf(object)
+      if (elem >= 0) {
+        return elem
+      }
+    }
+  }
+
   constructor(elem, config, displayFunction) {
     let value = undefined, min = undefined, max = undefined, step = undefined
     config = config || {}
@@ -38,6 +65,10 @@ class RSlider extends EventDispatcher {
     }
 
     super()
+
+    let instances = this.constructor.instances
+    instances.push(this)
+    this.id = instances.length - 1
 
     const getNormalizedValue = function() {
       let val = RSliderUtil.getNonNull.apply(RSliderUtil, arguments)
@@ -68,6 +99,7 @@ class RSlider extends EventDispatcher {
     let container = document.createElement('div')
     container.innerHTML = html
     container.className = 'r-slider-container'
+    container.setAttribute('data-r-slider-id', this.id)
 
     let input = container.querySelector('input')
     let progress = container.querySelector('.r-slider-progress')
