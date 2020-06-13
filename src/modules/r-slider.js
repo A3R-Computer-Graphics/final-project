@@ -327,7 +327,7 @@ class RSlider extends EventDispatcher {
     let max = this.max || 1
     let val = this.value || 0
 
-    if (this.value) {
+    if (isFinite(this.value)) {
       this.elements.input.value = this.displayFunction(this.value)
     }
 
