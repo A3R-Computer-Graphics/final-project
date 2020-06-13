@@ -51,8 +51,6 @@ class CameraPrototype extends Object3D {
   }
 
   switchToThirdPersonView() {
-      document.querySelector('#viewing-mode-status').innerText = 'Umum (3rd Person)'
-      document.querySelector('#third-person-camera-button').hidden = true
       this.isFirstPersonView = false
       this.currentFirstPersonViewObject = null
 
@@ -178,8 +176,6 @@ class CameraPrototype extends Object3D {
   switchToFirstPersonView() {
     const [oldAt, oldPosition] = [[...at], [...camera.position.property]]
     const { selectedObject } = app
-    document.querySelector('#third-person-camera-button').hidden = false
-    document.querySelector('#viewing-mode-status').innerHTML = 'Perspektif (1st Person) dari <b>' + selectedObject.name + '</b>';
 
     if (!this.isFirstPersonView) this.cacheThirdPersonViewCamera(oldAt, oldPosition)
     this.computeFirstPersonViewCamera(selectedObject, true)

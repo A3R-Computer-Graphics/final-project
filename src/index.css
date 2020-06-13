@@ -336,35 +336,48 @@ div#speed-slider {
   position: relative;
 }
 
-.obj-name {
+#tree-wrapper {
+  background: repeating-linear-gradient(
+    180deg,
+    #171717,
+    #171717 25px,
+    #252525 25px,
+    #252525 50px);
+}
+
+.obj-row {
   border-radius: 2px;
-  border: 1px solid #535151;
+  /* border: 1px solid #535151; */
   padding: 0.15rem;
   padding-left: 0.5rem;
   position: relative;
   user-select: none;
-  margin-top: 5px;
   word-break: break-all;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 25px;
 }
 
-.obj-name > span {
+.obj-row > span {
   padding-left: 16px;
 }
 
-.obj-name#root-node {
+.obj-row#root-node {
   border-color: transparent;
 }
 
-.obj-name#root-node > span {
+.obj-row#root-node > span {
   padding-left: 0;
 }
 
 .obj-action-buttons {
   z-index: 2;
   display: flex;
+  position: absolute;
+  right: 0;
+  height: 25px;
+  top: 0;
 }
 
 .obj-action-buttons > button {
@@ -385,18 +398,17 @@ div#speed-slider {
   position: relative;
   max-height: 270px;
   overflow-y: scroll;
-  padding: 11px;
   margin: 10px 0;
   background-color: #131313;
 }
 
-li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
+li:not(.selected) > input[type="checkbox"]:hover + .obj-row {
   background-color: rgba(255, 255, 255, 0.1);
   cursor: pointer;
   border-color: #adadad;
 }
 
-.obj-name#root-node:hover {
+.obj-row#root-node:hover {
   background-color:transparent;
   cursor: initial;
   border-color: transparent;
@@ -404,31 +416,30 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
 
 #tree ul {
   position: relative;
-  padding-left: 23px;
+  padding-left: 18px;
   list-style: none;
 }
 
-#tree > .obj-name::before {
+#tree > .obj-row::before {
   border-color: transparent;
 }
 
 #tree ul:before {
   position: absolute;
   content: "";
-  top: -5px;
-  left: 12px;
-  height: calc(100% - 3px);
+  left: 10px;
+  height: calc(100% - 11px);
   width: 1px;
   border-left: 1px solid #a2a2a2;
 }
 
-#tree .obj-name::before {
+#tree .obj-row::before {
   content: "";
   position: absolute;
   bottom: 10px;
   right: 100%;
   height: 1px;
-  width: 12px;
+  width: 8px;
   border-bottom: 1px solid #a2a2a2;
 }
 
@@ -442,29 +453,36 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   transform: translate(-50%, -50%);
 }
 
+/* #tree li.child-selected > ul > .collapsed-sign::before {
+  color: #e2ce1f;
+} */
+
 .collapsed-sign {
   width: 20px;
   height: 20px;
   display: block;
   position: absolute;
-  bottom: calc(100% + 10px);
+  bottom: 100%;
   left: 0px;
+  transform: rotate(180deg);
   cursor: pointer;
 }
 
-#tree input[type="checkbox"]:not(:checked) + * + ul > li {
+#tree input[type="checkbox"]:not(:checked) + ul > li {
   display: none;
 }
 
-#tree input[type="checkbox"]:not(:checked) + * + ul .collapsed-sign {
-  transform: rotate(180deg);
-  bottom: calc(100% + 5px);
+#tree input[type="checkbox"]:not(:checked) + ul .collapsed-sign {
+  transform: rotate(90deg);
+  bottom: calc(100% + 2px);
+  left: 2px;
 }
 
 #tree input[type="checkbox"] {
-  width: 100%;
-  height: 30px;
-  right: 0px;
+  width: 20px;
+  height: 25px;
+  left: 0px;
+  top: 0;
   display: block;
   position: absolute;
   z-index: 1;
@@ -480,8 +498,15 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   height: 100%;
 }
 
-#tree li.selected > .obj-name,
-#tree li.selected > input[type="checkbox"]:hover + .obj-name {
+#tree input[type="checkbox"]:focus {
+  background-color: #ffffff17;
+  border: 1px solid white;
+  outline: none;
+  border-radius: 2px;
+}
+
+#tree li.selected > .obj-row,
+#tree li.selected > input[type="checkbox"]:hover + .obj-row {
   background-color: #f2a518;
   border-color: #f2a518;
   margin-bottom: 0px;
@@ -489,17 +514,11 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   color: black;
 }
 
-#tree li.selected > input[type="checkbox"]:focus {
-  outline: none;
-}
-
-#tree li.selected > input[type="checkbox"]:focus + .obj-name {
+#tree li.selected > input[type="checkbox"]:focus + .obj-row {
   border-color: white;
   border-width: 2px;
   margin-left: -1px;
   margin-right: -1px;
-  margin-top: 4px;
-  margin-bottom: -1px;
 }
 
 #tree li.selected > ul > .collapsed-sign::before {
@@ -510,14 +529,14 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   content: "";
   display: block;
   position: absolute;
-  width: 10px;
-  height: calc(100% - 24px);
-  background-color: #131313;
-  top: 16px;
-  left: -17px;
+  width: 1px;
+  height: calc(100% - 13px);
+  background-color: #333333;
+  top: 14px;
+  left: -8px;
 }
 
-#tree li > input[type="checkbox"]:checked + * + ul::after {
+#tree li > input[type="checkbox"]:checked + ul::after {
   content: "";
   display: block;
   position: absolute;
@@ -525,8 +544,8 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   height: 6px;
   border-radius: 10px;
   background-color: #acacac;
-  top: -8px;
-  left: 10px;
+  top: -4px;
+  left: 8px;
 }
 
 
@@ -603,11 +622,53 @@ li:not(.selected) > input[type="checkbox"]:hover + .obj-name {
   margin-bottom: 0.5rem;
 }
 
-.toggle-visibility-button {
-  margin-bottom: 0.5rem;
+.obj-action-buttons button {
+  color: white;
+  border: 2px solid transparent;
+  background-color: transparent;
+  border-radius: 3px;
+  width: 25px;
 }
+
+.obj-action-buttons button:hover {
+  background-color: #ffffff26;
+}
+
+.obj-action-buttons button:focus{
+  outline: none;
+  background-color: #ffffff40;
+  transition: 0.2s all ease;
+}
+
+
+
+.obj-row:not(:hover) > .obj-action-buttons > * {
+  display: none;
+}
+
+.obj-row > .obj-action-buttons > .btn-visibility:not(.visible) {
+  display: block;
+}
+
+
+
+.click-catcher {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 
 #third-person-camera-button {
   margin: 4px 0;
   padding: 4px 8px;
+}
+
+
+/* Override bootstrap */
+
+button.btn:disabled {
+  cursor: auto;
 }

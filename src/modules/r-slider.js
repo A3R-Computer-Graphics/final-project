@@ -161,7 +161,6 @@ class RSlider extends EventDispatcher {
 
   onMouseDown(event) {
     this.clicking = true
-    console.log('mousedown')
   }
 
   onDocumentMouseMove(event, xInit, valueInit, width) {
@@ -170,6 +169,7 @@ class RSlider extends EventDispatcher {
     }
 
     event.preventDefault()
+    this.clearSelection()
 
     let shiftPressed = event.shiftKey
     let ctrlPressed = event.ctrlKey
@@ -278,8 +278,6 @@ class RSlider extends EventDispatcher {
           self.editingText = true
           self.elements.obstructor.hidden = true
           self.elements.input.focus()
-        } else {
-          console.log('yes.')
         }
       }
     })

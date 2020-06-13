@@ -111,7 +111,7 @@
 }
 
 #shading-mode-choices > * {
-  display: block;
+  display: flex;
   width: 112px;
   text-align: left;
   border: 1px solid #464646;
@@ -121,6 +121,7 @@
   padding-bottom: 3px;
   transition: all 0.2s ease;
   transition-property: color, background-color;
+  align-items: center;
 }
 
 #shading-mode-choices > *:first-child {
@@ -131,7 +132,7 @@
 
 
 #shading-mode-choices > * > img {
-  margin-right: 5px;
+  margin-right: 8px;
 }
 
 #shading-mode-choices > *:last-child {

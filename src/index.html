@@ -155,9 +155,9 @@
 
           <div id="object-perspective-menu">
             <label>Sudut Pandang Objek</label>
-            <button id="third-person-camera-button" class="btn r-btn btn-primary"
+            <button type="button" disabled id="third-person-camera-button" class="btn r-btn btn-primary"
               title="Lepaskan kamera dari sudut pandang objek sehingga kamera dapat bergerak bebas."
-              onclick="//switchToThirdPersonViewingMode()">Lepaskan</button>
+              onclick="switchToThirdPersonViewingMode()">Lepaskan</button>
           </div>
 
         </div>
@@ -174,11 +174,13 @@
         </div>
 
         <div id="tree">
-          <div class="obj-name" id="root-node">
-            <span>Root</span>
+          <div id="tree-wrapper">
+            <div class="obj-row" id="root-node">
+              <span>Root</span>
+            </div>
+            <ul>
+            </ul>
           </div>
-          <ul>
-          </ul>
         </div>
 
       </div>
@@ -195,9 +197,9 @@
         </div>
 
         <div id="selected-utils">
-          <button title="Fokuskan pandangan kamera pada objek ini" class="btn r-btn btn-primary"><i
+          <button onclick="toggleSelectedObjectFocus()" title="Fokuskan pandangan kamera pada objek ini" class="btn r-btn btn-primary"><i
               class="fas fa-bullseye"></i>Fokus</button>
-          <button title="Lihat sudut pandang dari objek ini" class="btn r-btn btn-primary"><i
+          <button onclick="toggleSelectedObjectPerspective()" title="Lihat sudut pandang dari objek ini" class="btn r-btn btn-primary"><i
               class="fas fa-camera"></i>Lihat Sudut Pandang</button>
         </div>
 
@@ -372,7 +374,7 @@
           atau <strong>tekan dan tahan</strong> yang lama (pada mobile)</label>
         <button id="third-person-camera-button" class="btn btn-secondary" onclick="switchToThirdPersonViewingMode()" hidden>Reset to 3rd Person Viewing Mode</button>
         <div id="tree">
-          <div class="obj-name" id="root-node">
+          <div class="obj-row" id="root-node">
             <span>Root</span>
           </div>
           <ul>

@@ -116,8 +116,6 @@ function initAnimationToggle() {
       icon.classList.add('fa-stop')
       icon.classList.remove('fa-play')
 
-      console.log(document.querySelectorAll('input[name^=selected-object]'))
-
       document.querySelectorAll('input[name^=selected-object]')
         .forEach(elem => {
           elem.setAttribute('disabled', '')
@@ -128,8 +126,6 @@ function initAnimationToggle() {
 
       icon.classList.remove('fa-stop')
       icon.classList.add('fa-play')
-
-      console.log('bb')
 
       document.querySelectorAll('input[name^=selected-object]')
         .forEach(elem => {
@@ -152,7 +148,6 @@ function initAnimationToggle() {
       document.querySelectorAll('[data-name^=selected-object]')
         .forEach(elem => {
           let slider = RSlider.get(elem)
-          console.log('slider', slider)
           if (slider) {
             slider.disable()
           }
@@ -170,7 +165,6 @@ function initAnimationToggle() {
       document.querySelectorAll('[data-name^=selected-object]')
         .forEach(elem => {
           let slider = RSlider.get(elem)
-          console.log('unanimate, slider', slider)
           if (slider) {
             slider.enable()
           }
@@ -223,16 +217,17 @@ function connectSpeedSlider() {
   const SPEED_MIN = slider.min;
   const SPEED_MAX = slider.max;
 
-  slider.on('change', () => {
-    let value = parseFloat(slider.value);
-    animationManager.speed = value;
+  slider.on('change', val => {
+    val = parseFloat(val)
+    if (isFinite(val)) {
+      animationManager.speed = val;
+    }
   })
 
   // Init slider position from inverse of exponential (logarithm)
-  let currentSpeed = animationManager.speed;
-  let sliderInitValue = interpolateLogarithmatically(SPEED_MIN, SPEED_MAX, currentSpeed);
-
-  updateSliderValueAndDisplay(slider, sliderInitValue);
+  // let currentSpeed = animationManager.speed;
+  // let sliderInitValue = interpolateLogarithmatically(SPEED_MIN, SPEED_MAX, currentSpeed);
+  // updateSliderValueAndDisplay(slider, sliderInitValue);
 }
 
 
@@ -697,11 +692,28 @@ function toggleSelectedObjectPerspective() {
   if (!selectedObject) return
 
   camera.switchToFirstPersonView()
+  updatePerspectiveView()
+}
+
+
+function updatePerspectiveView() {
+  let disabled = true
+  let status = 'umum (orang ketiga)'
+
+  if (camera.isFirstPersonView) {
+    disabled = false
+    status = 'Perspektif (1st Person) dari <b>' + camera.currentFirstPersonViewObject.name + '</b>'
+  }
+
+  document.querySelector('#third-person-camera-button').disabled = disabled
+  document.querySelector('#viewing-mode-status').innerHTML = status
 }
 
 function switchToThirdPersonViewingMode() {
-  if (camera.isFirstPersonView)
+  if (camera.isFirstPersonView) {
     camera.switchToThirdPersonView();
+  }
+  updatePerspectiveView()
 }
 
 window.addEventListener('load', async function init() {

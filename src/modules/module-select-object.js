@@ -4,6 +4,7 @@ class SelectObjectFromTree {
 
   constructor() {
     this.isMatchingSelectedPropertyToSlider = false
+    this.sliders = {}
 
     this.displayTree()
     this.connectSelectedObjectSlider()
@@ -44,7 +45,10 @@ class SelectObjectFromTree {
 
 
   initThrottleUpdateSlider() {
+    let sliders = this.sliders
+
     this.updateSliderOnObjectSelected = throttle(function () {
+
       let selectedObject = app.selectedObject
 
       if (!selectedObject) {
@@ -65,7 +69,7 @@ class SelectObjectFromTree {
           let value = propertyData[axisId]
           value = Math.round(value * 100) / 100
 
-          updateSliderValueAndDisplay(sliderName, value)
+          sliders[sliderName].setValue(value)
         })
       })
 
@@ -111,7 +115,6 @@ class SelectObjectFromTree {
     
     let newSelectedElement = document.querySelector(`li[data-model-name="${newSelection}"]`)
     if (newSelectedElement) {
-      this.deselect(oldSelection)
       newSelectedElement.classList.add('selected')
       this.updateSliderOnObjectSelected()
     }
@@ -164,7 +167,7 @@ class SelectObjectFromTree {
     // Delete all existing root children
     // WARNING: THIS HAS NOT BEEN CHECKED FOR MEMORY LEAK
 
-    let rootListHTMLNode = document.querySelector('#tree > ul')
+    let rootListHTMLNode = document.querySelector('#tree > * > ul')
     let childCount = rootListHTMLNode.childElementCount
 
     for (let i = 0; i < childCount; i++) {
@@ -178,45 +181,49 @@ class SelectObjectFromTree {
       let name = object.name
       nodeElement.dataset['modelName'] = name
 
-      let collapsedCheckElement = document.createElement('input')
-      collapsedCheckElement.type = 'checkbox'
-      collapsedCheckElement.checked = false
-      nodeElement.appendChild(collapsedCheckElement)
+      nodeElement.innerHTML = `
+      <div class="obj-row">
+        <span class="obj-name">${name}</span>
+        <div class="click-catcher"></div>
+        <div class="obj-action-buttons">
+          <button class="btn-visibility visible" title="Objek ditampilkan. Klik untuk sembunyikan objek.">
+            <i class="far fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      `
 
-      let displayElement = document.createElement('div')
-      displayElement.classList.add('obj-name')
+      nodeElement.querySelector('.click-catcher').addEventListener('click', function() {
+        event.preventDefault()
+        self.replaceSelection(name)
+      })
 
-      let spanElement = document.createElement('span')
-      spanElement.innerText = name
-
-      const actionButtonsElement = document.createElement('div')
-      actionButtonsElement.className = 'obj-action-buttons'
-
-      const toggleVisibilityElement = document.createElement('img')
-      toggleVisibilityElement.src = 'resources/images/visibility-show.svg'
-      toggleVisibilityElement.onclick = function () {
+      nodeElement.querySelector('.btn-visibility').addEventListener('click', function(e) {
         object.visible = !object.visible
+
+        let btn = e.target instanceof HTMLButtonElement ? e.target : e.target.parentNode
+        let elem = btn.querySelector('i')
+        const classes = elem.classList
+
         if (object.visible) {
-          toggleVisibilityElement.src = 'resources/images/visibility-show.svg'
+          btn.classList.add('visible')
+          classes.remove('fa-eye-slash')
+          classes.add('fa-eye')
+          btn.title = "Objek ditampilkan. Klik untuk sembunyikan objek."
         } else {
-          toggleVisibilityElement.src = 'resources/images/visibility-hide.svg'
+          btn.classList.remove('visible')
+          classes.add('fa-eye-slash')
+          classes.remove('fa-eye')
+          btn.title = "Objek disembunyikan. Klik untuk menampilkan objek."
         }
-      }
-
-      actionButtonsElement.appendChild(toggleVisibilityElement)
-      displayElement.appendChild(spanElement)
-      displayElement.appendChild(actionButtonsElement)
-
-      nodeElement.appendChild(displayElement);
-
-      [collapsedCheckElement, displayElement].forEach(element => {
-        element.addEventListener('contextmenu', event => {
-          event.preventDefault()
-          self.replaceSelection(name)
-        })
       })
 
       if (object.children && object.children.length > 0) {
+        let collapsedCheckElement = document.createElement('input')
+        collapsedCheckElement.type = 'checkbox'
+        collapsedCheckElement.checked = false
+        nodeElement.appendChild(collapsedCheckElement)
+        
         let childListElement = document.createElement('ul')
         childListElement.classList.add('collapsed')
         nodeElement.appendChild(childListElement)
@@ -225,12 +232,19 @@ class SelectObjectFromTree {
         collapseSignElement.classList.add('collapsed-sign')
         childListElement.appendChild(collapseSignElement)
 
-        object.children.forEach(children => {
+        let sortedChildren = ([...object.children]).sort(function (a, b) {
+          a = a.name.toLowerCase()
+          b = b.name.toLowerCase()
+          return (a < b) ? 1 : ((a > b) ? -1 : 0)
+        })
+
+        sortedChildren.forEach(children => {
           let childrenNode = createHTMLNodeFromObject(children)
           childListElement.appendChild(childrenNode)
         })
 
       }
+      
       return nodeElement
     }
 
@@ -245,6 +259,8 @@ class SelectObjectFromTree {
 
     let axis = ['x', 'y', 'z']
     let properties = ['position', 'rotation', 'scale']
+
+    let sliders = this.sliders
 
     properties.forEach(propertyName => {
       axis.forEach((axisName, index) => {
@@ -265,6 +281,8 @@ class SelectObjectFromTree {
               self.updateSelectedProperty(propertyName, axisId, value)
             }
           })
+
+        sliders[sliderName] = slider
 
       })
     })
