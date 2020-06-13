@@ -1,12 +1,12 @@
 var objectsDirections = {
-    "body": [0.0, -2.0, 0.0, 1.0],
+    "link.body": [0.0, -2.0, 0.0, 1.0],
     "chicken.body": [0.0, -2.0, 0.0, 1.0],
-    "Cone": [0.0, -1.0, -1.0, 1.0],
-    "rumput": [0.0, 0.0, 1.0, 1.0],
+    "mushroom-light": [0.0, -1.0, -1.0, 1.0],
+    "grasses": [0.0, 0.0, 1.0, 1.0],
 }
 
 var objectsDisplayNames = {
-    "body": "Link",
+    "link.body": "Link",
     "chicken.body": "Chicken",
 }
 
