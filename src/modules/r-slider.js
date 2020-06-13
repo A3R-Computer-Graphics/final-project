@@ -148,6 +148,13 @@ class RSlider extends EventDispatcher {
     if (this.name) {
       this.elements.container.setAttribute('data-name', this.name)
     }
+
+
+    let disabled = elem.getAttribute('disabled')
+    if (disabled !== null && disabled !== undefined) {
+      this.disable()
+    }
+
     this.updateDisplay()
     this.initListeners()
   }
@@ -235,6 +242,11 @@ class RSlider extends EventDispatcher {
     let {obstructor, container, input, prev, next} = this.elements
 
     obstructor.addEventListener('mousedown', function (e) {
+
+      if (self.disabled) {
+        return
+      }
+      
       initState.x = e.screenX
       initState.y = e.screenY
       initState.width = container.clientWidth
@@ -359,5 +371,21 @@ class RSlider extends EventDispatcher {
 
     this.elements.progress.style.width = progress + '%'
 
+  }
+
+  disable() {
+    const {input, container} = this.elements
+    container.setAttribute('data-disabled', '')
+    input.setAttribute('disabled', '')
+  }
+
+  enable() {
+    const {input, container} = this.elements
+    container.removeAttribute('data-disabled')
+    input.removeAttribute('disabled')
+  }
+
+  get disabled() {
+    return this.elements.input.getAttribute('disabled') !== null
   }
 }

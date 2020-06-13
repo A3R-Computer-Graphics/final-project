@@ -185,7 +185,6 @@ class SelectObjectFromTree {
 
       let displayElement = document.createElement('div')
       displayElement.classList.add('obj-name')
-      // displayElement.innerText = name
 
       let spanElement = document.createElement('span')
       spanElement.innerText = name
@@ -253,14 +252,17 @@ class SelectObjectFromTree {
         let axisId = index
         let sliderName = `selected-object-${propertyName}-${axisName}`
 
-        let slider = document.querySelector(`input[name="${sliderName}"]`)
+        let elem = document.querySelector(`input[name="${sliderName}"]`)
+        let slider = RSlider.get(elem)
+        if (!slider) {
+          slider = new RSlider(elem, {})
+        }
 
-        slider.addEventListener('input',
+        slider.on('change',
           () => {
             if (app.selectedObject) {
               let value = parseFloat(slider.value)
               self.updateSelectedProperty(propertyName, axisId, value)
-              updateSliderDisplay(slider, value)
             }
           })
 

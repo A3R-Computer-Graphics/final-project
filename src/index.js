@@ -103,35 +103,100 @@ function initCameraPosition() {
 }
 
 
+function initAnimationToggle() {
+  const button = document.querySelector('#toggle-anim')
+  const buttonText = button.querySelector('span')
+  const icon = button.querySelector('i')
 
-function toggleAnimation() {
-  const animateBtn = document.getElementById('toggle-anim');
-  if (animationManager.isAnimating) {
-    animationManager.stopAnimation()
-    animateBtn.innerText = 'Mulai Animasi';
-    animateBtn.classList.remove('btn-danger');
-    animateBtn.classList.add('btn-primary');
-    document.querySelectorAll('.range-animation')
-      .forEach(elem => {
-        elem.disabled = false;
-      })
-  } else {
-    animationManager.startAnimation();
-    animateBtn.innerText = 'Hentikan Animasi';
-    animateBtn.classList.remove('btn-primary');
-    animateBtn.classList.add('btn-danger');
-    document.querySelectorAll('.range-animation')
-      .forEach(elem => {
-        elem.disabled = true;
-      })
+  function initUpdateView() {
+    if (animationManager.isAnimating) {
+      buttonText.innerText = 'Hentikan'
+      button.setAttribute('title', 'Hentikan animasi')
+
+      icon.classList.add('fa-stop')
+      icon.classList.remove('fa-play')
+
+      console.log(document.querySelectorAll('input[name^=selected-object]'))
+
+      document.querySelectorAll('input[name^=selected-object]')
+        .forEach(elem => {
+          elem.setAttribute('disabled', '')
+        })
+    } else {
+      buttonText.innerText = 'Mulai'
+      button.setAttribute('title', 'Mulai animasi')
+
+      icon.classList.remove('fa-stop')
+      icon.classList.add('fa-play')
+
+      console.log('bb')
+
+      document.querySelectorAll('input[name^=selected-object]')
+        .forEach(elem => {
+          elem.removeAttribute('disabled')
+        })
+    }
   }
+
+  function updateView() {
+    if (animationManager.isAnimating) {
+      // button.classList.remove('btn-danger')
+      // button.classList.add('btn-primary')
+
+      buttonText.innerText = 'Hentikan'
+      button.setAttribute('title', 'Hentikan animasi')
+
+      icon.classList.add('fa-stop')
+      icon.classList.remove('fa-play')
+
+      document.querySelectorAll('[data-name^=selected-object]')
+        .forEach(elem => {
+          let slider = RSlider.get(elem)
+          console.log('slider', slider)
+          if (slider) {
+            slider.disable()
+          }
+        })
+    } else {
+      // button.classList.add('btn-danger')
+      // button.classList.remove('btn-primary')
+
+      buttonText.innerText = 'Mulai'
+      button.setAttribute('title', 'Mulai animasi')
+
+      icon.classList.remove('fa-stop')
+      icon.classList.add('fa-play')
+
+      document.querySelectorAll('[data-name^=selected-object]')
+        .forEach(elem => {
+          let slider = RSlider.get(elem)
+          console.log('unanimate, slider', slider)
+          if (slider) {
+            slider.enable()
+          }
+        })
+    }
+  }
+
+  function toggleAnimation() {
+    if (animationManager.isAnimating) {
+      animationManager.stopAnimation()
+      updateView()
+    } else {
+      animationManager.startAnimation()
+      updateView()
+    }
+  }
+
+  button.addEventListener('click', toggleAnimation)
+  initUpdateView()
 }
 
 
 
 function connectSlidersToModelData() {
   document.querySelectorAll('input[type="range"]').forEach(elem => {
-  
+
     const sliderName = elem.getAttribute('name')
     const propertyData = parsePropertyString(sliderName);
     if (propertyData === undefined) {
@@ -146,7 +211,7 @@ function connectSlidersToModelData() {
       let value = parseFloat(val);
       object.setOnAxisId(axisId, value);
     })
-    
+
   })
 }
 
@@ -183,7 +248,7 @@ function connectLightIntensitySliders() {
 
     let slider = RSlider.get(elem);
     if (!slider) {
-      slider = new RSlider(elem, {value: value});
+      slider = new RSlider(elem, { value: value });
     }
 
     slider.on('change', () => {
@@ -200,7 +265,7 @@ function connectLightColorPicker() {
     const name = colorPicker.getAttribute('name');
     const lightName = name.slice(name.indexOf('-') + 1);
     const lightObj = app.objects[lightName];
-    
+
     colorPicker.addEventListener('input', () => {
       const hexCol = colorPicker.value
       // Convert to rgb
@@ -208,7 +273,7 @@ function connectLightColorPicker() {
       r = ("0x" + hexCol[1] + hexCol[2]) / 255;
       g = ("0x" + hexCol[3] + hexCol[4]) / 255;
       b = ("0x" + hexCol[5] + hexCol[6]) / 255;
-      lightObj.color = [r,g,b]
+      lightObj.color = [r, g, b]
     });
 
   });
@@ -230,7 +295,7 @@ function updateCameraView() {
   let sin_t = Math.sin(theta);
   let sin_p = Math.sin(phi);
   let cos_t = Math.cos(theta);
-  let cos_p = Math.cos(phi); 
+  let cos_p = Math.cos(phi);
 
   let x = r * sin_t * cos_p;
   let y = r * sin_t * sin_p;
@@ -393,11 +458,11 @@ function createCubeLight() {
   // Make it tilt
   sun.rotation.setX(-80)
   sun.rotation.setZ(-20)
-  
+
   scene.add(sun)
   app.addObject(sun)
-  
-  
+
+
   window.lamp = new PointLight()
   lamp.name = app.getNextUniqueName('lamp')
   lamp.position.set(0.0, 0.0, 0.8)
@@ -405,7 +470,7 @@ function createCubeLight() {
 
   scene.add(lamp)
   app.addObject(lamp)
-  
+
   window.mushroomLight = new SpotLight()
   mushroomLight.name = app.getNextUniqueName('mushroom-light')
   mushroomLight.position.setZ(-0.7)
@@ -413,8 +478,8 @@ function createCubeLight() {
   mushroomLight.direction = [0.0, 0.0, -1.0, 1.0]
   mushroomLight.intensity = 4.5
 
-  // If there's a cone object, attach this light to it. Otherwise, just use the scene.
-  ;(app.objects['spotlight-cone'] || scene).add(mushroomLight)
+    // If there's a cone object, attach this light to it. Otherwise, just use the scene.
+    ; (app.objects['spotlight-cone'] || scene).add(mushroomLight)
   app.addObject(mushroomLight)
 
   light = window.sun
@@ -432,7 +497,7 @@ function toggleLight() {
     lamp.intensity = 0;
     sun.intensity = 0;
     mushroomLight.intensity = 0;
-  } else {    
+  } else {
     lamp.intensity = lamp.tempIntensity || 1.0;
     mushroomLight.intensity = mushroomLight.tempIntensity || 1.0;
     sun.intensity = sun.tempIntensity || 1.0;
@@ -577,6 +642,7 @@ function initObjectsDataFromBlender() {
 
 }
 
+
 function initShadeModeToggle() {
   const wrapper = document.querySelector('#shading-mode-choices');
   const wireframeButton = wrapper.querySelector('[data-shade-mode="wireframe"]')
@@ -601,6 +667,8 @@ function initShadeModeToggle() {
     app.wireframeMode = false
     updateView()
   })
+
+  updateView()
 }
 
 function toggleWireframeAndShadingMode() {
@@ -619,7 +687,7 @@ function toggleSelectedObjectFocus() {
   if (!app) return
   const { selectedObject } = app
   if (!selectedObject) return
-  
+
   navigableCamera.focus(selectedObject)
 }
 
@@ -627,7 +695,7 @@ function toggleSelectedObjectPerspective() {
   if (!app) return
   const { selectedObject } = app
   if (!selectedObject) return
-  
+
   camera.switchToFirstPersonView()
 }
 
@@ -676,8 +744,9 @@ window.addEventListener('load', async function init() {
       maxFrameNumber: 120
     })
     animationManager.initFromConfig(animations_definition)
-
   }
+
+  animationManager.startAnimation()
 
   // Attach event listener handles
 
@@ -690,11 +759,11 @@ window.addEventListener('load', async function init() {
   resolutionSlider.on('change', adjustResolution)
   resolution = resolutionSlider.value
 
-  document.querySelector('#toggle-anim').addEventListener('click', toggleAnimation)
   document.querySelector('#toggle-all-light').addEventListener('change', toggleLight)
   document.querySelector('#toggle-overlay').addEventListener('change', toggleOverlayMode)
 
   initShadeModeToggle()
+  initAnimationToggle()
 
   connectSlidersToModelData()
   connectLightIntensitySliders()
@@ -727,7 +796,7 @@ window.addEventListener('load', async function init() {
 async function render(currentFrame) {
   const gl = renderer.gl
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-  
+
   if (app.selectedObject) {
     app.selectedObject.updateWorldMatrix()
   }
@@ -735,7 +804,7 @@ async function render(currentFrame) {
   navigableCamera.update(currentFrame)
   objectPicking.update()
   await renderer.render(scene, camera, app)
-  
+
   // Switch between render every 1 seconds (for debugging purposes)
   // and continuously
   // setTimeout(() => window.requestAnimationFrame(render), 100)
