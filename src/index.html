@@ -150,7 +150,7 @@
 
         <div class="right-side">
           <label>Resolusi</label>
-          <input class="r-slider" type="range" step="1" name="resolution" value="50" min="1" max="100"
+          <input class="r-slider" type="range" step="1" name="resolution" value="100" min="1" max="100"
             data-clamp="true">
 
           <div id="object-perspective-menu">
@@ -174,16 +174,25 @@
         </div>
 
         <div id="tree">
-
+          <div class="obj-name" id="root-node">
+            <span>Root</span>
+          </div>
+          <ul>
+          </ul>
         </div>
+
       </div>
     </div>
 
 
-    <div class="section" id="selected-section">
+    <div class="section no-selection" id="selected-section">
       <h4>Objek Dipilih</h4>
 
       <div class="content">
+
+        <div class="no-selection-text">
+          Tidak ada objek dipilih.
+        </div>
 
         <div id="selected-utils">
           <button title="Fokuskan pandangan kamera pada objek ini" class="btn r-btn btn-primary"><i
@@ -239,7 +248,7 @@
         <div class="subsection flex">
           <div class="left-panel">
             <div class="checkbox-wrapper">
-              <input type="checkbox"></input>
+              <input id="toggle-all-light" type="checkbox" checked></input>
               <label>Nyalakan semua cahaya</label>
             </div>
           </div>

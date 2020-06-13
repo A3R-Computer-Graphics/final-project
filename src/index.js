@@ -32,9 +32,6 @@ let resolution = 100
 let isMenuShown = true
 let sliderList = []
 
-// Light is On to show if light is on or off
-let lightIsOn = true
-
 
 
 
@@ -48,13 +45,14 @@ let lightIsOn = true
 
 function updateSliderDisplay(slider, value) {
   if (typeof slider === 'string') {
-    slider = document.querySelector(`input[name="${slider}"`)
+    slider = document.querySelector(`[data-name="${slider}"`)
   }
   if (typeof value == 'undefined') {
     value = parseFloat(slider.value);
   }
+  slider = RSlider.get(slider);
   if (slider) {
-    slider.parentElement.querySelector('.slider-value').innerText = value;
+    slider.setValue(value);
   }
 }
 
@@ -68,17 +66,13 @@ function updateSliderDisplay(slider, value) {
  * @param {Number} sliderValue optional, different value for slider
  */
 
-function updateSliderValueAndDisplay(slider, value, sliderValue) {
+function updateSliderValueAndDisplay(slider, value) {
   if (value !== undefined) {
     if (typeof slider === 'string') {
-      slider = document.querySelector(`input[name="${slider}"`)
-    }
-    if (typeof sliderValue === 'undefined') {
-      sliderValue = value;
+      slider = RSlider.get(`[data-name="${slider}"`)
     }
     if (slider) {
-      slider.value = sliderValue;
-      slider.parentElement.querySelector('.slider-value').innerText = value;
+      slider.setValue(value);
     }
   }
 }
@@ -111,7 +105,7 @@ function initCameraPosition() {
 
 
 function toggleAnimation() {
-  const animateBtn = document.getElementById('btn-animate');
+  const animateBtn = document.getElementById('toggle-anim');
   if (animationManager.isAnimating) {
     animationManager.stopAnimation()
     animateBtn.innerText = 'Mulai Animasi';
@@ -137,6 +131,7 @@ function toggleAnimation() {
 
 function connectSlidersToModelData() {
   document.querySelectorAll('input[type="range"]').forEach(elem => {
+  
     const sliderName = elem.getAttribute('name')
     const propertyData = parsePropertyString(sliderName);
     if (propertyData === undefined) {
@@ -146,35 +141,33 @@ function connectSlidersToModelData() {
     const { modelName, propertyName, axisId } = propertyData;
     let object = app.objects[modelName][propertyName];
 
-    elem.addEventListener('input', () => {
-      let value = parseFloat(elem.value);
-      updateSliderValueAndDisplay(elem, value);
+    let slider = new RSlider(elem);
+    slider.on('change', (val) => {
+      let value = parseFloat(val);
       object.setOnAxisId(axisId, value);
     })
+    
   })
 }
 
 
 
 function connectSpeedSlider() {
-  let slider = document.querySelector('input[name="speed"]');
+  let slider = new RSlider('input[name="speed"]');
 
-  const SPEED_MIN = parseFloat(slider.getAttribute('min'));
-  const SPEED_MAX = parseFloat(slider.getAttribute('max'));
+  const SPEED_MIN = slider.min;
+  const SPEED_MAX = slider.max;
 
-  slider.addEventListener('input', () => {
+  slider.on('change', () => {
     let value = parseFloat(slider.value);
-    value = interpolateExponentially(SPEED_MIN, SPEED_MAX, value);
-    updateSliderDisplay(slider, Math.round(value * 100) + '%');
     animationManager.speed = value;
   })
 
   // Init slider position from inverse of exponential (logarithm)
   let currentSpeed = animationManager.speed;
-  let displaySpeed = Math.round(currentSpeed * 100) + '%'
   let sliderInitValue = interpolateLogarithmatically(SPEED_MIN, SPEED_MAX, currentSpeed);
 
-  updateSliderValueAndDisplay(slider, displaySpeed, sliderInitValue);
+  updateSliderValueAndDisplay(slider, sliderInitValue);
 }
 
 
@@ -189,10 +182,14 @@ function connectLightIntensitySliders() {
     let value = lightObj.intensity
     updateSliderValueAndDisplay(slider, value)
 
-    slider.addEventListener('input', () => {
+    slider = RSlider.get(slider);
+    if (!slider) {
+      slider = new RSlider(slider);
+    }
+
+    slider.on('change', () => {
       let newValue = parseFloat(slider.value);
       lightObj.intensity = newValue
-      updateSliderDisplay(slider, newValue);
     });
   });
 }
@@ -298,10 +295,8 @@ function adjustViewport() {
 
 
 
-function adjustResolution(event) {
-  let slider = event.target
-  resolution = Math.min(100, Math.max(1, slider.value))
-  updateSliderDisplay(slider, resolution + '%')
+function adjustResolution(val) {
+  resolution = Math.min(100, Math.max(1, val))
   adjustViewport()
 }
 
@@ -430,10 +425,8 @@ function createCubeLight() {
 
 
 function toggleLight() {
-  const lightBtn = document.getElementById('btn-toggle-light');
-  if (lightIsOn) {
-    lightIsOn = false;
-
+  const toggle = document.getElementById('toggle-all-light');
+  if (!toggle.checked) {
     lamp.tempIntensity = lamp.intensity;
     mushroomLight.tempIntensity = mushroomLight.intensity;
     sun.tempIntensity = sun.intensity;
@@ -441,22 +434,10 @@ function toggleLight() {
     lamp.intensity = 0;
     sun.intensity = 0;
     mushroomLight.intensity = 0;
-
-    lightBtn.innerText = 'Hidupkan Cahaya';
-    lightBtn.classList.remove('btn-danger');
-    lightBtn.classList.add('btn-primary');
-  } else {
-    lightIsOn = true;
-
-    console.log(lamp.tempIntensity, mushroomLight.tempIntensity, sun.tempIntensity)
-    
+  } else {    
     lamp.intensity = lamp.tempIntensity || 1.0;
     mushroomLight.intensity = mushroomLight.tempIntensity || 1.0;
     sun.intensity = sun.tempIntensity || 1.0;
-
-    lightBtn.innerText = 'Matikan Cahaya';
-    lightBtn.classList.remove('btn-primary');
-    lightBtn.classList.add('btn-danger');
   }
 }
 
@@ -635,67 +616,6 @@ function switchToThirdPersonViewingMode() {
 
 window.addEventListener('load', async function init() {
 
-  let speedSlider = new RSlider('input[name="speed"]', {clamp: true})
-  speedSlider.on('change', function(value) {
-    console.log('the value is:', value)
-  })
-
-  let resolutionSlider = new RSlider('input[name="resolution"]', {}, val => parseInt(val) + '%')
-  resolutionSlider.on('change', function(value) {
-    console.log('the value is:', value)
-  })
-
-  // mock
-  
-
-  let axis = ['x', 'y', 'z']
-  let properties = ['position', 'rotation', 'scale']
-
-  properties.forEach(propertyName => {
-    axis.forEach((axisName, index) => {
-
-      let axisId = index
-      let sliderName = `selected-object-${propertyName}-${axisName}`
-
-      let slider = document.querySelector(`input[name="${sliderName}"]`)
-      slider = new RSlider(slider)
-
-      console.log(axisId, propertyName)
-
-      slider.on('change',
-        (val) => {
-          console.log(val, axisId, propertyName)
-          // if (app.selectedObject) {
-          //   let value = parseFloat(slider.value)
-          //   self.updateSelectedProperty(propertyName, axisId, value)
-          //   updateSliderDisplay(slider, value)
-          // }
-        })
-
-    })
-  })
-
-
-  // document.querySelectorAll('input[type="range"]').forEach(elem => {
-  //   const sliderName = elem.getAttribute('name')
-  //   const propertyData = parsePropertyString(sliderName);
-  //   if (propertyData === undefined) {
-  //     return
-  //   }
-
-  //   const { modelName, propertyName, axisId } = propertyData;
-  //   // let object = app.objects[modelName][propertyName];
-    
-  //   let slider = new RSlider(elem);
-  //   slider.on('change', (val) => {
-  //     console.log('test')
-  //     let value = parseFloat(val);
-  //     // object.setOnAxisId(axisId, value);
-  //   })
-  // })
-
-  return
-
   // Set up scene, camera, and renderer
 
   canvas = document.getElementById('gl-canvas')
@@ -743,10 +663,13 @@ window.addEventListener('load', async function init() {
   canvas.parentElement.addEventListener('keyup', handleKeyUp)
   window.addEventListener('resize', adjustViewport)
 
-  document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
-  document.querySelector('input[name="resolution"]').addEventListener('input', adjustResolution)
-  document.querySelector('#btn-animate').addEventListener('click', toggleAnimation)
-  document.querySelector('#btn-toggle-light').addEventListener('click', toggleLight)
+  // document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
+  let resolutionSlider = new RSlider('input[name="resolution"]', {}, val => parseInt(val) + '%')
+  resolutionSlider.on('change', adjustResolution)
+  resolution = resolutionSlider.value
+  
+  document.querySelector('#toggle-anim').addEventListener('click', toggleAnimation)
+  document.querySelector('#toggle-all-light').addEventListener('click', toggleLight)
 
   connectSlidersToModelData()
   connectLightIntensitySliders()

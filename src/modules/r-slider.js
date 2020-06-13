@@ -325,4 +325,27 @@ class RSlider extends EventDispatcher {
   off() {
     this.removeListener.apply(this, arguments)
   }
+
+  /* Set value without triggering change event */
+
+  setValue(val) {
+    
+    this.value = val
+    this.limitValue()
+
+    let min = this.min || 0
+    let max = this.max || 1
+    val = this.value || 0
+
+    if (this.value) {
+      this.elements.input.value = this.displayFunction(this.value)
+    }
+
+    let progress = (val - min) / (max - min)
+    progress = Math.max(Math.min(progress, 1), 0)
+    progress *= 100
+
+    this.elements.progress.style.width = progress + '%'
+
+  }
 }

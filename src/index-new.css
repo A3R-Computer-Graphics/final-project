@@ -199,6 +199,19 @@
 }
 
 
+#selected-section.no-selection .content > *:not(.no-selection-text) {
+  display: none;
+}
+
+#selected-section:not(.no-selection) .no-selection-text {
+  display: none;
+}
+
+#selected-section .no-selection-text {
+  font-style: italic;color: #ffffff69;
+}
+
+
 
 /** Light setup */
 

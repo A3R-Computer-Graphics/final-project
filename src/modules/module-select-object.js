@@ -120,11 +120,12 @@ class SelectObjectFromTree {
   }
 
   updateSelectionView() {
+    let selectedContainer = document.querySelector('#selected-section')
     let object = app.selectedObject
     if (!object) {
-      document.querySelector('#selected-object-menu').classList.add('no-selection')
+      selectedContainer.classList.add('no-selection')
     } else {
-      document.querySelector('#selected-object-menu').classList.remove('no-selection')
+      selectedContainer.classList.remove('no-selection')
     }
     this.displaySelectionHierarchyText()
   }
