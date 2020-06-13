@@ -396,7 +396,7 @@ div#speed-slider {
 
 #tree {
   position: relative;
-  max-height: 270px;
+  max-height: 170px;
   overflow-y: scroll;
   margin: 10px 0;
   background-color: #131313;

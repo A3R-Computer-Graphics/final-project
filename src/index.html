@@ -82,28 +82,51 @@
   </div>
 
   <div id="screen-info">
-    <p id="canvas-status">Canvas aktif dipilih</p>
     <div>Objek dipilih: <span id="selobj-hierarchy"></span></div>
     <p>Sudut pandang: <span id="viewing-mode-status">umum (orang ketiga)</span></p>
   </div>
 
-  <div id="left-panel" class="side-panel">
-    <button>Tutup</button>
-    <h3>Bantuan</h3>
-  </div>
-
   <div id="right-panel" class="side-panel">
-    <button>Tutup</button>
-    <h3>Menu</h3>
 
-    <div class="section" hidden>
+    <div class="section">
 
-      <h4>Section Title</h4>
+      <h4>Bantuan</h4>
+
+      <input class="show" type="checkbox">
+      <div class="collapse-sign">
+        <i class="fas fa-chevron-right"></i>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+
       <div class="content">
-        <div class="r-slider-container">
-          <label>Slider Name</label>
-          <div class="r-slider-display" data-slider-name="slidername">0</div>
-          <input class="r-slider" type="range" step="0.01" name="slidername" value="0" min="0.05" max="4">
+        
+        <div id="help"><h3>Shortcut Keyboard</h3>
+          <ul>
+          <li><code>W</code>-<code>A</code>-<code>S</code>-<code>D</code>: gerak kamera maju-mundur dan kiri-kanan</li>
+          <li>Panah keyboard: gerak kamera atas-bawah dan kiri-kanan</li>
+          <li><code>F</code>: Fokus pada objek yang dipilih serta berganti ke sudut pandang umum</li>
+          <li><code>P</code>: Berganti sudut pandang ke objek yang dipilih</li>
+          </ul>
+          <h3>Memilih objek</h3>
+          <p>Pilih objek dengan <strong>klik kanan</strong> pada gambar objek di kanvas</p>
+          <h3>Mengatur Lighting</h3>
+          <p>Untuk melakukan hal ini, pilih objek light terlebih dahulu.</p>
+          <ul>
+          <li>Cahaya titik ada pada node root &gt; <code>lamp</code></li>
+          <li>Cahaya matahari ada pada node root &gt; <code>sun</code></li>
+          <li>Cahaya sorot ada pada node root &gt; <code>spotlight-holder</code> &gt; <code>spotlight-cone</code> &gt; <code>mushroom-light</code></li>
+          </ul>
+          <p>Selain itu, cahaya dapat langsung dipilih pada bagian <strong>Cahaya</strong>.</p>
+          <p>Atur posisi, rotasi, dan skala pada bagian <strong>Objek Dipilih</strong>.</p>
+          <h3>Navigasi dengan Mouse</h3>
+          <ul>
+          <li><strong>Gerak maju-mundur dan kiri-kanan</strong>: tekan dan tahan kanvas sambil menahan <strong><code>Shift</code></strong></li>
+          <li><strong>Gerak atas-bawah dan kiri-kanan</strong>: tekan dan tahan kanvas sambil menahan <strong><code>Alt</code></strong></li>
+          <li><strong>Putar arah kamera</strong>: tekan dan tahan kanvas dengan <strong>klik kiri</strong> dan gerakkan mouse</li>
+          <li><strong>Zoom in &amp; zoom out</strong>: scroll</li>
+          </ul>
+          <h3>Animasi</h3>
+          <p>Tekan <code>Spacebar</code> untuk memulai/menghentikan animasi</p>
         </div>
       </div>
 
@@ -111,6 +134,13 @@
 
     <div class="section" id="animation-section">
       <h4>Animasi</h4>
+
+      <input class="show" type="checkbox" checked>
+      <div class="collapse-sign">
+        <i class="fas fa-chevron-right"></i>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+
       <div class="content">
 
         <div class="left-side" style="width:100px">
@@ -131,6 +161,12 @@
 
     <div class="section" id="view-section">
       <h4>Tampilan</h4>
+
+      <input class="show" type="checkbox" checked>
+      <div class="collapse-sign">
+        <i class="fas fa-chevron-right"></i>
+        <i class="fas fa-chevron-down"></i>
+      </div>
 
       <div class="content">
 
@@ -166,7 +202,13 @@
 
 
     <div class="section">
-      <h4>Hirarki Scene</h4>
+      <h4>Hierarki Scene</h4>
+
+      <input class="show" type="checkbox" checked>
+      <div class="collapse-sign">
+        <i class="fas fa-chevron-right"></i>
+        <i class="fas fa-chevron-down"></i>
+      </div>
 
       <div class="content">
         <div class="help">
@@ -189,6 +231,12 @@
 
     <div class="section no-selection" id="selected-section">
       <h4>Objek Dipilih</h4>
+
+      <input class="show" type="checkbox" checked>
+      <div class="collapse-sign">
+        <i class="fas fa-chevron-right"></i>
+        <i class="fas fa-chevron-down"></i>
+      </div>
 
       <div class="content">
 
@@ -244,6 +292,12 @@
 
     <div class="section" id="light-section">
       <h4>Cahaya</h4>
+
+      <input class="show" type="checkbox" checked>
+      <div class="collapse-sign">
+        <i class="fas fa-chevron-right"></i>
+        <i class="fas fa-chevron-down"></i>
+      </div>
 
       <div class="content">
 
