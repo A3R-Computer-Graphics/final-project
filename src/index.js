@@ -690,6 +690,28 @@ function initFocusToLightButton() {
 
 
 
+function initFocusToQuickTools() {
+  document.querySelectorAll('button.change-view').forEach(button => {
+
+    let objectName = button.getAttribute('data-object-name')
+    let object = app.objects[objectName]
+
+    // Ignore setting up button if lamp name doesn't exist in app
+    if (!object) {
+      return
+    }
+
+    button.addEventListener('click', function() {
+      app.selectedObjectName = objectName
+      camera.switchToFirstPersonView()
+      updatePerspectiveView()
+    })
+
+  })
+}
+
+
+
 function toggleWireframeAndShadingMode() {
   app.wireframeMode = !app.wireframeMode
   const dom = document.querySelector('#toggle-wireframe-button');
@@ -801,6 +823,7 @@ window.addEventListener('load', async function init() {
   initShadeModeToggle()
   initAnimationToggle()
   initFocusToLightButton()
+  initFocusToQuickTools()
 
   connectSlidersToModelData()
   connectLightIntensitySliders()

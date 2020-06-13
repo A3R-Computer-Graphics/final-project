@@ -138,6 +138,30 @@
   font-weight: 600;
 }
 
+/* quick tool section */
+
+#view-as-buttons {
+  display: flex;
+}
+
+#view-as-buttons > * {
+  width: calc((100% - 8px * 2) / 3);
+  margin-right: 8px;
+  background-color: #262626;
+  color: #dedede;
+  padding-bottom: 9px;
+}
+
+button.change-view span {
+  display: block;
+  line-height: 1.2;
+}
+
+#view-as-buttons > *:hover {
+  background-color: #3a3a3a;
+}
+
+
 /* Animation section */
 #animation-section .content {
   display: flex;
