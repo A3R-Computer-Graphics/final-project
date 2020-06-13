@@ -88,344 +88,376 @@
 
   <div id="right-panel" class="side-panel">
 
-    <div class="section">
+    <button id="toggle-close-menu" class="btn r-btn btn-secondary">
+      <i class="fas fa-chevron-right"></i>
+      <i class="fas fa-chevron-left"></i>
+      <span class="button-text"></span>
+    </button>
 
-      <h4>Bantuan</h4>
+    <div class="panel-content">
 
-      <input class="show" type="checkbox">
-      <div class="collapse-sign">
-        <i class="fas fa-chevron-right"></i>
-        <i class="fas fa-chevron-down"></i>
-      </div>
+      <div class="section">
 
-      <div class="content">
-        
-        <div id="help"><h3>Shortcut Keyboard</h3>
-          <ul>
-          <li><code>W</code>-<code>A</code>-<code>S</code>-<code>D</code>: gerak kamera maju-mundur dan kiri-kanan</li>
-          <li>Panah keyboard: gerak kamera atas-bawah dan kiri-kanan</li>
-          <li><code>F</code>: Fokus pada objek yang dipilih serta berganti ke sudut pandang umum</li>
-          <li><code>P</code>: Berganti sudut pandang ke objek yang dipilih</li>
-          </ul>
-          <h3>Memilih objek</h3>
-          <p>Pilih objek dengan <strong>klik kanan</strong> pada gambar objek di kanvas</p>
-          <h3>Mengatur Lighting</h3>
-          <p>Untuk melakukan hal ini, pilih objek light terlebih dahulu.</p>
-          <ul>
-          <li>Cahaya titik ada pada node root &gt; <code>lamp</code></li>
-          <li>Cahaya matahari ada pada node root &gt; <code>sun</code></li>
-          <li>Cahaya sorot ada pada node root &gt; <code>spotlight-holder</code> &gt; <code>spotlight-cone</code> &gt; <code>mushroom-light</code></li>
-          </ul>
-          <p>Selain itu, cahaya dapat langsung dipilih pada bagian <strong>Cahaya</strong>.</p>
-          <p>Atur posisi, rotasi, dan skala pada bagian <strong>Objek Dipilih</strong>.</p>
-          <h3>Navigasi dengan Mouse</h3>
-          <ul>
-          <li><strong>Gerak maju-mundur dan kiri-kanan</strong>: tekan dan tahan kanvas sambil menahan <strong><code>Shift</code></strong></li>
-          <li><strong>Gerak atas-bawah dan kiri-kanan</strong>: tekan dan tahan kanvas sambil menahan <strong><code>Alt</code></strong></li>
-          <li><strong>Putar arah kamera</strong>: tekan dan tahan kanvas dengan <strong>klik kiri</strong> dan gerakkan mouse</li>
-          <li><strong>Zoom in &amp; zoom out</strong>: scroll</li>
-          </ul>
-          <h3>Animasi</h3>
-          <p>Tekan <code>Spacebar</code> untuk memulai/menghentikan animasi</p>
+        <h4>Bantuan</h4>
+
+        <input class="show" type="checkbox">
+        <div class="collapse-sign">
+          <i class="fas fa-chevron-right"></i>
+          <i class="fas fa-chevron-down"></i>
         </div>
+
+        <div class="content">
+
+          <div id="help">
+            <h3>Shortcut Keyboard</h3>
+            <ul>
+              <li><code>W</code>-<code>A</code>-<code>S</code>-<code>D</code>: gerak kamera maju-mundur dan kiri-kanan
+              </li>
+              <li>Panah keyboard: gerak kamera atas-bawah dan kiri-kanan</li>
+              <li><code>F</code>: Fokus pada objek yang dipilih serta berganti ke sudut pandang umum</li>
+              <li><code>P</code>: Berganti sudut pandang ke objek yang dipilih</li>
+            </ul>
+            <h3>Memilih objek</h3>
+            <p>Pilih objek dengan <strong>klik kanan</strong> pada gambar objek di kanvas</p>
+            <h3>Mengatur Lighting</h3>
+            <p>Untuk melakukan hal ini, pilih objek light terlebih dahulu.</p>
+            <ul>
+              <li>Cahaya titik ada pada node root &gt; <code>lamp</code></li>
+              <li>Cahaya matahari ada pada node root &gt; <code>sun</code></li>
+              <li>Cahaya sorot ada pada node root &gt; <code>spotlight-holder</code> &gt; <code>spotlight-cone</code>
+                &gt; <code>mushroom-light</code></li>
+            </ul>
+            <p>Selain itu, cahaya dapat langsung dipilih pada bagian <strong>Cahaya</strong>.</p>
+            <p>Atur posisi, rotasi, dan skala pada bagian <strong>Objek Dipilih</strong>.</p>
+            <h3>Navigasi dengan Mouse</h3>
+            <ul>
+              <li><strong>Gerak maju-mundur dan kiri-kanan</strong>: tekan dan tahan kanvas sambil menahan
+                <strong><code>Shift</code></strong></li>
+              <li><strong>Gerak atas-bawah dan kiri-kanan</strong>: tekan dan tahan kanvas sambil menahan
+                <strong><code>Alt</code></strong></li>
+              <li><strong>Putar arah kamera</strong>: tekan dan tahan kanvas dengan <strong>klik kiri</strong> dan
+                gerakkan mouse</li>
+              <li><strong>Zoom in &amp; zoom out</strong>: scroll</li>
+            </ul>
+            <h3>Animasi</h3>
+            <p>Tekan <code>Spacebar</code> untuk memulai/menghentikan animasi</p>
+          </div>
+        </div>
+
       </div>
 
-    </div>
 
+      <div class="section">
+        <h4>Quick Tool</h4>
 
-    <div class="section">
-      <h4>Quick Tool</h4>
+        <input class="show" type="checkbox" checked>
+        <div class="collapse-sign">
+          <i class="fas fa-chevron-right"></i>
+          <i class="fas fa-chevron-down"></i>
+        </div>
 
-      <input class="show" type="checkbox" checked>
-      <div class="collapse-sign">
-        <i class="fas fa-chevron-right"></i>
-        <i class="fas fa-chevron-down"></i>
-      </div>
+        <div class="content" id="view-as-buttons">
 
-      <div class="content" id="view-as-buttons">
-        
-          <button data-object-name="link.head" id="view-as-link" class="btn r-btn btn-secondary change-view" title="Hentikan">
-            <img src="resources/images/view-icon-link.svg"/>
+          <button data-object-name="link.head" id="view-as-link" class="btn r-btn btn-secondary change-view"
+            title="Hentikan">
+            <img src="resources/images/view-icon-link.svg" />
             <span>Ganti sudut pandang ke kepala "Link"</span>
           </button>
-        
-          <button data-object-name="chicken.head" id="view-as-chicken" class="btn r-btn btn-secondary change-view" title="Hentikan">
-            <img src="resources/images/view-icon-chicken.svg"/>
+
+          <button data-object-name="chicken.head" id="view-as-chicken" class="btn r-btn btn-secondary change-view"
+            title="Hentikan">
+            <img src="resources/images/view-icon-chicken.svg" />
             <span>Ganti sudut pandang ke kepala ayam</span>
           </button>
-        
-          <button data-object-name="Hidung" id="view-as-horse" class="btn r-btn btn-secondary change-view" title="Hentikan">
-            <img src="resources/images/view-icon-horse.svg"/>
+
+          <button data-object-name="Hidung" id="view-as-horse" class="btn r-btn btn-secondary change-view"
+            title="Hentikan">
+            <img src="resources/images/view-icon-horse.svg" />
             <span>Ganti sudut pandang ke kepala kuda</span>
           </button>
         </div>
 
-    </div>
-
-
-    <div class="section" id="animation-section">
-      <h4>Animasi</h4>
-
-      <input class="show" type="checkbox" checked>
-      <div class="collapse-sign">
-        <i class="fas fa-chevron-right"></i>
-        <i class="fas fa-chevron-down"></i>
       </div>
 
-      <div class="content">
 
-        <div class="left-side" style="width:100px">
-          <label>Playback</label>
-          <button id="toggle-anim" class="btn r-btn btn-primary" title="Hentikan">
-            <i class="fas fa-stop"></i><span>Hentikan</span>
-          </button>
-        </div>
-        <div class="right-side">
-          <label>Kecepatan</label>
-          <input class="r-slider" type="range" step="0.01" name="speed" value="0.5" min="0.05" max="4"
-            data-clamp="true">
+      <div class="section" id="animation-section">
+        <h4>Animasi</h4>
+
+        <input class="show" type="checkbox" checked>
+        <div class="collapse-sign">
+          <i class="fas fa-chevron-right"></i>
+          <i class="fas fa-chevron-down"></i>
         </div>
 
-      </div>
-    </div>
+        <div class="content">
 
-    <div class="section" id="view-section">
-      <h4>Tampilan</h4>
-
-      <input class="show" type="checkbox" checked>
-      <div class="collapse-sign">
-        <i class="fas fa-chevron-right"></i>
-        <i class="fas fa-chevron-down"></i>
-      </div>
-
-      <div class="content">
-
-        <div class="left-side">
-          <label>Mode</label>
-          <div id="shading-mode-choices">
-            <button data-shade-mode="shading" class="selected"><img src="resources/images/shading-icon.svg" /><span>Shading</span></button>
-            <button data-shade-mode="wireframe"><img src="resources/images/wireframe-icon.svg" /><span>Wireframe</span></button>
+          <div class="left-side" style="width:100px">
+            <label>Playback</label>
+            <button id="toggle-anim" class="btn r-btn btn-primary" title="Hentikan">
+              <i class="fas fa-stop"></i><span>Hentikan</span>
+            </button>
           </div>
-
-          <div class="checkbox-wrapper" style="margin-top:16px"
-            title="Tampilkan objek bantuan seperti arah cahaya dan ruang shadowmap">
-            <input id="toggle-overlay" type="checkbox" checked></input>
-            <label>Tampilkan overlay</label>
-          </div>
-        </div>
-
-        <div class="right-side">
-          <label>Resolusi</label>
-          <input class="r-slider" type="range" step="1" name="resolution" value="100" min="1" max="100"
-            data-clamp="true">
-
-          <div id="object-perspective-menu">
-            <label>Sudut Pandang Objek</label>
-            <button type="button" disabled id="third-person-camera-button" class="btn r-btn btn-primary"
-              title="Lepaskan kamera dari sudut pandang objek sehingga kamera dapat bergerak bebas."
-              onclick="switchToThirdPersonViewingMode()">Lepaskan</button>
+          <div class="right-side">
+            <label>Kecepatan</label>
+            <input class="r-slider" type="range" step="0.01" name="speed" value="0.5" min="0.05" max="4"
+              data-clamp="true">
           </div>
 
         </div>
       </div>
-    </div>
 
+      <div class="section" id="view-section">
+        <h4>Tampilan</h4>
 
-    <div class="section">
-      <h4>Hierarki Scene</h4>
-
-      <input class="show" type="checkbox" checked>
-      <div class="collapse-sign">
-        <i class="fas fa-chevron-right"></i>
-        <i class="fas fa-chevron-down"></i>
-      </div>
-
-      <div class="content">
-        <div class="help">
-          Pilih objek dengan mengklik item.
+        <input class="show" type="checkbox" checked>
+        <div class="collapse-sign">
+          <i class="fas fa-chevron-right"></i>
+          <i class="fas fa-chevron-down"></i>
         </div>
 
-        <div id="tree">
-          <div id="tree-wrapper">
-            <div class="obj-row" id="root-node">
-              <span>Root</span>
+        <div class="content">
+
+          <div class="left-side">
+            <label>Mode</label>
+            <div id="shading-mode-choices">
+              <button data-shade-mode="shading" class="selected"><img
+                  src="resources/images/shading-icon.svg" /><span>Shading</span></button>
+              <button data-shade-mode="wireframe"><img
+                  src="resources/images/wireframe-icon.svg" /><span>Wireframe</span></button>
             </div>
-            <ul>
-            </ul>
-          </div>
-        </div>
 
-      </div>
-    </div>
-
-
-    <div class="section no-selection" id="selected-section">
-      <h4>Objek Dipilih</h4>
-
-      <input class="show" type="checkbox" checked>
-      <div class="collapse-sign">
-        <i class="fas fa-chevron-right"></i>
-        <i class="fas fa-chevron-down"></i>
-      </div>
-
-      <div class="content">
-
-        <div class="no-selection-text">
-          Tidak ada objek dipilih.
-        </div>
-
-        <div id="selected-utils">
-          <button onclick="toggleSelectedObjectFocus()" title="Fokuskan pandangan kamera pada objek ini" class="btn r-btn btn-primary"><i
-              class="fas fa-bullseye"></i>Fokus</button>
-          <button onclick="toggleSelectedObjectPerspective()" title="Lihat sudut pandang dari objek ini" class="btn r-btn btn-primary"><i
-              class="fas fa-camera"></i>Lihat Sudut Pandang</button>
-        </div>
-
-        <div id="selected-transformational">
-          <div>
-            <label class="title-label">Translasi</label>
-            <label>X</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-position-x" value="0" min="-10"
-              max="10">
-            <label>Y</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-position-y" value="0" min="-10"
-              max="10">
-            <label>Z</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-position-z" value="0" min="-10"
-              max="10">
-          </div>
-          <div>
-            <label class="title-label">Rotasi</label>
-            <label>X</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-x" value="0" min="0"
-              max="360">
-            <label>Y</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-y" value="0" min="0"
-              max="360">
-            <label>Z</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-z" value="0" min="0"
-              max="360">
-          </div>
-          <div>
-            <label class="title-label">Skala</label>
-            <label>X</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-scale-x" value="1" min="-5" max="5">
-            <label>Y</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-scale-y" value="1" min="-5" max="5">
-            <label>Z</label>
-            <input class="r-slider" type="range" step="0.05" name="selected-object-scale-z" value="1" min="-5" max="5">
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <div class="section" id="light-section">
-      <h4>Cahaya</h4>
-
-      <input class="show" type="checkbox" checked>
-      <div class="collapse-sign">
-        <i class="fas fa-chevron-right"></i>
-        <i class="fas fa-chevron-down"></i>
-      </div>
-
-      <div class="content">
-
-        <div class="subsection flex">
-          <div class="left-panel">
-            <div class="checkbox-wrapper">
-              <input id="toggle-all-light" type="checkbox" checked></input>
-              <label>Nyalakan semua cahaya</label>
+            <div class="checkbox-wrapper" style="margin-top:16px"
+              title="Tampilkan objek bantuan seperti arah cahaya dan ruang shadowmap">
+              <input id="toggle-overlay" type="checkbox" checked></input>
+              <label>Tampilkan overlay</label>
             </div>
           </div>
 
-          <div class="right-panel color-picker-field-wrapper">
-            <label>Warna Ambient</label>
-            <div class="colorpicker-value">
-              <input type="color" name="ambient-color" value="#3f0a52">
+          <div class="right-side">
+            <label>Resolusi</label>
+            <input class="r-slider" type="range" step="1" name="resolution" value="100" min="1" max="100"
+              data-clamp="true">
+
+            <div id="object-perspective-menu">
+              <label>Sudut Pandang Objek</label>
+              <button type="button" disabled id="third-person-camera-button" class="btn r-btn btn-primary"
+                title="Lepaskan kamera dari sudut pandang objek sehingga kamera dapat bergerak bebas."
+                onclick="switchToThirdPersonViewingMode()">Lepaskan</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
+      <div class="section">
+        <h4>Hierarki Scene</h4>
+
+        <input class="show" type="checkbox" checked>
+        <div class="collapse-sign">
+          <i class="fas fa-chevron-right"></i>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+
+        <div class="content">
+          <div class="help">
+            Pilih objek dengan mengklik item.
+          </div>
+
+          <div id="tree">
+            <div id="tree-wrapper">
+              <div class="obj-row" id="root-node">
+                <span>Root</span>
+              </div>
+              <ul>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+
+      <div class="section no-selection" id="selected-section">
+        <h4>Objek Dipilih</h4>
+
+        <input class="show" type="checkbox" checked>
+        <div class="collapse-sign">
+          <i class="fas fa-chevron-right"></i>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+
+        <div class="content">
+
+          <div class="no-selection-text">
+            Tidak ada objek dipilih.
+          </div>
+
+          <div id="selected-utils">
+            <button onclick="toggleSelectedObjectFocus()" title="Fokuskan pandangan kamera pada objek ini"
+              class="btn r-btn btn-primary"><i class="fas fa-bullseye"></i>Fokus</button>
+            <button onclick="toggleSelectedObjectPerspective()" title="Lihat sudut pandang dari objek ini"
+              class="btn r-btn btn-primary"><i class="fas fa-camera"></i>Lihat Sudut Pandang</button>
+          </div>
+
+          <div id="selected-transformational">
+            <div>
+              <label class="title-label">Translasi</label>
+              <label>X</label>
+              <input class="r-slider" type="range" step="0.05" name="selected-object-position-x" value="0" min="-10"
+                max="10">
+              <label>Y</label>
+              <input class="r-slider" type="range" step="0.05" name="selected-object-position-y" value="0" min="-10"
+                max="10">
+              <label>Z</label>
+              <input class="r-slider" type="range" step="0.05" name="selected-object-position-z" value="0" min="-10"
+                max="10">
+            </div>
+            <div>
+              <label class="title-label">Rotasi</label>
+              <label>X</label>
+              <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-x" value="0" min="0"
+                max="360">
+              <label>Y</label>
+              <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-y" value="0" min="0"
+                max="360">
+              <label>Z</label>
+              <input class="r-slider" type="range" step="0.05" name="selected-object-rotation-z" value="0" min="0"
+                max="360">
+            </div>
+            <div>
+              <label class="title-label">Skala</label>
+              <label>X</label>
+              <input class="r-slider" type="range" step="0.05" name="selected-object-scale-x" value="1" min="-5"
+                max="5">
+              <label>Y</label>
+              <input class="r-slider" type="range" step="0.05" name="selected-object-scale-y" value="1" min="-5"
+                max="5">
+              <label>Z</label>
+              <input class="r-slider" type="range" step="0.05" name="selected-object-scale-z" value="1" min="-5"
+                max="5">
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="subsection light-setup">
 
-          <h5><i class="fas fa-lightbulb"></i> Cahaya Titik</h5>
-          <button data-light-name="lamp" class="btn r-btn btn-secondary">Pilih objek</button>
+      <div class="section" id="light-section">
+        <h4>Cahaya</h4>
 
-          <div class="two-panel-wrapper">
+        <input class="show" type="checkbox" checked>
+        <div class="collapse-sign">
+          <i class="fas fa-chevron-right"></i>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+
+        <div class="content">
+
+          <div class="subsection flex">
             <div class="left-panel">
-              <label>Intensitas</label>
-              <input class="r-slider" type="range" step="0.05" name="lamp-intensity" value="1" min="0" max="10" data-clamp="true">
+              <div class="checkbox-wrapper">
+                <input id="toggle-all-light" type="checkbox" checked></input>
+                <label>Nyalakan semua cahaya</label>
+              </div>
             </div>
 
-            <div class="right-panel">
-              <div class="color-picker-field-wrapper">
-                <label>Warna Diffuse</label>
-                <div class="colorpicker-value">
-                  <input type="color" name="pointlight-diffuse-lightcolor" data-light-name="lamp" data-light-property="diffuseColor" value="#ffffff">
-                </div>
-              </div>
-              <div class="color-picker-field-wrapper">
-                <label>Warna Specular</label>
-                <div class="colorpicker-value">
-                  <input type="color" name="pointlight-specular-lightcolor" data-light-name="lamp" data-light-property="specularColor" value="#ffffff">
-                </div>
+            <div class="right-panel color-picker-field-wrapper">
+              <label>Warna Ambient</label>
+              <div class="colorpicker-value">
+                <input type="color" name="ambient-color" value="#3f0a52">
               </div>
             </div>
           </div>
 
-        </div>
+          <div class="subsection light-setup">
 
-        <div class="subsection light-setup">
-          <h5><i class="fas fa-lightbulb"></i> Cahaya Sorot</h5>
-          <button data-light-name="mushroom-light" class="btn r-btn btn-secondary">Pilih objek</button>
-          <div class="two-panel-wrapper">
-            <div class="left-panel">
-              <label>Intensitas</label>
-              <input class="r-slider" type="range" step="0.01" name="mushroom-light-intensity" value="1" min="0" max="10" data-clamp="true">
-            </div>
+            <h5><i class="fas fa-lightbulb"></i> Cahaya Titik</h5>
+            <button data-light-name="lamp" class="btn r-btn btn-secondary">Pilih objek</button>
 
-            <div class="right-panel">
-              <div class="color-picker-field-wrapper">
-                <label>Warna Diffuse</label>
-                <div class="colorpicker-value">
-                  <input type="color" name="spotlight-diffuse-lightcolor" data-light-name="mushroom-light" data-light-property="diffuseColor" value="#ffffff">
-                </div>
-
+            <div class="two-panel-wrapper">
+              <div class="left-panel">
+                <label>Intensitas</label>
+                <input class="r-slider" type="range" step="0.05" name="lamp-intensity" value="1" min="0" max="10"
+                  data-clamp="true">
               </div>
-              <div class="color-picker-field-wrapper">
-                <label>Warna Specular</label>
-                <div class="colorpicker-value">
-                  <input type="color" name="spotlight-specular-lightcolor" data-light-name="mushroom-light" data-light-property="specularColor" value="#ffffff">
+
+              <div class="right-panel">
+                <div class="color-picker-field-wrapper">
+                  <label>Warna Diffuse</label>
+                  <div class="colorpicker-value">
+                    <input type="color" name="pointlight-diffuse-lightcolor" data-light-name="lamp"
+                      data-light-property="diffuseColor" value="#ffffff">
+                  </div>
+                </div>
+                <div class="color-picker-field-wrapper">
+                  <label>Warna Specular</label>
+                  <div class="colorpicker-value">
+                    <input type="color" name="pointlight-specular-lightcolor" data-light-name="lamp"
+                      data-light-property="specularColor" value="#ffffff">
+                  </div>
                 </div>
               </div>
             </div>
 
           </div>
-        </div>
 
+          <div class="subsection light-setup">
+            <h5><i class="fas fa-lightbulb"></i> Cahaya Sorot</h5>
+            <button data-light-name="mushroom-light" class="btn r-btn btn-secondary">Pilih objek</button>
+            <div class="two-panel-wrapper">
+              <div class="left-panel">
+                <label>Intensitas</label>
+                <input class="r-slider" type="range" step="0.01" name="mushroom-light-intensity" value="1" min="0"
+                  max="10" data-clamp="true">
+              </div>
 
-        <div class="subsection light-setup">
-          <h5><i class="fas fa-sun"></i> Cahaya Matahari</h5>
-          <button data-light-name="sun" class="btn r-btn btn-secondary">Pilih objek</button>
+              <div class="right-panel">
+                <div class="color-picker-field-wrapper">
+                  <label>Warna Diffuse</label>
+                  <div class="colorpicker-value">
+                    <input type="color" name="spotlight-diffuse-lightcolor" data-light-name="mushroom-light"
+                      data-light-property="diffuseColor" value="#ffffff">
+                  </div>
 
-          <div class="two-panel-wrapper">
-            <div class="left-panel">
-              <label>Intensitas</label>
-              <input class="r-slider" type="range" step="0.01" name="sun-intensity" value="1" min="0" max="10" data-clamp="true">
+                </div>
+                <div class="color-picker-field-wrapper">
+                  <label>Warna Specular</label>
+                  <div class="colorpicker-value">
+                    <input type="color" name="spotlight-specular-lightcolor" data-light-name="mushroom-light"
+                      data-light-property="specularColor" value="#ffffff">
+                  </div>
+                </div>
+              </div>
+
             </div>
+          </div>
 
-            <div class="right-panel">
-              <div class="color-picker-field-wrapper">
-                <label>Warna</label>
-                <div class="colorpicker-value">
-                  <input type="color" name="sun-lightcolor" data-light-name="sun" data-light-property="color" value="#fd790d">
+
+          <div class="subsection light-setup">
+            <h5><i class="fas fa-sun"></i> Cahaya Matahari</h5>
+            <button data-light-name="sun" class="btn r-btn btn-secondary">Pilih objek</button>
+
+            <div class="two-panel-wrapper">
+              <div class="left-panel">
+                <label>Intensitas</label>
+                <input class="r-slider" type="range" step="0.01" name="sun-intensity" value="1" min="0" max="10"
+                  data-clamp="true">
+              </div>
+
+              <div class="right-panel">
+                <div class="color-picker-field-wrapper">
+                  <label>Warna</label>
+                  <div class="colorpicker-value">
+                    <input type="color" name="sun-lightcolor" data-light-name="sun" data-light-property="color"
+                      value="#fd790d">
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
     </div>
 
   </div>

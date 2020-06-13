@@ -6,7 +6,6 @@
 .side-panel {
   position: absolute;
   height: 100%;
-  overflow-y: scroll;
   background-color: #262626;
   font-size: 12px;
 }
@@ -107,6 +106,49 @@
 .section > input:checked + .collapse-sign .fa-chevron-right {
   display: none;
 }
+
+
+/* Menu open and close */
+
+#toggle-close-menu {
+  position: absolute;
+  top: 20px;
+  right: 100%;
+  display: flex;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  font-size: 14px;
+  align-items: center;
+}
+
+.side-panel > .panel-content {
+  overflow-y: scroll;
+  max-height: 100%;
+}
+
+#right-panel.closed {
+  width: 0;
+}
+
+#toggle-close-menu .button-text::before {
+  content: "Tutup";
+}
+
+#right-panel.closed #toggle-close-menu .button-text::before {
+  content: "Menu";
+}
+
+#right-panel.closed #toggle-close-menu .fa-chevron-right {
+  display: none;
+}
+
+#right-panel:not(.closed) #toggle-close-menu .fa-chevron-left {
+  display: none;
+}
+
+
+
+
 
 /* Help section */
 

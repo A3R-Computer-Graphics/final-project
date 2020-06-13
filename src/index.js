@@ -369,16 +369,16 @@ function adjustResolution(val) {
 
 
 function toggleMenu() {
-  let wrapperDOM = document.getElementById('menu-toggler-wrapper');
-  let menuTogglerButtonText = document.querySelector('#menu-toggler-button > .button-text');
-  if (!isMenuShown) {
-    wrapperDOM.className = 'show-menu';
-    menuTogglerButtonText.innerText = 'Tutup';
+  let panel = document.getElementById('right-panel');
+  let button = document.getElementById('toggle-close-menu')
+  let closed = panel.classList.contains('closed')
+  closed = !closed
+
+  if (closed) {
+    panel.classList.add('closed')
   } else {
-    wrapperDOM.className = 'hide-menu';
-    menuTogglerButtonText.innerText = 'Buka Menu';
+    panel.classList.remove('closed')
   }
-  isMenuShown = !isMenuShown;
 }
 
 
@@ -812,7 +812,7 @@ window.addEventListener('load', async function init() {
   canvas.parentElement.addEventListener('keyup', handleKeyUp)
   window.addEventListener('resize', adjustViewport)
 
-  // document.querySelector('#menu-toggler-button').addEventListener('click', toggleMenu)
+  document.querySelector('#toggle-close-menu').addEventListener('click', toggleMenu)
   let resolutionSlider = new RSlider('input[name="resolution"]', {}, val => parseInt(val) + '%')
   resolutionSlider.on('change', adjustResolution)
   resolution = resolutionSlider.value
