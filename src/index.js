@@ -173,23 +173,21 @@ function connectSpeedSlider() {
 
 
 function connectLightIntensitySliders() {
-  document.querySelectorAll('input[name^=lightintensity-slider]').forEach(slider => {
+  document.querySelectorAll('input[name$=-intensity]').forEach(elem => {
 
-    const name = slider.getAttribute('name');
-    const lightName = name.slice(22);
+    const name = elem.getAttribute('name');
+    const lightName = name.match(/(.*)-intensity/)[1];
     const lightObj = app.objects[lightName];
 
-    let value = lightObj.intensity
-    updateSliderValueAndDisplay(slider, value)
+    let value = lightObj.intensity;
 
-    slider = RSlider.get(slider);
+    let slider = RSlider.get(elem);
     if (!slider) {
-      slider = new RSlider(slider);
+      slider = new RSlider(elem, {value: value});
     }
 
     slider.on('change', () => {
-      let newValue = parseFloat(slider.value);
-      lightObj.intensity = newValue
+      lightObj.intensity = parseFloat(slider.value);
     });
   });
 }
@@ -667,7 +665,7 @@ window.addEventListener('load', async function init() {
   let resolutionSlider = new RSlider('input[name="resolution"]', {}, val => parseInt(val) + '%')
   resolutionSlider.on('change', adjustResolution)
   resolution = resolutionSlider.value
-  
+
   document.querySelector('#toggle-anim').addEventListener('click', toggleAnimation)
   document.querySelector('#toggle-all-light').addEventListener('click', toggleLight)
 

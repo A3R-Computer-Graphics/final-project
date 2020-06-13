@@ -262,6 +262,16 @@
   flex-basis: 50%;
 }
 
+#light-section .two-panel-wrapper > .left-panel {
+  flex-basis: 40%;
+  margin-right: 12px;
+}
+
+#light-section .two-panel-wrapper > .right-panel {
+  flex-basis: 60%;
+  padding-top: 3px;
+}
+
 
 
 
