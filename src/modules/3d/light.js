@@ -20,10 +20,6 @@ class Light extends Object3D {
       material: Light.lightCubeMaterial
     })
 
-    this.ambient = vec4(0.2, 0.2, 0.2, 1.0)
-    this.diffuse = vec4(1.0, 1.0, 1.0, 1.0)
-    this.specular = vec4(1.0, 1.0, 1.0, 1.0)
-
     this.shadowMapIndex = Light.lastShadowMapIndex++
     this.shadowMapTexture = null
     this.shadowMapTextureSize = textureSize || Light.TEXTURE_SIZE
@@ -33,7 +29,7 @@ class Light extends Object3D {
 
     this.intensity = 1.0
 
-    this.color = [1.0, 1.0, 1.0];
+    this.color = vec3(1.0, 1.0, 1.0);
 
     Light.lightList.push(this)
   }
@@ -49,8 +45,8 @@ class PointLight extends Light {
 
   constructor() {
     super(...arguments)
-    this.diffuseColor = vec4(1.0, 1.0, 1.0, 1.0)
-    this.specularColor = vec4(1.0, 1.0, 1.0, 1.0)
+    this.diffuseColor = vec3(1.0, 1.0, 1.0)
+    this.specularColor = vec3(1.0, 1.0, 1.0)
   }
 
   initTexture(gl) {
@@ -361,7 +357,8 @@ class SpotLight extends MatrixBasedLight {
     super(textureSize)
     this._fov = 40.0
     this.shadowMapIndex = 3
-    this.color = [1.0, 1.0, 0.0]
+    this.diffuseColor = vec3(1.0, 1.0, 1.0)
+    this.specularColor = vec3(1.0, 1.0, 1.0)
   }
 
   get fov() {

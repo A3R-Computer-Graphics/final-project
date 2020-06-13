@@ -14,7 +14,7 @@ varying vec3 v_camLightPos;  // Light position, interpolated
 varying vec3 v_pos;
 varying vec3 v_worldNorm;
 
-uniform vec4 ambientColor, pointLightDiffuseColor, pointLightSpecularColor;
+uniform vec3 ambientColor, pointLightDiffuseColor, pointLightSpecularColor;
 uniform vec4 materialDiffuseColor, materialSpecularColor;
 uniform float shininess;
 
@@ -64,7 +64,7 @@ const vec4 selectedObjectColor = vec4(0.0/255.0, 123.0/255.0, 255.0/255.0, 1.0);
 
 // Color Picker
 uniform vec3 u_directionalLightColor;
-uniform vec3 u_spotLightColor;
+uniform vec3 spotLightDiffuseColor, spotLightSpecularColor;
 
 uniform bool u_softShadow;
 
@@ -217,9 +217,6 @@ vec4 defaultShader() {
     // constants
     float plastic = 0.1;
 
-    vec3 spotlightColor = u_spotLightColor; // red + green = yellow;
-    vec3 directionalLightColor = u_directionalLightColor; // a little bit violet
-
 
     vec4 baseColor = mix(materialDiffuseColor, texture2D(u_texture, v_texcoord), textureMix);
 
@@ -227,7 +224,7 @@ vec4 defaultShader() {
         return baseColor;
     }
 
-    vec4 color = vec4((ambientColor *  baseColor).rgb, 1.0);
+    vec4 color = vec4(ambientColor *  baseColor.rgb, 1.0);
     vec3 normal = normalize(v_worldNorm);
 
     // This is based on personal observation, not some empirical source
@@ -260,10 +257,10 @@ vec4 defaultShader() {
     shadowMix = pointLightShadowValue();
 
     vec4 diffuseColor = mix(materialDiffuseColor, texture2D(u_texture, v_texcoord), textureMix);
-    diffuseColor *= lambertian * pointLightDiffuseColor * pointLightIntensity;
+    diffuseColor *= lambertian * vec4(pointLightDiffuseColor, 1.0) * pointLightIntensity;
 
     vec4 specularColor = mix(materialSpecularColor, texture2D(u_texture, v_texcoord), textureMix);
-    specularColor *= specular * pointLightSpecularColor * pointLightIntensity;
+    specularColor *= specular * vec4(pointLightSpecularColor, 1.0) * pointLightIntensity;
 
     color += (diffuseColor + specularColor) * shadowMix * power;
 
@@ -276,7 +273,7 @@ vec4 defaultShader() {
     // Apply directional light shadow
 
     shadowMix = directionalLightShadowValue();
-    color += vec4(plasticColor.rgb * directionalLightColor * shadowMix * light, 0.0);
+    color += vec4(plasticColor.rgb * u_directionalLightColor * shadowMix * light, 0.0);
 
 
     // Compute spotlight
@@ -298,7 +295,7 @@ vec4 defaultShader() {
     // Apply spotlight shadow
 
     shadowMix = spotLightShadowValue();
-    vec3 spotlight = plasticColor.rgb * spotlightColor * light + vec3(1.0) * specular;
+    vec3 spotlight = plasticColor.rgb * spotLightDiffuseColor * light + specular * spotLightSpecularColor;
     spotlight *= power * shadowMix;
     spotlight = max(spotlight, vec3(0.0));
 

@@ -341,7 +341,8 @@ class Renderer extends EventDispatcher {
               spotlightIntensity: light.intensity * light.visible || 0.0,
 
               u_projectedTexture_spot: light.shadowMapTexture,
-              u_spotLightColor: light.color,
+              spotLightDiffuseColor: light.diffuseColor,
+              spotLightSpecularColor: light.specularColor,
             })
 
           }

@@ -250,23 +250,36 @@ function connectLightIntensitySliders() {
 
 
 function connectLightColorPicker() {
-  document.querySelectorAll('input[name^=lightcolor-]').forEach(colorPicker => {
+  document.querySelectorAll('input[name$=lightcolor]').forEach(colorPicker => {
 
-    const name = colorPicker.getAttribute('name');
-    const lightName = name.slice(name.indexOf('-') + 1);
+    const lightName = colorPicker.getAttribute('data-light-name');
     const lightObj = app.objects[lightName];
+    const lightProperty = colorPicker.getAttribute('data-light-property');
 
     colorPicker.addEventListener('input', () => {
+      
       const hexCol = colorPicker.value
       // Convert to rgb
       let r = 0, g = 0, b = 0;
       r = ("0x" + hexCol[1] + hexCol[2]) / 255;
       g = ("0x" + hexCol[3] + hexCol[4]) / 255;
       b = ("0x" + hexCol[5] + hexCol[6]) / 255;
-      lightObj.color = [r, g, b]
+      lightObj[lightProperty] = [r, g, b]
     });
 
   });
+
+  document.querySelector('input[name="ambient-color"]').addEventListener('input', event => {
+    
+    const hexCol = event.target.value
+    // Convert to rgb
+    let r = 0, g = 0, b = 0;
+    r = ("0x" + hexCol[1] + hexCol[2]) / 255;
+    g = ("0x" + hexCol[3] + hexCol[4]) / 255;
+    b = ("0x" + hexCol[5] + hexCol[6]) / 255;
+    scene.ambientColor = [r, g, b]
+
+  })
 }
 
 
@@ -441,7 +454,7 @@ function createCubeLight() {
   sun.far = 120
   sun.projWidth = 90
   sun.projHeight = 90
-  sun.color = [0.9, 0.7, 0.0]
+  sun.color = [1.0, 0.45, 0.05]
 
   sun.intensity = 2.5
 
