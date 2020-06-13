@@ -702,7 +702,7 @@ function updatePerspectiveView() {
 
   if (camera.isFirstPersonView) {
     disabled = false
-    status = 'Perspektif (1st Person) dari <b>' + camera.currentFirstPersonViewObject.name + '</b>'
+    status = 'Perspektif (orang pertama) dari <b>' + camera.currentFirstPersonViewObject.name + '</b>'
   }
 
   document.querySelector('#third-person-camera-button').disabled = disabled

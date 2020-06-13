@@ -19,6 +19,8 @@ class CameraPrototype extends Object3D {
     this.animationStillRunning = false
     this.cancelSwitchCameraAnimation = function() {}
     this.pendingFunctions = []
+
+    this.newAt = [0, 0, 0]
   }
 
   lookAt(at) {
@@ -50,6 +52,34 @@ class CameraPrototype extends Object3D {
     this.cameraMatrixNeedsUpdate = false
   }
 
+  switchToThirdPersonAndFocusAt(object) {
+    
+    let objectMatrix = mat4(object.worldMatrix)
+    let objectWorldPosition = objectMatrix[3].slice(0, 3)
+    let newPosition = vec3(objectWorldPosition)
+    let newRadius = 4
+    
+    let r = newRadius;
+    cameraRadius = r;
+
+    theta = (Math.sign(theta) || 1) * Math.max(Math.abs(theta), 0.1)
+
+    let sin_t = Math.sin(theta);
+    let sin_p = Math.sin(phi);
+    let cos_t = Math.cos(theta);
+    let cos_p = Math.cos(phi);
+
+    let x = r * sin_t * cos_p;
+    let y = r * sin_t * sin_p;
+    let z = r * cos_t;
+
+    let eye = add(newPosition, vec3(x, y, z));
+
+    this.lastThirdPersonViewInformation.position = eye
+    this.lastThirdPersonViewInformation.at = newPosition
+    this.switchToThirdPersonView()
+  }
+
   switchToThirdPersonView() {
       this.isFirstPersonView = false
       this.currentFirstPersonViewObject = null
@@ -71,7 +101,9 @@ class CameraPrototype extends Object3D {
       }
       let animationDuration = NavigableCamera.MAX_FOCUS_PROGRESS_FRAME_DURATION * 2
 
-      const [oldPosition, oldAt] = [[...this.position.property], [...at]];
+      const oldPosition = m4.inverse(this.viewMatrix).slice(12, 15)
+      const oldAt = [...this.newAt]
+
       let animateFocusTransition = () => {
         if (progress > animationDuration || animationCancelled) {
           this.animationStillRunning = false
@@ -121,6 +153,8 @@ class CameraPrototype extends Object3D {
     const newPosition = resultingMatrix.slice(0, 3)
 
     if (this.position === newPosition && at === newAt) return
+
+    this.newAt = newAt
     
     if (animate) {
       this.cancelSwitchCameraAnimation()

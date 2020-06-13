@@ -546,8 +546,9 @@ class NavigableCamera {
 
   focus(selectedObject) {
     if (camera.isFirstPersonView) {
-      camera.switchToThirdPersonView()
+      camera.switchToThirdPersonAndFocusAt(selectedObject)
       updatePerspectiveView()
+      return
     }
     
     let objectMatrix = mat4(selectedObject.worldMatrix)
