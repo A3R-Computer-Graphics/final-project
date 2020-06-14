@@ -136,8 +136,6 @@ function initAnimationToggle() {
 
   function updateView() {
     if (animationManager.isAnimating) {
-      // button.classList.remove('btn-danger')
-      // button.classList.add('btn-primary')
 
       buttonText.innerText = 'Hentikan'
       button.setAttribute('title', 'Hentikan animasi')
@@ -153,8 +151,6 @@ function initAnimationToggle() {
           }
         })
     } else {
-      // button.classList.add('btn-danger')
-      // button.classList.remove('btn-primary')
 
       buttonText.innerText = 'Mulai'
       button.setAttribute('title', 'Mulai animasi')
@@ -184,6 +180,26 @@ function initAnimationToggle() {
 
   button.addEventListener('click', toggleAnimation)
   initUpdateView()
+
+  let isSpaceKeyPressed = false
+  
+  function handleKeyDown(event) {
+    if (!isSpaceKeyPressed && (event.code === 'Space' || event.key === ' ' || event.keyCode === 32)) {
+      toggleAnimation()
+      isSpaceKeyPressed = true
+    }
+  }
+  
+  function handleKeyUp(event) {
+    if (event.code === 'Space' || event.key === ' ' || event.keyCode === 32) {
+      isSpaceKeyPressed = false
+    }
+  }
+
+  // Attach event listener handles
+
+  canvas.parentElement.addEventListener('keydown', handleKeyDown)
+  canvas.parentElement.addEventListener('keyup', handleKeyUp)
 }
 
 
@@ -308,21 +324,6 @@ function updateCameraView() {
 
   camera.position.set(eye)
   camera.lookAt(at)
-}
-
-let isSpaceKeyPressed = false
-
-function handleKeyDown(event) {
-  if (!isSpaceKeyPressed && (event.code === 'Space' || event.key === ' ' || event.keyCode === 32)) {
-    toggleAnimation()
-    isSpaceKeyPressed = true
-  }
-}
-
-function handleKeyUp(event) {
-  if (event.code === 'Space' || event.key === ' ' || event.keyCode === 32) {
-    isSpaceKeyPressed = false
-  }
 }
 
 
@@ -805,11 +806,6 @@ window.addEventListener('load', async function init() {
   }
 
   animationManager.startAnimation()
-
-  // Attach event listener handles
-
-  canvas.parentElement.addEventListener('keydown', handleKeyDown)
-  canvas.parentElement.addEventListener('keyup', handleKeyUp)
   window.addEventListener('resize', adjustViewport)
 
   document.querySelector('#toggle-close-menu').addEventListener('click', toggleMenu)
